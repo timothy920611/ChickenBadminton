@@ -1,0 +1,197 @@
+{
+  "players": [
+    {
+      "id": 1774193670940.8062,
+      "name": "大谷",
+      "gender": "男",
+      "level": 4
+    },
+    {
+      "id": 1774193670940.1282,
+      "name": "林書豪",
+      "gender": "男",
+      "level": 12
+    },
+    {
+      "id": 1774193670941.5127,
+      "name": "戴資穎",
+      "gender": "男",
+      "level": 12
+    },
+    {
+      "id": 1774193670941.8718,
+      "name": "周天成",
+      "gender": "男",
+      "level": 4
+    },
+    {
+      "id": 1774193670941.9402,
+      "name": "李洋",
+      "gender": "男",
+      "level": 16
+    },
+    {
+      "id": 1774193670942.2368,
+      "name": "王齊麟",
+      "gender": "男",
+      "level": 14
+    },
+    {
+      "id": 1774193670942.6548,
+      "name": "安洗瑩",
+      "gender": "男",
+      "level": 4
+    },
+    {
+      "id": 1774193670943.7546,
+      "name": "陳雨菲",
+      "gender": "男",
+      "level": 6
+    }
+  ],
+  "matches": [
+    {
+      "id": "M_0",
+      "round": 1,
+      "team1": {
+        "id": "Team_1774193675205_0",
+        "name1": "李洋",
+        "name2": "安洗瑩",
+        "totalLevel": 20
+      },
+      "team2": {
+        "id": "Team_1774193675205_3",
+        "name1": "戴資穎",
+        "name2": "陳雨菲",
+        "totalLevel": 18
+      },
+      "score1": 21,
+      "score2": 3,
+      "isFinished": true
+    },
+    {
+      "id": "M_1",
+      "round": 1,
+      "team1": {
+        "id": "Team_1774193675205_1",
+        "name1": "王齊麟",
+        "name2": "大谷",
+        "totalLevel": 18
+      },
+      "team2": {
+        "id": "Team_1774193675205_2",
+        "name1": "林書豪",
+        "name2": "周天成",
+        "totalLevel": 16
+      },
+      "score1": null,
+      "score2": null,
+      "isFinished": false
+    },
+    {
+      "id": "M_2",
+      "round": 2,
+      "team1": {
+        "id": "Team_1774193675205_0",
+        "name1": "李洋",
+        "name2": "安洗瑩",
+        "totalLevel": 20
+      },
+      "team2": {
+        "id": "Team_1774193675205_2",
+        "name1": "林書豪",
+        "name2": "周天成",
+        "totalLevel": 16
+      },
+      "score1": null,
+      "score2": null,
+      "isFinished": false
+    },
+    {
+      "id": "M_3",
+      "round": 2,
+      "team1": {
+        "id": "Team_1774193675205_3",
+        "name1": "戴資穎",
+        "name2": "陳雨菲",
+        "totalLevel": 18
+      },
+      "team2": {
+        "id": "Team_1774193675205_1",
+        "name1": "王齊麟",
+        "name2": "大谷",
+        "totalLevel": 18
+      },
+      "score1": null,
+      "score2": null,
+      "isFinished": false
+    },
+    {
+      "id": "M_4",
+      "round": 3,
+      "team1": {
+        "id": "Team_1774193675205_0",
+        "name1": "李洋",
+        "name2": "安洗瑩",
+        "totalLevel": 20
+      },
+      "team2": {
+        "id": "Team_1774193675205_1",
+        "name1": "王齊麟",
+        "name2": "大谷",
+        "totalLevel": 18
+      },
+      "score1": null,
+      "score2": null,
+      "isFinished": false
+    },
+    {
+      "id": "M_5",
+      "round": 3,
+      "team1": {
+        "id": "Team_1774193675205_2",
+        "name1": "林書豪",
+        "name2": "周天成",
+        "totalLevel": 16
+      },
+      "team2": {
+        "id": "Team_1774193675205_3",
+        "name1": "戴資穎",
+        "name2": "陳雨菲",
+        "totalLevel": 18
+      },
+      "score1": null,
+      "score2": null,
+      "isFinished": false
+    }
+  ],
+  "currentTeams": [
+    {
+      "id": "Team_1774193675205_0",
+      "name1": "李洋",
+      "name2": "安洗瑩",
+      "totalLevel": 20
+    },
+    {
+      "id": "Team_1774193675205_1",
+      "name1": "王齊麟",
+      "name2": "大谷",
+      "totalLevel": 18
+    },
+    {
+      "id": "Team_1774193675205_2",
+      "name1": "林書豪",
+      "name2": "周天成",
+      "totalLevel": 16
+    },
+    {
+      "id": "Team_1774193675205_3",
+      "name1": "戴資穎",
+      "name2": "陳雨菲",
+      "totalLevel": 18
+    }
+  ],
+  "matchMode": "round-robin",
+  "currentRestingPlayers": [],
+  "currentRestingTeams": []
+}
