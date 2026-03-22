@@ -3,181 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏸 雞雞羽球計分板 - 歡迎</title>
+    <title>🏸 羽球賽程系統 - 登入</title>
     <style>
         :root {
             --primary: #059669;
             --primary-hover: #047857;
-            --secondary: #1f2937;
-            --secondary-hover: #111827;
-            --bg-gradient-start: #0f766e;
-            --bg-gradient-end: #064e3b;
+            --secondary: #0f766e;
+            --bg: #f3f4f6;
             --card-bg: #ffffff;
             --text-main: #1f2937;
+            --text-muted: #6b7280;
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--text-main);
-        }
-
-        .login-card {
-            background-color: var(--card-bg);
-            padding: 40px 30px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        .logo {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        h1 {
-            font-size: 26px;
-            color: var(--primary);
-            margin-bottom: 30px;
-            font-weight: bold;
-        }
-
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 16px;
-            margin-bottom: 15px;
-            border: none;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-            box-shadow: 0 4px 6px rgba(5, 150, 105, 0.3);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background-color: var(--secondary);
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background-color: var(--secondary-hover);
-            transform: translateY(-2px);
-        }
-
-        /* Modal 樣式 */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: white;
-            padding: 25px;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 350px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            animation: popIn 0.3s ease-out;
-        }
-
-        @keyframes popIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: var(--secondary);
-            text-align: center;
-        }
-
-        select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 16px;
-            margin-bottom: 25px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        select:focus {
-            border-color: var(--primary);
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-modal {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .btn-cancel {
-            background-color: #f3f4f6;
-            color: #4b5563;
-        }
-
-        .btn-cancel:hover {
-            background-color: #e5e7eb;
-        }
-
-        .btn-confirm {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .btn-confirm:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .btn-confirm:disabled {
-            background-color: #9ca3af;
-            cursor: not-allowed;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .login-card { background-color: var(--card-bg); border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); text-align: center; }
+        .logo { font-size: 48px; margin-bottom: 10px; }
+        h1 { color: var(--secondary); font-size: 24px; margin-bottom: 5px; }
+        p.subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 30px; }
+        
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; font-size: 14px; font-weight: bold; margin-bottom: 5px; color: var(--text-main); }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; outline: none; transition: border-color 0.2s; }
+        .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2); }
+        
+        button { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.2s; margin-bottom: 10px; }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-secondary { background-color: #e5e7eb; color: #4b5563; }
+        .btn-secondary:hover { background-color: #d1d5db; }
+        .btn-guest { background-color: transparent; color: var(--text-muted); border: 1px solid #d1d5db; margin-top: 15px; }
+        .btn-guest:hover { background-color: #f9fafb; color: var(--text-main); }
+        
+        #statusMsg { font-size: 14px; margin-top: 15px; min-height: 20px; font-weight: bold; }
+        .error { color: #ef4444; }
+        .success { color: #10b981; }
+        .loading { color: #3b82f6; }
+        
+        .warning-text { font-size: 12px; color: #9ca3af; margin-top: 20px; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -185,148 +47,166 @@
     <div class="login-card">
         <div class="logo">🏸</div>
         <h1>雞雞羽球計分板</h1>
-        
-        <!-- 新增對局：清空快取並進入 play.html -->
-        <button class="btn btn-primary" onclick="startNewGame()">新增對局</button>
-        
-        <!-- 讀取舊資料：開啟 Modal 從 GitHub 抓取檔案 -->
-        <button class="btn btn-secondary" onclick="openLoadModal()">讀取舊資料</button>
-    </div>
+        <p class="subtitle">賽程安排與戰績管理系統</p>
 
-    <!-- 讀取檔案的 Modal -->
-    <div class="modal-overlay" id="loadModal">
-        <div class="modal-content">
-            <div class="modal-title">選擇要讀取的檔案</div>
-            <select id="fileSelector">
-                <option value="">載入檔案清單中...</option>
-            </select>
-            <div class="modal-actions">
-                <button class="btn-modal btn-cancel" onclick="closeLoadModal()">取消</button>
-                <button class="btn-modal btn-confirm" id="btnConfirmLoad" onclick="confirmLoad()">確定</button>
-            </div>
+        <div class="input-group">
+            <label for="username">帳號</label>
+            <input type="text" id="username" placeholder="請輸入英文或數字" autocomplete="off">
         </div>
+        <div class="input-group">
+            <label for="password">密碼</label>
+            <input type="password" id="password" placeholder="請輸入密碼">
+        </div>
+
+        <button class="btn-primary" onclick="handleLogin()">登入</button>
+        <button class="btn-secondary" onclick="handleSignup()">註冊新帳號</button>
+        <button class="btn-guest" onclick="continueAsGuest()">👤 直接以訪客身分進入 (共用區)</button>
+
+        <div id="statusMsg"></div>
+
+        <p class="warning-text">
+            * 註冊帳號可擁有獨立的賽程與常用選手紀錄。<br>
+            * 密碼已啟用 SHA-256 單向加密保護。
+        </p>
     </div>
 
     <script>
-        // ==========================================
-        // ☁️ 雲端設定區：防禦型 Token 混淆機制
-        // ==========================================
+        // GitHub API 設定
         const GITHUB_OWNER = 'timothy920611';   
         const GITHUB_REPO = 'ChickenBadminton'; 
-        const GITHUB_FOLDER = 'json';
-
         const NOISE = "5d5502d0e27ded4a977810d55f13e615c201fe6f7e1c0ff57641e034d75e2b2f";
         const OBFUSCATED_TOKEN = "Z2l0aHViX3BhdF8xMUI0TlFKR0EwUWJlSVdIcDRLeVdUX3RMbHJFSXVLMFdzWVF3Y2" + NOISE + "9LbEd5SFN1cXl6Z3dUQ04xTHdNSHJ0cndIWkdIQ1MzRUVOVG9XR1p5RTFC";
         
         function getRealToken() {
-            try { 
-                const cleanBase64 = OBFUSCATED_TOKEN.replace(NOISE, "");
-                return atob(cleanBase64); 
-            } catch (e) { 
-                return null; 
-            }
+            try { return atob(OBFUSCATED_TOKEN.replace(NOISE, "")); } 
+            catch (e) { return null; }
         }
+
         // ==========================================
-
-        // 開啟新的一局
-        function startNewGame() {
-            // 清空本地存檔，確保進去是一張白紙
-            localStorage.removeItem('badmintonData');
-            // 跳轉至主程式
-            window.location.href = 'play.html';
+        // 🔒 密碼加密功能 (SHA-256)
+        // ==========================================
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
         }
 
-        // Modal 控制
-        const modal = document.getElementById('loadModal');
-        
-        function openLoadModal() {
-            modal.style.display = 'flex';
-            fetchFileList();
+        function setStatus(msg, type) {
+            const el = document.getElementById('statusMsg');
+            el.textContent = msg;
+            el.className = type;
         }
 
-        function closeLoadModal() {
-            modal.style.display = 'none';
+        async function checkUserExists(username, token) {
+            const path = `users/${username}.json`;
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+                cache: 'no-store'
+            });
+            if (res.status === 404) return null;
+            if (res.ok) return await res.json();
+            throw new Error("API 錯誤");
         }
 
-        // 點擊背景關閉 Modal
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) closeLoadModal();
-        });
-
-        // 從 GitHub 抓取檔案列表
-        async function fetchFileList() {
-            const selector = document.getElementById('fileSelector');
-            const btnConfirm = document.getElementById('btnConfirmLoad');
-            const token = getRealToken();
+        async function handleLogin() {
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value;
             
-            selector.innerHTML = '<option value="">⏳ 載入清單中...</option>';
-            btnConfirm.disabled = true;
+            if (!user || !pass) return setStatus("⚠️ 請輸入帳號與密碼", "error");
+            if (!/^[a-zA-Z0-9_]+$/.test(user)) return setStatus("⚠️ 帳號只能包含英文、數字與底線", "error");
+
+            const token = getRealToken();
+            if (!token) return setStatus("❌ 系統 Token 設定錯誤", "error");
+
+            setStatus("⏳ 登入驗證中...", "loading");
 
             try {
-                const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FOLDER}?t=${Date.now()}`, {
-                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-                });
-                
-                if (!res.ok) throw new Error('無法讀取');
-                
-                const files = await res.json();
-                const jsonFiles = files.filter(f => f.name.endsWith('.json'));
-                
-                if (jsonFiles.length === 0) {
-                    selector.innerHTML = '<option value="">目前尚無任何存檔</option>';
-                    return;
+                const userData = await checkUserExists(user, token);
+                if (!userData) {
+                    return setStatus("❌ 找不到此帳號，請先註冊", "error");
                 }
+
+                // 解析雲端資料
+                const contentStr = decodeURIComponent(escape(atob(userData.content)));
+                const userObj = JSON.parse(contentStr);
                 
-                // 將最新的檔案排在最前面
-                selector.innerHTML = jsonFiles.reverse().map(f => `<option value="${f.name}">${f.name.replace('.json', '')}</option>`).join('');
-                btnConfirm.disabled = false;
+                // 將輸入的密碼進行 SHA-256 加密
+                const hashedInput = await hashPassword(pass);
                 
+                // 驗證密碼：支援新的 SHA-256 或舊版的 Base64(向下相容)
+                if (userObj.password === hashedInput || userObj.password === btoa(pass)) { 
+                    localStorage.setItem('badminton_currentUser', user);
+                    setStatus("✅ 登入成功！跳轉中...", "success");
+                    setTimeout(() => window.location.href = 'play.html', 800);
+                } else {
+                    setStatus("❌ 密碼錯誤", "error");
+                }
+
             } catch (e) {
-                selector.innerHTML = '<option value="">❌ 無法讀取 GitHub 清單</option>';
+                setStatus("❌ 網路連線錯誤", "error");
             }
         }
 
-        // 確認讀取並跳轉
-        async function confirmLoad() {
-            const selector = document.getElementById('fileSelector');
-            const filename = selector.value;
-            if (!filename) return;
+        async function handleSignup() {
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value;
+            
+            if (!user || !pass) return setStatus("⚠️ 請輸入要建立的帳號與密碼", "error");
+            if (!/^[a-zA-Z0-9_]+$/.test(user)) return setStatus("⚠️ 帳號只能包含英文、數字與底線", "error");
 
-            const btnConfirm = document.getElementById('btnConfirmLoad');
-            const originalText = btnConfirm.innerText;
-            btnConfirm.innerText = "讀取中...";
-            btnConfirm.disabled = true;
-
-            const path = `${GITHUB_FOLDER}/${filename}`;
             const token = getRealToken();
+            setStatus("⏳ 建立帳號中...", "loading");
 
             try {
-                // 1. 從 GitHub 抓取特定檔案內容
-                const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}?t=${Date.now()}`, {
-                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                const userData = await checkUserExists(user, token);
+                if (userData) {
+                    return setStatus("❌ 此帳號已經有人使用了", "error");
+                }
+
+                // 產生 SHA-256 加密密碼
+                const hashedPassword = await hashPassword(pass);
+
+                // 建立使用者設定檔 users/{username}.json
+                const path = `users/${user}.json`;
+                const newUserData = { 
+                    username: user, 
+                    password: hashedPassword, // 存入加密後的密碼
+                    createdAt: new Date().toISOString() 
+                };
+                const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(newUserData, null, 2))));
+
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: `建立新使用者: ${user}`, content: contentBase64 })
                 });
-                
-                if (!res.ok) throw new Error('找不到檔案');
 
-                const json = await res.json();
-                
-                // 2. 解碼 Base64 內容 (處理中文)
-                const decodedStr = decodeURIComponent(escape(atob(json.content)));
-                
-                // 3. 驗證是否為有效的 JSON
-                const data = JSON.parse(decodedStr);
+                if (res.ok) {
+                    // 同時初始化該用戶的常用選手名單 (以建立專屬資料夾)
+                    const fpPath = `json/${user}/frequent_players.json`;
+                    await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${fpPath}`, {
+                        method: 'PUT',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: `初始化專屬資料夾: ${user}`, content: btoa("[]") })
+                    });
 
-                // 4. 將抓到的資料寫入 LocalStorage，這樣 play.html 一開啓就會自動載入這份資料
-                localStorage.setItem('badmintonData', JSON.stringify(data));
-                
-                // 5. 無縫跳轉至主程式
-                window.location.href = 'play.html';
-
+                    localStorage.setItem('badminton_currentUser', user);
+                    setStatus("✅ 註冊成功！跳轉中...", "success");
+                    setTimeout(() => window.location.href = 'play.html', 1000);
+                } else {
+                    setStatus("❌ 建立失敗，請稍後再試", "error");
+                }
             } catch (e) {
-                alert("❌ 讀取檔案失敗！請檢查網路或檔案是否毀損。");
-                btnConfirm.innerText = originalText;
-                btnConfirm.disabled = false;
+                setStatus("❌ 網路連線錯誤", "error");
             }
+        }
+
+        function continueAsGuest() {
+            localStorage.removeItem('badminton_currentUser'); // 移除帳號標記即為訪客
+            window.location.href = 'play.html';
         }
     </script>
 </body>
