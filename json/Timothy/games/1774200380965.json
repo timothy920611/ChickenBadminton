@@ -1,9 +1,22 @@
 {
-  "players": [],
+  "players": [
+    {
+      "id": 1774200618664.7354,
+      "name": "慕華",
+      "gender": "男",
+      "level": 8
+    },
+    {
+      "id": 1774200618664.0393,
+      "name": "沛恩",
+      "gender": "男",
+      "level": 4
+    }
+  ],
   "matches": [],
   "restingInfo": {
     "players": [],
     "teams": []
   },
-  "lastUpdated": "2026-03-22T17:30:01.168Z"
+  "lastUpdated": "2026-03-22T17:30:18.664Z"
 }
