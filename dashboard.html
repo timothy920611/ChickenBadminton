@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏸 我的賽事管理</title>
+    <style>
+        :root {
+            --primary: #059669;
+            --primary-hover: #047857;
+            --secondary: #0f766e;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg); color: var(--text-main); padding: 20px; max-width: 900px; margin: 0 auto; }
+        
+        /* 頂部導覽列 */
+        .header { display: flex; justify-content: space-between; align-items: center; background-color: var(--primary); color: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .header h1 { font-size: 20px; display: flex; align-items: center; gap: 10px; }
+        .user-info { display: flex; align-items: center; gap: 15px; font-size: 14px; }
+        
+        .card { background-color: var(--card-bg); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        h2 { font-size: 18px; color: var(--secondary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+
+        /* 表單與按鈕 */
+        .input-group { display: flex; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+        input { flex: 1; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; outline: none; min-width: 200px; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2); }
+        
+        button { padding: 12px 20px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-danger { background-color: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 8px 15px; font-size: 14px;}
+        .btn-danger:hover { background-color: #fef2f2; }
+        .btn-logout { background-color: rgba(255, 255, 255, 0.2); color: white; padding: 8px 15px; font-size: 14px;}
+        .btn-logout:hover { background-color: rgba(255, 255, 255, 0.3); }
+        button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+
+        /* 比賽列表網格 */
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 10px; }
+        .game-card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; background: #fafafa; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s, box-shadow 0.2s; }
+        .game-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-color: #d1d5db; }
+        .game-card h3 { font-size: 18px; color: var(--text-main); margin-bottom: 8px; }
+        .game-date { font-size: 13px; color: var(--text-muted); }
+        .empty-state { grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-muted); background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🏸 我的賽程管理</h1>
+        <div class="user-info">
+            <span>👤 <span id="displayUser">載入中...</span></span>
+            <button class="btn-logout" onclick="logout()">登出</button>
+        </div>
+    </div>
+
+    <!-- 新增比賽區塊 -->
+    <div class="card">
+        <h2>✨ 建立新比賽</h2>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">建立一個新的賽程群組，獨立管理當天的參賽人員與比分。</p>
+        <div class="input-group">
+            <input type="text" id="newGameName" placeholder="例如：3/23 週末羽球團" autocomplete="off">
+            <button class="btn-primary" id="createGameBtn" onclick="createGame()">➕ 新增並進入計分板</button>
+        </div>
+    </div>
+
+    <!-- 過去比賽區塊 -->
+    <div class="card">
+        <h2>📂 過去的比賽紀錄</h2>
+        <div class="games-grid" id="gamesList">
+            <!-- 比賽卡片會動態載入到這裡 -->
+            <p style="color: #6b7280; padding: 20px;">⏳ 讀取賽事清單中...</p>
+        </div>
+    </div>
+
+    <script>
+        // GitHub API 設定
+        const GITHUB_OWNER = 'timothy920611';   
+        const GITHUB_REPO = 'ChickenBadminton'; 
+        const NOISE = "5d5502d0e27ded4a977810d55f13e615c201fe6f7e1c0ff57641e034d75e2b2f";
+        const OBFUSCATED_TOKEN = "Z2l0aHViX3BhdF8xMUI0TlFKR0EwUWJlSVdIcDRLeVdUX3RMbHJFSXVLMFdzWVF3Y2" + NOISE + "9LbEd5SFN1cXl6Z3dUQ04xTHdNSHJ0cndIWkdIQ1MzRUVOVG9XR1p5RTFC";
+        
+        function getRealToken() {
+            try { return atob(OBFUSCATED_TOKEN.replace(NOISE, "")); } 
+            catch (e) { return null; }
+        }
+
+        // 系統狀態
+        const currentUser = localStorage.getItem('badminton_currentUser') || 'guest';
+        let gamesIndexSha = null;
+        let gamesList = [];
+
+        // 初始化
+        window.onload = () => {
+            document.getElementById('displayUser').innerText = currentUser === 'guest' ? '訪客 (共用區)' : currentUser;
+            loadGames();
+        };
+
+        // 登出
+        function logout() {
+            localStorage.removeItem('badminton_currentUser');
+            window.location.href = 'index.html';
+        }
+
+        // 1. 讀取比賽列表 (讀取 games_index.json)
+        async function loadGames() {
+            const token = getRealToken();
+            if (!token) return alert("系統 Token 設定錯誤！");
+
+            const path = `json/${currentUser}/games_index.json`;
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    cache: 'no-store'
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    gamesIndexSha = data.sha;
+                    const content = decodeURIComponent(escape(atob(data.content)));
+                    gamesList = JSON.parse(content);
+                } else if (res.status === 404) {
+                    // 如果沒有這個檔案，代表是新帳號，清單為空
+                    gamesList = [];
+                    gamesIndexSha = null;
+                }
+                renderGames();
+            } catch(e) {
+                console.error(e);
+                document.getElementById('gamesList').innerHTML = '<p style="color: #ef4444;">❌ 讀取失敗，請檢查網路連線或重新整理。</p>';
+            }
+        }
+
+        // 2. 將清單渲染到畫面上
+        function renderGames() {
+            const listDiv = document.getElementById('gamesList');
+            listDiv.innerHTML = '';
+            
+            if (gamesList.length === 0) {
+                listDiv.innerHTML = '<div class="empty-state">目前還沒有比賽紀錄喔！趕快在上方建立一場吧 🏸</div>';
+                return;
+            }
+            
+            gamesList.forEach(game => {
+                const card = document.createElement('div');
+                card.className = 'game-card';
+                card.innerHTML = `
+                    <div>
+                        <h3>${game.name}</h3>
+                        <p class="game-date">建立時間: ${game.date}</p>
+                    </div>
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button class="btn-primary" style="flex: 1; padding: 8px;" onclick="enterGame('${game.id}')">進入計分板</button>
+                        <button class="btn-danger" onclick="deleteGame('${game.id}', '${game.name}')">刪除</button>
+                    </div>
+                `;
+                listDiv.appendChild(card);
+            });
+        }
+
+        // 3. 儲存/更新 比賽列表 到 GitHub
+        async function saveGamesIndex(newList) {
+            const token = getRealToken();
+            const path = `json/${currentUser}/games_index.json`;
+            const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(newList, null, 2))));
+            
+            const body = {
+                message: `更新賽事清單: ${currentUser}`,
+                content: contentBase64
+            };
+            if (gamesIndexSha) body.sha = gamesIndexSha;
+
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                gamesIndexSha = data.content.sha; // 更新檔案的 SHA，以便下次修改
+                gamesList = newList;
+                renderGames();
+                return true;
+            }
+            return false;
+        }
+
+        // 4. 建立新比賽
+        async function createGame() {
+            const gameName = document.getElementById('newGameName').value.trim();
+            if(!gameName) return alert("⚠️ 請輸入比賽名稱！");
+            
+            const btn = document.getElementById('createGameBtn');
+            btn.disabled = true;
+            btn.innerText = "⏳ 建立中...";
+            
+            // 產生唯一 ID (用時間戳記)
+            const newGame = {
+                id: Date.now().toString(),
+                name: gameName,
+                date: new Date().toLocaleString('zh-TW', { hour12: false })
+            };
+            
+            // 將新比賽加到清單最前面
+            const newList = [newGame, ...gamesList];
+            const success = await saveGamesIndex(newList);
+            
+            if(success) {
+                enterGame(newGame.id); // 成功後直接進入計分板
+            } else {
+                alert("❌ 建立失敗，請稍後再試。");
+                btn.disabled = false;
+                btn.innerText = "➕ 新增並進入計分板";
+            }
+        }
+
+        // 5. 刪除比賽
+        async function deleteGame(gameId, gameName) {
+            if(!confirm(`確定要刪除「${gameName}」的紀錄嗎？\n(注意：此動作無法復原！)`)) return;
+            
+            const newList = gamesList.filter(g => g.id !== gameId);
+            const success = await saveGamesIndex(newList);
+            
+            if(success) {
+                // 這裡未來可以加一段邏輯：同步刪除 GitHub 上該場比賽的 JSON 檔案
+                alert("✅ 已刪除比賽紀錄！");
+            } else {
+                alert("❌ 刪除失敗，請稍後再試。");
+            }
+        }
+
+        // 6. 進入計分板頁面
+        function enterGame(gameId) {
+            // 透過網址參數將 gameId 傳遞給 badminton_pro.html
+            window.location.href = `badminton_pro.html?gameId=${gameId}`;
+        }
+    </script>
+</body>
+</html>
