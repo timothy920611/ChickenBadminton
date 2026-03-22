@@ -3,280 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏸 羽球雙打賽程與計分系統</title>
+    <title>🏸 雞雞羽球計分板 - 歡迎</title>
     <style>
-        /* CSS 變數與基礎設定 */
         :root {
             --primary: #059669;
             --primary-hover: #047857;
-            --secondary: #0f766e;
-            --bg: #f3f4f6;
+            --secondary: #1f2937;
+            --secondary-hover: #111827;
+            --bg-gradient-start: #0f766e;
+            --bg-gradient-end: #064e3b;
             --card-bg: #ffffff;
             --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --danger: #ef4444;
-            --warning: #f59e0b;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg); color: var(--text-main); padding: 20px; max-width: 1200px; margin: 0 auto; }
-        h1 { text-align: center; color: var(--secondary); margin-bottom: 10px; font-size: 28px; }
-        h2 { font-size: 20px; margin-bottom: 15px; color: var(--primary); display: flex; justify-content: space-between; align-items: center; }
-        .card { background-color: var(--card-bg); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .form-group { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-        input, select, button { padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; outline: none; }
-        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2); }
-        button { background-color: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; transition: all 0.2s; }
-        button:hover { background-color: var(--primary-hover); }
-        button:disabled { background-color: #9ca3af; cursor: not-allowed; }
-        .btn-danger { background-color: var(--danger); padding: 6px 12px; font-size: 14px; }
-        .btn-danger:hover { background-color: #dc2626; }
-        
-        /* 浮動置頂工具列 */
-        .toolbar-container {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background-color: rgba(243, 244, 246, 0.95);
-            backdrop-filter: blur(4px);
-            padding: 12px 0;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #d1d5db;
-            box-shadow: 0 4px 6px -6px rgba(0,0,0,0.1);
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
-        .toolbar { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            gap: 10px; 
-            flex-wrap: wrap; 
-        }
-        .load-group {
+
+        body {
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            min-height: 100vh;
             display: flex;
-            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+        }
+
+        .login-card {
+            background-color: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 26px;
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px rgba(5, 150, 105, 0.3);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--secondary-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Modal 樣式 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
             align-items: center;
         }
-        .tool-btn { background-color: var(--secondary); font-size: 15px; padding: 10px 16px; border-radius: 8px; color: white; cursor: pointer; border: none; font-weight: bold; display: flex; align-items: center; gap: 5px; }
-        .tool-btn:hover { background-color: #0d9488; filter: brightness(1.1); }
-        .file-select { padding: 10px; border-radius: 8px; border: 1px solid #d1d5db; min-width: 180px; font-weight: bold; color: var(--secondary); }
 
-        /* 玩家列表區塊 */
-        .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-        .player-tag { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .player-info { display: flex; flex-direction: column; font-size: 14px; }
-        .player-name { font-weight: bold; font-size: 16px; color: var(--secondary); }
-        
-        /* 進度條 */
-        .progress-container { width: 100%; background-color: #e5e7eb; border-radius: 999px; height: 8px; margin-top: 8px; overflow: hidden; }
-        .progress-bar { height: 100%; background-color: var(--primary); transition: width 0.3s ease; }
-        
-        /* 賽程區塊 */
-        .mode-buttons { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .btn-mode-1 { flex: 1; background-color: #3b82f6; padding: 15px; font-size: 16px; }
-        .btn-mode-1:hover { background-color: #2563eb; }
-        .btn-mode-2 { flex: 1; background-color: var(--warning); color: #fff; padding: 15px; font-size: 16px; }
-        .btn-mode-2:hover { background-color: #d97706; }
-        
-        .round-header { grid-column: 1 / -1; background: var(--secondary); color: white; padding: 10px 15px; border-radius: 8px; font-size: 18px; font-weight: bold; margin-top: 10px; }
-        .matches-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
-        .match-card { border: 2px solid #e5e7eb; border-radius: 12px; background: #fafafa; overflow: hidden; display: flex; flex-direction: column; }
-        .match-header { background: #f1f5f9; padding: 8px; text-align: center; font-weight: bold; color: var(--text-muted); border-bottom: 1px solid #e5e7eb; }
-        .match-body { padding: 16px; display: flex; justify-content: space-between; align-items: center; flex: 1; }
-        .team { flex: 1; text-align: center; }
-        .team-name { font-weight: bold; font-size: 16px; margin-bottom: 4px; line-height: 1.4; }
-        .team-level { font-size: 12px; color: var(--text-muted); background: #e2e8f0; padding: 2px 8px; border-radius: 999px; display: inline-block; }
-        .vs-badge { background: var(--text-muted); color: white; font-weight: bold; padding: 4px 8px; border-radius: 8px; margin: 0 12px; font-size: 14px; }
-        .score-input { width: 60px; text-align: center; font-size: 20px; font-weight: bold; margin-top: 12px; padding: 4px; }
-        .score-display { font-size: 28px; font-weight: bold; margin-top: 8px; }
-        .winner { color: var(--danger); }
-        .match-footer { padding: 12px; background: #fff; border-top: 1px solid #e5e7eb; text-align: center; }
-        .info-box { background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px; margin-bottom: 20px; border-radius: 4px; font-size: 14px; color: #1e3a8a; }
-        .dev-btn { background-color: #64748b; font-size: 12px; padding: 6px 12px; }
-        
-        /* 戰績表 */
-        .standings-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .standings-table th, .standings-table td { padding: 12px; border: 1px solid #e5e7eb; text-align: center; }
-        .standings-table th { background-color: var(--secondary); color: white; font-weight: bold; white-space: nowrap; }
-        .standings-table tr:nth-child(even) { background-color: #f8fafc; }
-        .standings-table tr:hover { background-color: #f1f5f9; }
+        .modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: popIn 0.3s ease-out;
+        }
 
-        /* 分級說明 Modal 樣式 */
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
-        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border-radius: 12px; width: 95%; max-width: 850px; max-height: 85vh; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
-        .modal-title { font-size: 20px; color: var(--secondary); font-weight: bold; }
-        .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; background: none; border: none; padding: 0; }
-        .close-btn:hover { color: #333; background: none; }
-        .level-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        .level-table th, .level-table td { border: 1px solid #e5e7eb; padding: 10px; text-align: left; vertical-align: top; }
-        .level-table th { background-color: #f8fafc; color: var(--secondary); white-space: nowrap; text-align: center; }
-        .level-table tr:nth-child(even) { background-color: #f9fafb; }
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--secondary);
+            text-align: center;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 25px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:focus {
+            border-color: var(--primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-modal {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-cancel {
+            background-color: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .btn-cancel:hover {
+            background-color: #e5e7eb;
+        }
+
+        .btn-confirm {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-confirm:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
     </style>
 </head>
 <body>
 
-    <h1>🏸 羽球雙打賽程與計分系統</h1>
-
-    <!-- 浮動置頂的檔案管理工具列 -->
-    <div class="toolbar-container">
-        <div class="toolbar">
-            <button class="tool-btn" id="btnSync" onclick="syncToGitHub()" style="background-color: var(--primary);">☁️ 儲存賽程 (自訂檔名)</button>
-            <div class="load-group">
-                <select id="fileSelector" class="file-select">
-                    <option value="">載入檔案清單中...</option>
-                </select>
-                <button class="tool-btn" id="btnLoad" onclick="loadFromGitHub()" style="background-color: #24292e;">📂 讀取</button>
-            </div>
-        </div>
+    <div class="login-card">
+        <div class="logo">🏸</div>
+        <h1>雞雞羽球計分板</h1>
+        
+        <!-- 新增對局：清空快取並進入 play.html -->
+        <button class="btn btn-primary" onclick="startNewGame()">新增對局</button>
+        
+        <!-- 讀取舊資料：開啟 Modal 從 GitHub 抓取檔案 -->
+        <button class="btn btn-secondary" onclick="openLoadModal()">讀取舊資料</button>
     </div>
 
-    <!-- 新增球員區塊 -->
-    <div class="card">
-        <h2>
-            1. 球員名單 
-            <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
-                已加入：<span id="playerCount">0</span> / 20
-                <button class="dev-btn" onclick="generateMockPlayers()" style="margin-left: 10px;">快速加入測試假資料</button>
-            </span>
-        </h2>
-        
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
-        </div>
-        <br>
-
-        <div class="form-group">
-            <input type="text" id="playerName" placeholder="球員姓名" required style="flex: 1; min-width: 120px;">
-            <select id="playerGender">
-                <option value="男">男</option>
-                <option value="女">女</option>
-            </select>
-            <select id="playerLevel">
-                <option value="" disabled selected>實力級數 (1弱 ~ 18強)</option>
-                <option value="1">1 (新手階)</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4 (初階)</option>
-                <option value="5">5</option>
-                <option value="6">6 (初中階)</option>
-                <option value="7">7</option>
-                <option value="8">8 (中階)</option>
-                <option value="9">9</option>
-                <option value="10">10 (中進階)</option>
-                <option value="11">11</option>
-                <option value="12">12</option>
-                <option value="13">13 (高階)</option>
-                <option value="14">14</option>
-                <option value="15">15</option>
-                <option value="16">16 (職業級)</option>
-                <option value="17">17</option>
-                <option value="18">18</option>
-            </select>
-            <button type="button" onclick="openLevelModal()" style="background-color: var(--secondary); padding: 10px 14px; display: flex; align-items: center; gap: 5px;">
-                ℹ️ <span>分級說明</span>
-            </button>
-            <button id="addBtn" onclick="addPlayer()">加入球員</button>
-        </div>
-
-        <div class="player-grid" id="playerList"></div>
-    </div>
-
-    <!-- 賽程安排區塊 -->
-    <div class="card">
-        <h2>2. 賽程安排</h2>
-        
-        <div class="mode-buttons">
-            <button class="btn-mode-1" onclick="generateSchedule('single')">
-                🎲 產生「單輪賽事」<br><span style="font-size: 12px; font-weight: normal;">(每次皆重新打亂配對，適合歡樂打)</span>
-            </button>
-            <button class="btn-mode-2" onclick="generateSchedule('round-robin')">
-                🏆 產生「循環賽」<br><span style="font-size: 12px; font-weight: normal;">(固定隊伍，所有人互打，有戰績表)</span>
-            </button>
-        </div>
-        
-        <div id="restArea"></div>
-        <div id="standingsArea"></div>
-        <div class="matches-grid" id="scheduleArea">
-            <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px;">
-                尚未產生賽程。請確認至少有 4 位球員在名單中，並選擇上方模式。
-            </div>
-        </div>
-    </div>
-
-    <!-- 分級說明 Modal -->
-    <div id="levelModal" class="modal">
+    <!-- 讀取檔案的 Modal -->
+    <div class="modal-overlay" id="loadModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">🏸 台灣羽球推廣協會羽球程度分級制度</div>
-                <button class="close-btn" onclick="closeLevelModal()">&times;</button>
+            <div class="modal-title">選擇要讀取的檔案</div>
+            <select id="fileSelector">
+                <option value="">載入檔案清單中...</option>
+            </select>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="closeLoadModal()">取消</button>
+                <button class="btn-modal btn-confirm" id="btnConfirmLoad" onclick="confirmLoad()">確定</button>
             </div>
-            <table class="level-table">
-                <thead>
-                    <tr>
-                        <th width="60">級數</th>
-                        <th width="160">比賽階級</th>
-                        <th>程度說明</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="text-align: center; font-weight: bold; font-size: 18px;">1</td>
-                        <td rowspan="3" style="background-color: #bbf7d0; text-align: center; vertical-align: middle;">
-                            <div style="font-size: 20px; font-weight: bold; color: #166534;">新手階</div>
-                        </td>
-                        <td>剛接觸羽球學會比賽規則，並懂得比賽禮儀</td>
-                    </tr>
-                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">2</td><td>在中場距離中高球來回10拍，發球有一半以上成功率</td></tr>
-                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">3</td><td>定點有一半可以打到2/3場後，發球有九成以上成功率</td></tr>
-                    
-                    <tr>
-                        <td style="text-align: center; font-weight: bold; font-size: 18px;">4</td>
-                        <td rowspan="2" style="background-color: #fbcfe8; text-align: center; vertical-align: middle;">
-                            <div style="font-size: 20px; font-weight: bold; color: #831843;">初階</div>
-                        </td>
-                        <td>清楚正確握拍法。長球男生定點可以打到後場，女生可以打到中後場</td>
-                    </tr>
-                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">5</td><td>清楚正確握拍法，略懂基本腳步，基本球路有一定的表現</td></tr>
-
-                    <tr>
-                        <td style="text-align: center; font-weight: bold; font-size: 18px;">6</td>
-                        <td rowspan="2" style="background-color: #fed7aa; text-align: center; vertical-align: middle;">
-                            <div style="font-size: 20px; font-weight: bold; color: #9a3412;">初中階</div>
-                        </td>
-                        <td>懂基本輪轉，已開始會殺球及切球，移動長球可至中後場</td>
-                    </tr>
-                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">7</td><td>殺切長球穩定性七成以上。已有基本防守能力。</td></tr>
-                    
-                    <tr>
-                        <td style="text-align: center; font-weight: bold; font-size: 18px;">8</td>
-                        <td rowspan="2" style="background-color: #fef08a; text-align: center; vertical-align: middle;">
-                            <div style="font-size: 20px; font-weight: bold; color: #854d0e;">中階</div>
-                        </td>
-                        <td>有基本戰略及打點，熟悉輪轉，防守有些微變化。</td>
-                    </tr>
-                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">9</td><td>切殺長吊有九成準確性及質量，防守有一定程度的變化。</td></tr>
-                    
-                    <tr>
-                        <td style="text-align: center; font-weight: bold; font-size: 18px;">10</td>
-                        <td rowspan="3" style="background-color: #bae6fd; text-align: center; vertical-align: middle;">
-                            <div style="font-size: 20px; font-weight: bold; color: #075985;">中進階</div>
-                        </td>
-                        <td>輪轉概念熟念並能活化運用，策略性戰略皆能有效得分</td>
-                    </tr>
-                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">11</td><td>發力及速度兼具，輕鬆完成反拍各種球路。防守具威脅性。</td></tr>
-                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">12</td><td>有高速度移位及靈敏步法，殺切吊都具高強度侵略性</td></tr>
-                    
-                    <tr>
-                        <td style="text-align: center; font-weight: bold; font-size: 16px;">13-15</td>
-                        <td style="text-align: center; vertical-align: middle;"><div style="font-size: 20px; font-weight: bold;">高階</div></td>
-                        <td style="vertical-align: middle;">各種球路都穩定熟練，防守無死角、球速快質量高</td>
-                    </tr>
-                    <tr>
-                        <td style="text-align: center; font-weight: bold; font-size: 16px; background-color: #000; color: #fff;">16-18</td>
-                        <td style="background-color: #000; color: #fff; text-align: center; vertical-align: middle;"><div style="font-size: 20px; font-weight: bold;">職業級</div></td>
-                        <td style="background-color: #000; color: #fff; vertical-align: middle;">球路、戰術已爐火純青，且發展出個人獨特風格</td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </div>
 
@@ -286,322 +213,120 @@
         // ==========================================
         const GITHUB_OWNER = 'timothy920611';   
         const GITHUB_REPO = 'ChickenBadminton'; 
-        const GITHUB_FOLDER = 'json';           // 指定存檔資料夾
+        const GITHUB_FOLDER = 'json';
 
-        // 你提供的混淆亂碼（噪音）
         const NOISE = "5d5502d0e27ded4a977810d55f13e615c201fe6f7e1c0ff57641e034d75e2b2f";
-        
-        // 這是將你的 Base64 Token 從正中間切開，並把 NOISE 塞進去後組合成的「混淆字串」
-        // 這樣 GitHub 的掃描器就無法用正規表達式 (Regex) 直接抓出你的 Token 了
         const OBFUSCATED_TOKEN = "Z2l0aHViX3BhdF8xMUI0TlFKR0EwUWJlSVdIcDRLeVdUX3RMbHJFSXVLMFdzWVF3Y2" + NOISE + "9LbEd5SFN1cXl6Z3dUQ04xTHdNSHJ0cndIWkdIQ1MzRUVOVG9XR1p5RTFC";
         
-        // 動態解碼函數
         function getRealToken() {
             try { 
-                // 1. 先把中間的亂碼剔除，還原成純 Base64
                 const cleanBase64 = OBFUSCATED_TOKEN.replace(NOISE, "");
-                // 2. 進行 Base64 解碼得到真實 Token
                 return atob(cleanBase64); 
             } catch (e) { 
-                console.error("Token 解碼失敗");
                 return null; 
             }
         }
         // ==========================================
 
-        const MAX_PLAYERS = 20;
-        let players = [];
-        let matches = [];
-        let currentTeams = []; 
-        let matchMode = 'single'; 
-        let currentRestingPlayers = [];
-        let currentRestingTeams = [];
-
-        // Modal 視窗控制
-        function openLevelModal() { document.getElementById('levelModal').style.display = 'block'; }
-        function closeLevelModal() { document.getElementById('levelModal').style.display = 'none'; }
-        window.onclick = function(event) {
-            const modal = document.getElementById('levelModal');
-            if (event.target == modal) modal.style.display = 'none';
+        // 開啟新的一局
+        function startNewGame() {
+            // 清空本地存檔，確保進去是一張白紙
+            localStorage.removeItem('badmintonData');
+            // 跳轉至主程式
+            window.location.href = 'play.html';
         }
 
-        // --- GitHub API 雲端功能 ---
+        // Modal 控制
+        const modal = document.getElementById('loadModal');
+        
+        function openLoadModal() {
+            modal.style.display = 'flex';
+            fetchFileList();
+        }
 
-        // 讀取 GitHub 上的檔案列表，填入下拉選單
+        function closeLoadModal() {
+            modal.style.display = 'none';
+        }
+
+        // 點擊背景關閉 Modal
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeLoadModal();
+        });
+
+        // 從 GitHub 抓取檔案列表
         async function fetchFileList() {
             const selector = document.getElementById('fileSelector');
+            const btnConfirm = document.getElementById('btnConfirmLoad');
             const token = getRealToken();
+            
+            selector.innerHTML = '<option value="">⏳ 載入清單中...</option>';
+            btnConfirm.disabled = true;
+
             try {
                 const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FOLDER}?t=${Date.now()}`, {
                     headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
-                if (!res.ok) {
-                    selector.innerHTML = '<option value="">目前尚無存檔</option>';
-                    return;
-                }
+                
+                if (!res.ok) throw new Error('無法讀取');
+                
                 const files = await res.json();
                 const jsonFiles = files.filter(f => f.name.endsWith('.json'));
                 
                 if (jsonFiles.length === 0) {
-                    selector.innerHTML = '<option value="">目前尚無存檔</option>';
+                    selector.innerHTML = '<option value="">目前尚無任何存檔</option>';
                     return;
                 }
                 
-                // 將檔案列表反轉（讓最新的排在最前面）
+                // 將最新的檔案排在最前面
                 selector.innerHTML = jsonFiles.reverse().map(f => `<option value="${f.name}">${f.name.replace('.json', '')}</option>`).join('');
+                btnConfirm.disabled = false;
+                
             } catch (e) {
-                selector.innerHTML = '<option value="">(無法讀取清單)</option>';
+                selector.innerHTML = '<option value="">❌ 無法讀取 GitHub 清單</option>';
             }
         }
 
-        async function syncToGitHub() {
-            const token = getRealToken();
-            if (!token) return alert("❌ Token 錯誤！請確認混淆字串設定。");
-            
-            // 讓使用者輸入檔名
-            let today = new Date();
-            let defaultName = `賽程_${today.getMonth()+1}月${today.getDate()}日_${String(today.getHours()).padStart(2,'0')}${String(today.getMinutes()).padStart(2,'0')}`;
-            let filename = prompt("請輸入要儲存的檔案名稱：\n(不需輸入 .json，系統會自動加)", defaultName);
-            
-            if (!filename) return; // 使用者按取消或未輸入
-            if (!filename.endsWith('.json')) filename += '.json';
-            
-            const path = `${GITHUB_FOLDER}/${filename}`;
-
-            const btn = document.getElementById('btnSync');
-            btn.innerText = "⏳ 儲存中...";
-            btn.disabled = true;
-
-            const dataObj = { players, matches, currentTeams, matchMode, currentRestingPlayers, currentRestingTeams };
-            const contentStr = JSON.stringify(dataObj, null, 2);
-            const base64Content = btoa(unescape(encodeURIComponent(contentStr)));
-
-            try {
-                let fileSha = null;
-                const getRes = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (getRes.ok) fileSha = (await getRes.json()).sha;
-
-                const body = {
-                    message: `建立/更新賽程檔案: ${filename}`,
-                    content: base64Content,
-                    ...(fileSha && { sha: fileSha })
-                };
-
-                const putRes = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-
-                if (putRes.ok) {
-                    alert(`✅ 已成功儲存檔案：${filename}`);
-                    fetchFileList(); // 重新整理下拉選單
-                }
-                else alert("❌ 儲存失敗：" + (await putRes.json()).message);
-            } catch (e) {
-                alert("❌ 網路連線錯誤！");
-            }
-            btn.innerText = "☁️ 儲存賽程 (自訂檔名)";
-            btn.disabled = false;
-        }
-
-        async function loadFromGitHub() {
+        // 確認讀取並跳轉
+        async function confirmLoad() {
             const selector = document.getElementById('fileSelector');
             const filename = selector.value;
-            if (!filename) return alert("❌ 請先從選單選擇一個檔案！");
+            if (!filename) return;
 
-            const btn = document.getElementById('btnLoad');
-            btn.innerText = "⏳ 讀取中...";
-            btn.disabled = true;
+            const btnConfirm = document.getElementById('btnConfirmLoad');
+            const originalText = btnConfirm.innerText;
+            btnConfirm.innerText = "讀取中...";
+            btnConfirm.disabled = true;
 
             const path = `${GITHUB_FOLDER}/${filename}`;
             const token = getRealToken();
 
             try {
+                // 1. 從 GitHub 抓取特定檔案內容
                 const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}?t=${Date.now()}`, {
                     headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
-                if (!res.ok) throw new Error('Not found');
+                
+                if (!res.ok) throw new Error('找不到檔案');
 
                 const json = await res.json();
+                
+                // 2. 解碼 Base64 內容 (處理中文)
                 const decodedStr = decodeURIComponent(escape(atob(json.content)));
+                
+                // 3. 驗證是否為有效的 JSON
                 const data = JSON.parse(decodedStr);
 
-                players = data.players || []; matches = data.matches || []; currentTeams = data.currentTeams || [];
-                matchMode = data.matchMode || 'single'; currentRestingPlayers = data.currentRestingPlayers || []; currentRestingTeams = data.currentRestingTeams || [];
+                // 4. 將抓到的資料寫入 LocalStorage，這樣 play.html 一開啓就會自動載入這份資料
+                localStorage.setItem('badmintonData', JSON.stringify(data));
                 
-                updatePlayerUI();
-                document.getElementById('standingsArea').innerHTML = ''; 
-                if (matches.length > 0) {
-                    if (matchMode === 'round-robin') renderStandings();
-                    renderSchedule();
-                } else {
-                    document.getElementById('scheduleArea').innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px;">尚未產生賽程。</div>`;
-                    document.getElementById('restArea').innerHTML = '';
-                }
-                saveToLocalStorage();
-                alert(`✅ 成功讀取檔案：${filename.replace('.json', '')}！`);
+                // 5. 無縫跳轉至主程式
+                window.location.href = 'play.html';
+
             } catch (e) {
-                alert("❌ 讀取檔案失敗！");
+                alert("❌ 讀取檔案失敗！請檢查網路或檔案是否毀損。");
+                btnConfirm.innerText = originalText;
+                btnConfirm.disabled = false;
             }
-            
-            btn.innerText = "📂 讀取";
-            btn.disabled = false;
-        }
-
-        // --- 本地儲存功能 ---
-        function saveToLocalStorage() {
-            localStorage.setItem('badmintonData', JSON.stringify({ players, matches, currentTeams, matchMode, currentRestingPlayers, currentRestingTeams }));
-        }
-
-        function loadFromLocalStorage() {
-            const dataStr = localStorage.getItem('badmintonData');
-            if (dataStr) {
-                try {
-                    const data = JSON.parse(dataStr);
-                    players = data.players || []; matches = data.matches || []; currentTeams = data.currentTeams || [];
-                    matchMode = data.matchMode || 'single'; currentRestingPlayers = data.currentRestingPlayers || []; currentRestingTeams = data.currentRestingTeams || [];
-                    updatePlayerUI();
-                    if (matches.length > 0) {
-                        if (matchMode === 'round-robin') renderStandings();
-                        renderSchedule();
-                    }
-                } catch (e) {}
-            }
-        }
-
-        // 頁面載入時：1.載入本地暫存 2.拉取遠端檔案列表
-        window.addEventListener('DOMContentLoaded', () => {
-            loadFromLocalStorage();
-            fetchFileList();
-        });
-
-        // --- 核心邏輯 (加入球員/產生賽程/計分) ---
-        function addPlayer(name = null, gender = null, level = null) {
-            if (players.length >= MAX_PLAYERS) return;
-            const inputName = name || document.getElementById('playerName').value.trim();
-            const inputGender = gender || document.getElementById('playerGender').value;
-            const inputLevel = level || parseInt(document.getElementById('playerLevel').value);
-            if (!inputName || isNaN(inputLevel) || players.some(p => p.name === inputName)) return;
-
-            players.push({ id: Date.now() + Math.random(), name: inputName, gender: inputGender, level: inputLevel });
-            if(!name) { document.getElementById('playerName').value = ''; document.getElementById('playerLevel').value = ''; }
-            updatePlayerUI(); saveToLocalStorage();
-        }
-
-        function removePlayer(id) {
-            players = players.filter(p => p.id !== id);
-            updatePlayerUI(); saveToLocalStorage();
-        }
-
-        function updatePlayerUI() {
-            const list = document.getElementById('playerList');
-            list.innerHTML = '';
-            players.forEach(p => {
-                list.innerHTML += `<div class="player-tag"><div class="player-info"><span class="player-name">${p.name}</span><span style="color: #64748b;">${p.gender} | 等級 ${p.level}</span></div><button class="btn-danger" onclick="removePlayer(${p.id})">✕</button></div>`;
-            });
-            document.getElementById('playerCount').innerText = players.length;
-            document.getElementById('progressBar').style.width = `${(players.length / MAX_PLAYERS) * 100}%`;
-        }
-
-        function generateSchedule(mode) {
-            if (players.length < 4) return;
-            matchMode = mode; matches = []; currentTeams = []; currentRestingPlayers = []; currentRestingTeams = [];
-            document.getElementById('standingsArea').innerHTML = '';
-
-            let currentPlayers = [...players].sort(() => Math.random() - 0.5).sort((a, b) => b.level - a.level);
-            if (currentPlayers.length % 2 !== 0) currentRestingPlayers.push(currentPlayers.splice(Math.floor(currentPlayers.length / 2), 1)[0]);
-
-            for (let i = 0; i < currentPlayers.length / 2; i++) {
-                currentTeams.push({ id: `Team_${Date.now()}_${i}`, name1: currentPlayers[i].name, name2: currentPlayers[currentPlayers.length - 1 - i].name, totalLevel: currentPlayers[i].level + currentPlayers[currentPlayers.length - 1 - i].level });
-            }
-
-            if (mode === 'single') {
-                if (currentTeams.length % 2 !== 0) currentRestingTeams.push(currentTeams.splice(Math.floor(Math.random() * currentTeams.length), 1)[0]);
-                currentTeams.sort(() => Math.random() - 0.5);
-                for (let i = 0; i < currentTeams.length; i += 2) matches.push({ id: `M_${i}`, round: 1, team1: currentTeams[i], team2: currentTeams[i+1], score1: null, score2: null, isFinished: false });
-            } else if (mode === 'round-robin') {
-                let rrTeams = [...currentTeams];
-                if (rrTeams.length % 2 !== 0) rrTeams.push({ id: 'BYE', name1: '輪空', name2: '休息', totalLevel: 0 });
-                let numTeams = rrTeams.length, matchIdCounter = 0;
-                for (let r = 0; r < numTeams - 1; r++) {
-                    for (let i = 0; i < numTeams / 2; i++) {
-                        let t1 = rrTeams[i], t2 = rrTeams[numTeams - 1 - i];
-                        if (t1.id !== 'BYE' && t2.id !== 'BYE') matches.push({ id: `M_${matchIdCounter++}`, round: r + 1, team1: t1, team2: t2, score1: null, score2: null, isFinished: false });
-                    }
-                    rrTeams.splice(1, 0, rrTeams.pop());
-                }
-                renderStandings();
-            }
-            renderSchedule(); saveToLocalStorage();
-        }
-
-        function renderSchedule() {
-            document.getElementById('restArea').innerHTML = '';
-            let restMsg = [];
-            if (currentRestingPlayers.length > 0) restMsg.push(`單數球員：<strong>${currentRestingPlayers[0].name}</strong> (休息)`);
-            if (currentRestingTeams.length > 0) restMsg.push(`單數隊伍：<strong>${currentRestingTeams[0].name1} & ${currentRestingTeams[0].name2}</strong> (輪空)`);
-            if (restMsg.length > 0) document.getElementById('restArea').innerHTML = `<div class="info-box">${restMsg.join('<br>')}</div>`;
-
-            let htmlStr = '', currentRoundRendered = 0;
-            matches.forEach((m, index) => {
-                if (matchMode === 'round-robin' && m.round !== currentRoundRendered) { htmlStr += `<div class="round-header">🏆 第 ${m.round} 輪</div>`; currentRoundRendered = m.round; }
-                htmlStr += `
-                    <div class="match-card">
-                        <div class="match-header">${matchMode === 'single' ? '場次 ' + (index+1) : '第 ' + m.round + ' 輪'}</div>
-                        <div class="match-body">
-                            <div class="team"><div class="team-name">${m.team1.name1}<br>& ${m.team1.name2}</div>
-                                ${m.isFinished ? `<div class="score-display ${m.score1 > m.score2 ? 'winner' : ''}">${m.score1}</div>` : `<input type="number" id="s1-${m.id}" class="score-input">`}
-                            </div>
-                            <div class="vs-badge">VS</div>
-                            <div class="team"><div class="team-name">${m.team2.name1}<br>& ${m.team2.name2}</div>
-                                ${m.isFinished ? `<div class="score-display ${m.score2 > m.score1 ? 'winner' : ''}">${m.score2}</div>` : `<input type="number" id="s2-${m.id}" class="score-input">`}
-                            </div>
-                        </div>
-                        <div class="match-footer">
-                            ${m.isFinished ? `<button style="background: white; color: var(--primary); border: 1px solid var(--primary);" onclick="editMatch('${m.id}')">修改</button>` : `<button style="width: 100%;" onclick="saveScore('${m.id}')">確認分數</button>`}
-                        </div>
-                    </div>`;
-            });
-            document.getElementById('scheduleArea').innerHTML = htmlStr || `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px;">尚未產生賽程。</div>`;
-        }
-
-        function saveScore(id) {
-            const s1 = document.getElementById(`s1-${id}`).value, s2 = document.getElementById(`s2-${id}`).value;
-            if (s1 === '' || s2 === '') return;
-            const m = matches.find(x => x.id === id); m.score1 = parseInt(s1); m.score2 = parseInt(s2); m.isFinished = true;
-            renderSchedule(); if (matchMode === 'round-robin') renderStandings(); saveToLocalStorage();
-        }
-
-        function editMatch(id) {
-            matches.find(x => x.id === id).isFinished = false; renderSchedule();
-            if (matchMode === 'round-robin') renderStandings(); saveToLocalStorage();
-        }
-
-        function renderStandings() {
-            if (matchMode !== 'round-robin') return;
-            let stats = {}; currentTeams.forEach(t => stats[t.id] = { name: `${t.name1} & ${t.name2}`, win: 0, loss: 0, ptsDiff: 0 });
-            matches.forEach(m => {
-                if (m.isFinished) {
-                    stats[m.team1.id].ptsDiff += (m.score1 - m.score2); stats[m.team2.id].ptsDiff += (m.score2 - m.score1);
-                    if (m.score1 > m.score2) { stats[m.team1.id].win++; stats[m.team2.id].loss++; }
-                    else if (m.score2 > m.score1) { stats[m.team2.id].win++; stats[m.team1.id].loss++; }
-                }
-            });
-            let sorted = Object.values(stats).sort((a, b) => b.win !== a.win ? b.win - a.win : b.ptsDiff - a.ptsDiff);
-            let html = `<h3 style="color: var(--secondary); margin-bottom: 10px;">📊 排行榜</h3><div style="overflow-x: auto; margin-bottom: 25px;"><table class="standings-table">
-                <thead><tr><th>名次</th><th>隊伍</th><th>勝</th><th>負</th><th>淨勝分</th></tr></thead><tbody>`;
-            sorted.forEach((s, idx) => {
-                html += `<tr><td>${idx + 1}</td><td>${s.name}</td><td style="color: var(--primary); font-weight: bold;">${s.win}</td><td style="color: var(--danger); font-weight: bold;">${s.loss}</td><td style="color: ${s.ptsDiff >= 0 ? 'var(--primary)' : 'var(--danger)'}">${s.ptsDiff > 0 ? '+'+s.ptsDiff : s.ptsDiff}</td></tr>`;
-            });
-            document.getElementById('standingsArea').innerHTML = html + `</tbody></table></div>`;
-        }
-
-        function generateMockPlayers() {
-            const names = ["大谷", "林書豪", "戴資穎", "周天成", "李洋", "王齊麟", "安洗瑩", "陳雨菲"];
-            for(let i=0; i < Math.min(20 - players.length, names.length); i++) addPlayer(names[i] + (players.some(p => p.name===names[i]) ? "2" : ""), "男", Math.floor(Math.random() * 18) + 1);
         }
     </script>
 </body>
