@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏸 羽球雙打賽程與計分系統 (支援循環賽)</title>
+    <style>
+        /* CSS 變數與基礎設定 */
+        :root {
+            --primary: #059669;
+            --primary-hover: #047857;
+            --secondary: #0f766e;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg); color: var(--text-main); padding: 20px; max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; color: var(--secondary); margin-bottom: 20px; font-size: 28px; }
+        h2 { font-size: 20px; margin-bottom: 15px; color: var(--primary); display: flex; justify-content: space-between; align-items: center; }
+        .card { background-color: var(--card-bg); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .form-group { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        input, select, button { padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; outline: none; }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2); }
+        button { background-color: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+        button:hover { background-color: var(--primary-hover); }
+        button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        .btn-danger { background-color: var(--danger); padding: 6px 12px; font-size: 14px; }
+        .btn-danger:hover { background-color: #dc2626; }
+        
+        /* 玩家列表區塊 */
+        .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+        .player-tag { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .player-info { display: flex; flex-direction: column; font-size: 14px; }
+        .player-name { font-weight: bold; font-size: 16px; color: var(--secondary); }
+        
+        /* 進度條 */
+        .progress-container { width: 100%; background-color: #e5e7eb; border-radius: 999px; height: 8px; margin-top: 8px; overflow: hidden; }
+        .progress-bar { height: 100%; background-color: var(--primary); transition: width 0.3s ease; }
+        
+        /* 賽程區塊 */
+        .mode-buttons { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn-mode-1 { flex: 1; background-color: #3b82f6; padding: 15px; font-size: 16px; }
+        .btn-mode-1:hover { background-color: #2563eb; }
+        .btn-mode-2 { flex: 1; background-color: var(--warning); color: #fff; padding: 15px; font-size: 16px; }
+        .btn-mode-2:hover { background-color: #d97706; }
+        
+        .round-header { grid-column: 1 / -1; background: var(--secondary); color: white; padding: 10px 15px; border-radius: 8px; font-size: 18px; font-weight: bold; margin-top: 10px; }
+        .matches-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .match-card { border: 2px solid #e5e7eb; border-radius: 12px; background: #fafafa; overflow: hidden; display: flex; flex-direction: column; }
+        .match-header { background: #f1f5f9; padding: 8px; text-align: center; font-weight: bold; color: var(--text-muted); border-bottom: 1px solid #e5e7eb; }
+        .match-body { padding: 16px; display: flex; justify-content: space-between; align-items: center; flex: 1; }
+        .team { flex: 1; text-align: center; }
+        .team-name { font-weight: bold; font-size: 16px; margin-bottom: 4px; line-height: 1.4; }
+        .team-level { font-size: 12px; color: var(--text-muted); background: #e2e8f0; padding: 2px 8px; border-radius: 999px; display: inline-block; }
+        .vs-badge { background: var(--text-muted); color: white; font-weight: bold; padding: 4px 8px; border-radius: 8px; margin: 0 12px; font-size: 14px; }
+        .score-input { width: 60px; text-align: center; font-size: 20px; font-weight: bold; margin-top: 12px; padding: 4px; }
+        .score-display { font-size: 28px; font-weight: bold; margin-top: 8px; }
+        .winner { color: var(--danger); }
+        .match-footer { padding: 12px; background: #fff; border-top: 1px solid #e5e7eb; text-align: center; }
+        .info-box { background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px; margin-bottom: 20px; border-radius: 4px; font-size: 14px; color: #1e3a8a; }
+        .dev-btn { background-color: #64748b; font-size: 12px; padding: 6px 12px; }
+        
+        /* 戰績表 */
+        .standings-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .standings-table th, .standings-table td { padding: 12px; border: 1px solid #e5e7eb; text-align: center; }
+        .standings-table th { background-color: var(--secondary); color: white; font-weight: bold; white-space: nowrap; }
+        .standings-table tr:nth-child(even) { background-color: #f8fafc; }
+        .standings-table tr:hover { background-color: #f1f5f9; }
+
+        /* 分級說明 Modal 樣式 */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border-radius: 12px; width: 95%; max-width: 800px; max-height: 85vh; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
+        .modal-title { font-size: 20px; color: var(--secondary); font-weight: bold; }
+        .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; background: none; border: none; padding: 0; }
+        .close-btn:hover { color: #333; background: none; }
+        .level-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .level-table th, .level-table td { border: 1px solid #e5e7eb; padding: 10px; text-align: left; vertical-align: top; }
+        .level-table th { background-color: #f8fafc; color: var(--secondary); white-space: nowrap; text-align: center; }
+        .level-table tr:nth-child(even) { background-color: #f9fafb; }
+        .level-badge { display: inline-block; background: var(--primary); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; text-align: center; }
+        .level-desc-main { font-weight: bold; color: var(--text-main); margin-bottom: 6px; }
+        .level-desc-sub { color: var(--text-muted); font-size: 13px; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <h1>🏸 羽球雙打賽程與計分系統 <span style="font-size: 16px; color: var(--text-muted);">(最高支援20人)</span></h1>
+
+    <!-- 新增球員區塊 -->
+    <div class="card">
+        <h2>
+            1. 球員名單 
+            <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
+                已加入：<span id="playerCount">0</span> / 20
+                <button class="dev-btn" onclick="generateMockPlayers()" style="margin-left: 10px;">快速加入測試假資料</button>
+            </span>
+        </h2>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+        </div>
+        <br>
+
+        <div class="form-group">
+            <input type="text" id="playerName" placeholder="球員姓名" required style="flex: 1; min-width: 120px;">
+            <select id="playerGender">
+                <option value="男">男</option>
+                <option value="女">女</option>
+            </select>
+            <select id="playerLevel">
+                <option value="" disabled selected>實力級數 (1弱 ~ 18強)</option>
+                <option value="1">1 (新手階)</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4 (初階)</option>
+                <option value="5">5</option>
+                <option value="6">6 (初中階)</option>
+                <option value="7">7</option>
+                <option value="8">8 (中階)</option>
+                <option value="9">9</option>
+                <option value="10">10 (中進階)</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="13">13 (高階)</option>
+                <option value="14">14</option>
+                <option value="15">15</option>
+                <option value="16">16 (職業級)</option>
+                <option value="17">17</option>
+                <option value="18">18</option>
+            </select>
+            <button type="button" onclick="openLevelModal()" style="background-color: var(--secondary); padding: 10px 14px; display: flex; align-items: center; gap: 5px;">
+                ℹ️ <span>分級說明</span>
+            </button>
+            <button id="addBtn" onclick="addPlayer()">加入球員</button>
+        </div>
+
+        <div class="player-grid" id="playerList"></div>
+    </div>
+
+    <!-- 賽程安排區塊 -->
+    <div class="card">
+        <h2>2. 賽程安排</h2>
+        
+        <div class="mode-buttons">
+            <button class="btn-mode-1" onclick="generateSchedule('single')">
+                🎲 產生「單輪賽事」<br><span style="font-size: 12px; font-weight: normal;">(每次皆重新打亂配對，適合歡樂打)</span>
+            </button>
+            <button class="btn-mode-2" onclick="generateSchedule('round-robin')">
+                🏆 產生「循環賽」<br><span style="font-size: 12px; font-weight: normal;">(固定隊伍，所有人互打，有戰績表)</span>
+            </button>
+        </div>
+        
+        <div id="restArea"></div>
+        <div id="standingsArea"></div>
+        <div class="matches-grid" id="scheduleArea">
+            <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px;">
+                尚未產生賽程。請確認至少有 4 位球員在名單中，並選擇上方模式。
+            </div>
+        </div>
+    </div>
+
+    <!-- 分級說明 Modal -->
+    <div id="levelModal" class="modal">
+        <div class="modal-content" style="max-width: 850px;">
+            <div class="modal-header">
+                <div class="modal-title">🏸 台灣羽球推廣協會羽球程度分級制度 (21.04.19更新)</div>
+                <button class="close-btn" onclick="closeLevelModal()">&times;</button>
+            </div>
+            <table class="level-table">
+                <thead>
+                    <tr>
+                        <th width="60">級數</th>
+                        <th width="160">比賽階級</th>
+                        <th>程度說明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align: center; font-weight: bold; font-size: 18px;">1</td>
+                        <td rowspan="3" style="background-color: #bbf7d0; text-align: center; vertical-align: middle;">
+                            <div style="font-size: 20px; font-weight: bold; color: #166534;">新手階</div>
+                            <div style="font-size: 12px; color: #166534; margin-top: 4px;">球齡一年內，對於規則、場地、發力皆不熟悉</div>
+                        </td>
+                        <td>剛接觸羽球學會比賽規則，並懂得比賽禮儀</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: bold; font-size: 18px;">2</td>
+                        <td>在中場距離中高球來回10拍，發球有一半以上成功率</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: bold; font-size: 18px;">3</td>
+                        <td>定點有一半可以打到2/3場後，發球有九成以上成功率</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: bold; font-size: 18px;">4</td>
+                        <td rowspan="2" style="background-color: #fbcfe8; text-align: center; vertical-align: middle;">
+                            <div style="font-size: 20px; font-weight: bold; color: #831843;">初階</div>
+                            <div style="font-size: 12px; color: #831843; margin-top: 4px;">球齡1~3年<br>一般零打團之初階</div>
+                        </td>
+                        <td>清楚正確握拍法。長球男生定點可以打到後場，女生可以打到中後場；會基本平推；正反轉拍不順暢。</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: bold; font-size: 18px;">5</td>
+                        <td>清楚正確握拍法，略懂基本腳步，基本球路在非受迫時有一定的表現</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: bold; font-size: 18px;">6</td>
+                        <td rowspan="2" style="background-color: #fed7aa; text-align: center; vertical-align: middle;">
+                            <div style="font-size: 20px; font-weight: bold; color: #9a3412;">初中階</div>
+                            <div style="font-size: 12px; color: #9a3412; margin-top: 4px;">球齡3~5年<br>一般零打團之中下</div>
+                        </td>
+                        <td>清楚正確握拍法，略懂基本腳步，並懂得基本輪轉，尚不熟練，已開始會殺球及切球，非受迫時移動長球可至中後場</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: bold; font-size: 18px;">7</td>
+                        <td>殺球、切球或長球不論是定點或移動，成功率及穩定性有七成以上。已有基本防守能力，但無變化。</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: bold; font-size: 18px;">8</td>
+                        <td rowspan="2" style="background-color: #fef08a; text-align: center; vertical-align: middle;">
+                            <div style="font-size: 20px; font-weight: bold; color: #854d0e;">中階</div>
+                            <div style="font-size: 12px; color: #854d0e; margin-top: 4px;">球齡5~10年<br>一般零打團之中階</div>
+                        </td>
+                        <td>有基本戰略及打點，熟悉輪轉概念，切殺長吊均有七成以上準確性，防守有些微變化。</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: bold; font-size: 18px;">9</td>
+                        <td>切殺長吊中有三種球路有九成以上準確性及質量，發力及力道已有強度，防守要有一定程度的變化及穩定性</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: bold; font-size: 18px;">10</td>
+                        <td rowspan="3" style="background-color: #bae6fd; text-align: center; vertical-align: middle;">
+                            <div style="font-size: 20px; font-weight: bold; color: #075985;">中進階</div>
+                            <div style="font-size: 12px; color: #075985; margin-top: 4px;">球齡10年以上<br>一般零打團之中上</div>
+                        </td>
+                        <td>輪轉概念熟念並能活化運用，策略性戰略及打點皆能有效得分</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: bold; font-size: 18px;">11</td>
+                        <td>切殺長吊皆具準確性，發力及速度、策略兼具，輕鬆完成反拍各種球路。防守具有威脅性。</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: bold; font-size: 18px;">12</td>
+                        <td>有高速度移位及靈敏地走位與步法，殺切吊都具有高強度侵略性，常有一擊必殺的球路</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: bold; font-size: 16px;">13-15</td>
+                        <td style="text-align: center; vertical-align: middle;">
+                            <div style="font-size: 20px; font-weight: bold;">高階</div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">校隊前段、體保、<br>社會甲組等</div>
+                        </td>
+                        <td style="vertical-align: middle;">各種球路都穩定熟練，防守無死角、球速快質量高、戰略組織、爆發力都屬上等</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: bold; font-size: 16px; background-color: #000; color: #fff;">16-18</td>
+                        <td style="background-color: #000; color: #fff; text-align: center; vertical-align: middle;">
+                            <div style="font-size: 20px; font-weight: bold;">職業級</div>
+                            <div style="font-size: 12px; color: #ccc; margin-top: 4px;">甲組、國家代表選手</div>
+                        </td>
+                        <td style="background-color: #000; color: #fff; vertical-align: middle;">各種球路、戰術、步法已爐火純青，且發展出個人獨特球路風格</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Modal 視窗控制邏輯
+        function openLevelModal() {
+            document.getElementById('levelModal').style.display = 'block';
+        }
+        
+        function closeLevelModal() {
+            document.getElementById('levelModal').style.display = 'none';
+        }
+        
+        // 點擊 Modal 半透明背景時自動關閉
+        window.onclick = function(event) {
+            const modal = document.getElementById('levelModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        const MAX_PLAYERS = 20;
+        let players = [];
+        let matches = [];
+        let currentTeams = []; // 儲存循環賽固定的隊伍
+        let matchMode = 'single'; // 'single' 或 'round-robin'
+        
+        // 新增全域變數，避免傳遞資料時發生字串逸出造成的程式錯誤
+        let currentRestingPlayers = [];
+        let currentRestingTeams = [];
+
+        // 1. 新增球員功能 (與先前相同)
+        function addPlayer(name = null, gender = null, level = null) {
+            if (players.length >= MAX_PLAYERS) { alert(`已達上限 ${MAX_PLAYERS} 人！`); return; }
+            const inputName = name || document.getElementById('playerName').value.trim();
+            const inputGender = gender || document.getElementById('playerGender').value;
+            const inputLevel = level || parseInt(document.getElementById('playerLevel').value);
+            if (!inputName || isNaN(inputLevel)) { alert("請填寫完整名稱與級數！"); return; }
+            if (players.some(p => p.name === inputName)) { alert("名稱已存在！"); return; }
+
+            players.push({ id: Date.now() + Math.random(), name: inputName, gender: inputGender, level: inputLevel });
+            
+            if(!name) {
+                document.getElementById('playerName').value = '';
+                document.getElementById('playerLevel').value = '';
+                document.getElementById('playerName').focus();
+            }
+            updatePlayerUI();
+        }
+
+        function removePlayer(id) {
+            players = players.filter(p => p.id !== id);
+            updatePlayerUI();
+        }
+
+        function updatePlayerUI() {
+            const list = document.getElementById('playerList');
+            list.innerHTML = '';
+            players.forEach(p => {
+                list.innerHTML += `
+                    <div class="player-tag">
+                        <div class="player-info">
+                            <span class="player-name">${p.name}</span>
+                            <span style="color: #64748b;">${p.gender} | 等級 ${p.level}</span>
+                        </div>
+                        <button class="btn-danger" onclick="removePlayer(${p.id})">✕</button>
+                    </div>`;
+            });
+            const count = players.length;
+            document.getElementById('playerCount').innerText = count;
+            document.getElementById('progressBar').style.width = `${(count / MAX_PLAYERS) * 100}%`;
+            document.getElementById('addBtn').disabled = (count >= MAX_PLAYERS);
+
+            // 提醒使用者名單變動，需要重新產生賽程
+            if (matches.length > 0) {
+                const warningDiv = document.getElementById('rosterWarning');
+                const restArea = document.getElementById('restArea');
+                if (!warningDiv) {
+                    restArea.insertAdjacentHTML('beforebegin', `
+                        <div id="rosterWarning" style="background-color: #fef2f2; color: #dc2626; padding: 12px; border-radius: 8px; border: 1px solid #f87171; margin-bottom: 15px; text-align: center; font-weight: bold;">
+                            ⚠️ 注意：球員名單已變動！請記得點擊上方的「產生賽程」來更新賽程表。
+                        </div>
+                    `);
+                }
+            }
+        }
+
+        // 2. 產生賽程 (整合兩種模式)
+        function generateSchedule(mode) {
+            if (players.length < 4) { alert("雙打賽程至少需要 4 位球員！目前人數不足，請再加入球員。"); return; }
+            
+            // 優化：若沒有任何已儲存的比分，就不需跳出警告，直接默默覆蓋
+            let hasSavedScores = matches.some(m => m.isFinished);
+            if (matches.length > 0 && hasSavedScores) {
+                if (!confirm("重新產生賽程將會清除目前所有「已儲存的比分」，確定要繼續嗎？")) return;
+            }
+
+            // 清除變動警告
+            const warningDiv = document.getElementById('rosterWarning');
+            if (warningDiv) warningDiv.remove();
+
+            matchMode = mode;
+            matches = [];
+            currentTeams = [];
+            currentRestingPlayers = [];
+            currentRestingTeams = [];
+            document.getElementById('standingsArea').innerHTML = ''; // 清除戰績表
+
+            let currentPlayers = [...players];
+
+            // 實力排序
+            currentPlayers.sort(() => Math.random() - 0.5); 
+            currentPlayers.sort((a, b) => b.level - a.level);
+
+            // 處理奇數人數：抽出中間實力者休息
+            if (currentPlayers.length % 2 !== 0) {
+                const midIndex = Math.floor(currentPlayers.length / 2);
+                currentRestingPlayers.push(currentPlayers.splice(midIndex, 1)[0]);
+            }
+
+            // 智能高低配產生隊伍
+            let half = currentPlayers.length / 2;
+            for (let i = 0; i < half; i++) {
+                let p1 = currentPlayers[i];
+                let p2 = currentPlayers[currentPlayers.length - 1 - i];
+                currentTeams.push({ 
+                    id: `Team_${Date.now()}_${i}`,
+                    name1: p1.name, name2: p2.name,
+                    totalLevel: p1.level + p2.level 
+                });
+            }
+
+            if (mode === 'single') {
+                // 【模式一：單輪隨機賽】
+                if (currentTeams.length % 2 !== 0) {
+                    const randIndex = Math.floor(Math.random() * currentTeams.length);
+                    currentRestingTeams.push(currentTeams.splice(randIndex, 1)[0]);
+                }
+                currentTeams.sort(() => Math.random() - 0.5);
+                for (let i = 0; i < currentTeams.length; i += 2) {
+                    matches.push({
+                        id: `M_${i}`, round: 1,
+                        team1: currentTeams[i], team2: currentTeams[i+1],
+                        score1: null, score2: null, isFinished: false
+                    });
+                }
+            } else if (mode === 'round-robin') {
+                // 【模式二：循環賽 (Circle Method)】
+                let rrTeams = [...currentTeams];
+                // 如果隊伍數是奇數，加入虛擬隊伍(輪空)
+                if (rrTeams.length % 2 !== 0) {
+                    rrTeams.push({ id: 'BYE', name1: '輪空', name2: '休息', totalLevel: 0 });
+                }
+                
+                let numTeams = rrTeams.length;
+                let numRounds = numTeams - 1;
+                let matchIdCounter = 0;
+
+                for (let r = 0; r < numRounds; r++) {
+                    for (let i = 0; i < numTeams / 2; i++) {
+                        let t1 = rrTeams[i];
+                        let t2 = rrTeams[numTeams - 1 - i];
+                        
+                        // 只要對手不是輪空，就產生比賽
+                        if (t1.id !== 'BYE' && t2.id !== 'BYE') {
+                            matches.push({
+                                id: `M_${matchIdCounter++}`, round: r + 1,
+                                team1: t1, team2: t2,
+                                score1: null, score2: null, isFinished: false
+                            });
+                        }
+                    }
+                    // 陣列旋轉 (保持索引 0 不動，最後一個移到第二個)
+                    rrTeams.splice(1, 0, rrTeams.pop());
+                }
+                renderStandings(); // 產生初始戰績表
+            }
+
+            renderSchedule();
+        }
+
+        // 3. 渲染賽程介面
+        function renderSchedule() {
+            const restArea = document.getElementById('restArea');
+            const scheduleArea = document.getElementById('scheduleArea');
+            
+            // 處理休息名單顯示
+            restArea.innerHTML = '';
+            let restMsg = [];
+            if (currentRestingPlayers.length > 0) restMsg.push(`無法配對之單數球員：<strong>${currentRestingPlayers[0].name}</strong> (本輪/本系列賽休息)`);
+            if (currentRestingTeams.length > 0) restMsg.push(`單數隊伍輪空：<strong>${currentRestingTeams[0].name1} & ${currentRestingTeams[0].name2}</strong>`);
+            if (restMsg.length > 0) restArea.innerHTML = `<div class="info-box">☕ <strong>休息名單提示：</strong><br>${restMsg.join('<br>')}</div>`;
+
+            if (matches.length === 0) {
+                scheduleArea.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px;">
+                        尚未產生賽程。請確認至少有 4 位球員在名單中，並選擇上方模式。
+                    </div>`;
+                return;
+            }
+
+            let currentRoundRendered = 0;
+            let htmlStr = ''; // 使用字串累加，避免迴圈內不斷更新 DOM 造成的效能異常
+
+            matches.forEach((match, index) => {
+                // 如果是循環賽，插入輪次標題
+                if (matchMode === 'round-robin' && match.round !== currentRoundRendered) {
+                    htmlStr += `<div class="round-header">🏆 第 ${match.round} 輪</div>`;
+                    currentRoundRendered = match.round;
+                }
+
+                htmlStr += `
+                    <div class="match-card" id="match-${match.id}">
+                        <div class="match-header">${matchMode === 'single' ? '場次 ' + (index+1) : '第 ' + match.round + ' 輪'}</div>
+                        <div class="match-body">
+                            <div class="team">
+                                <div class="team-name">${match.team1.name1}<br>& ${match.team1.name2}</div>
+                                <div class="team-level">戰力 ${match.team1.totalLevel}</div>
+                                ${match.isFinished 
+                                    ? `<div class="score-display ${match.score1 > match.score2 ? 'winner' : ''}">${match.score1}</div>` 
+                                    : `<input type="number" id="score1-${match.id}" class="score-input" placeholder="分" min="0">`
+                                }
+                            </div>
+                            <div class="vs-badge">VS</div>
+                            <div class="team">
+                                <div class="team-name">${match.team2.name1}<br>& ${match.team2.name2}</div>
+                                <div class="team-level">戰力 ${match.team2.totalLevel}</div>
+                                ${match.isFinished 
+                                    ? `<div class="score-display ${match.score2 > match.score1 ? 'winner' : ''}">${match.score2}</div>` 
+                                    : `<input type="number" id="score2-${match.id}" class="score-input" placeholder="分" min="0">`
+                                }
+                            </div>
+                        </div>
+                        <div class="match-footer">
+                            ${match.isFinished 
+                                ? `<button style="background-color: white; color: var(--primary); border: 1px solid var(--primary);" onclick="editMatch('${match.id}')">修改比分</button>` 
+                                : `<button style="width: 100%;" onclick="saveScore('${match.id}')">儲存賽果</button>`
+                            }
+                        </div>
+                    </div>`;
+            });
+            
+            scheduleArea.innerHTML = htmlStr;
+        }
+
+        // 儲存與修改比分
+        function saveScore(matchId) {
+            const s1 = document.getElementById(`score1-${matchId}`).value;
+            const s2 = document.getElementById(`score2-${matchId}`).value;
+            if (s1 === '' || s2 === '') { alert("請完整輸入雙方比分！"); return; }
+
+            const match = matches.find(m => m.id === matchId);
+            match.score1 = parseInt(s1);
+            match.score2 = parseInt(s2);
+            match.isFinished = true;
+
+            renderSchedule();
+            if (matchMode === 'round-robin') renderStandings(); // 更新戰績表
+        }
+
+        function editMatch(matchId) {
+            const match = matches.find(m => m.id === matchId);
+            match.isFinished = false;
+            
+            renderSchedule();
+            
+            document.getElementById(`score1-${matchId}`).value = match.score1;
+            document.getElementById(`score2-${matchId}`).value = match.score2;
+            if (matchMode === 'round-robin') renderStandings(); // 更新戰績表
+        }
+
+        // 4. 計算並渲染戰績表 (循環賽專用)
+        function renderStandings() {
+            if (matchMode !== 'round-robin') return;
+
+            let stats = {};
+            currentTeams.forEach(t => {
+                stats[t.id] = { name: `${t.name1} & ${t.name2}`, win: 0, loss: 0, ptsFor: 0, ptsAgainst: 0, ptsDiff: 0 };
+            });
+
+            matches.forEach(m => {
+                if (m.isFinished) {
+                    let s1 = m.score1, s2 = m.score2, t1 = m.team1.id, t2 = m.team2.id;
+                    stats[t1].ptsFor += s1; stats[t2].ptsFor += s2;
+                    stats[t1].ptsAgainst += s2; stats[t2].ptsAgainst += s1;
+                    stats[t1].ptsDiff += (s1 - s2); stats[t2].ptsDiff += (s2 - s1);
+                    if (s1 > s2) { stats[t1].win++; stats[t2].loss++; }
+                    else if (s2 > s1) { stats[t2].win++; stats[t1].loss++; }
+                }
+            });
+
+            // 排序：勝場數 > 淨勝分 > 總得分
+            let sortedStats = Object.values(stats).sort((a, b) => {
+                if (b.win !== a.win) return b.win - a.win;
+                if (b.ptsDiff !== a.ptsDiff) return b.ptsDiff - a.ptsDiff;
+                return b.ptsFor - a.ptsFor;
+            });
+
+            let html = `
+                <h3 style="margin-top: 10px; margin-bottom: 10px; color: var(--secondary);">📊 戰績排行榜</h3>
+                <div style="overflow-x: auto; margin-bottom: 25px;">
+                <table class="standings-table">
+                    <thead><tr><th>名次</th><th>隊伍</th><th>勝</th><th>負</th><th>總得分</th><th>總失分</th><th>淨勝分</th></tr></thead>
+                    <tbody>`;
+            
+            sortedStats.forEach((s, idx) => {
+                html += `
+                    <tr>
+                        <td><strong>${idx + 1}</strong></td>
+                        <td>${s.name}</td>
+                        <td style="color: var(--primary); font-weight: bold;">${s.win}</td>
+                        <td style="color: var(--danger); font-weight: bold;">${s.loss}</td>
+                        <td>${s.ptsFor}</td><td>${s.ptsAgainst}</td>
+                        <td style="color: ${s.ptsDiff >= 0 ? 'var(--primary)' : 'var(--danger)'}">${s.ptsDiff > 0 ? '+'+s.ptsDiff : s.ptsDiff}</td>
+                    </tr>`;
+            });
+            html += `</tbody></table></div>`;
+            document.getElementById('standingsArea').innerHTML = html;
+        }
+
+        // 測試用假資料
+        function generateMockPlayers() {
+            const names = ["大谷", "林書豪", "戴資穎", "周天成", "李洋", "王齊麟", "安洗瑩", "陳雨菲"];
+            const maxToAdd = Math.min(20 - players.length, names.length);
+            for(let i=0; i < maxToAdd; i++) {
+                let name = names[i];
+                if (players.some(p => p.name === name)) name += "2"; 
+                addPlayer(name, Math.random() > 0.5 ? "男" : "女", Math.floor(Math.random() * 18) + 1);
+            }
+        }
+    </script>
+</body>
+</html>
