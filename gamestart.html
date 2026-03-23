@@ -137,6 +137,51 @@
         try { const idx=JSON.parse(localStorage.getItem(`gamesIndex_${currentUser}`)||'[]'); const f=idx.find(g=>g.id===GAME_ID); document.getElementById('gameTitle').innerText = f?`🏸 ${f.name}`:'🏸 賽程計分'; } catch(e){}
     }
 
+
+    function normalizeGameData(data) {
+        const playersData = Array.isArray(data?.players) ? data.players : [];
+        const schedulesData = Array.isArray(data?.schedules) ? data.schedules : [];
+        const teamsData = Array.isArray(data?.currentTeams) ? data.currentTeams : [];
+        const legacyMatches = Array.isArray(data?.matches) ? data.matches : [];
+        return {
+            players: playersData,
+            currentTeams: teamsData,
+            schedules: schedulesData,
+            matchMode: data?.matchMode || 'single',
+            hasLegacyData: legacyMatches.length > 0 && schedulesData.length === 0 && teamsData.length === 0
+        };
+    }
+
+    async function fetchGameFileFromGitHub() {
+        const token = getRealToken();
+        if (!token) throw new Error('missing-token');
+
+        const candidatePaths = [
+            `${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`,
+            `${GITHUB_FOLDER}/${currentUser}/games/${GAME_ID}.json`
+        ];
+
+        let lastError = null;
+        for (const path of candidatePaths) {
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
+                });
+                if (res.ok) {
+                    return { path, raw: await res.json() };
+                }
+                if (res.status !== 404) {
+                    lastError = new Error(`status-${res.status}`);
+                }
+            } catch (e) {
+                lastError = e;
+            }
+        }
+
+        if (lastError) throw lastError;
+        return null;
+    }
+
     async function loadData() {
         const d = getStorage();
         players = d.players || [];
@@ -171,21 +216,17 @@
     // 靜默輪詢：只比對 SHA，有變動才更新畫面
     async function pollFromGitHub() {
         if (isSyncing) return;
-        const token = getRealToken(); if (!token) return;
-        const path = `${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
         try {
-            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
-                headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
-            });
-            if (!res.ok) return;
-            const raw = await res.json();
-            if (raw.sha === fileSha) return; // 沒變動，不重繪
-            fileSha = raw.sha;
-            const data = JSON.parse(decodeURIComponent(escape(atob(raw.content))));
-            players = data.players || [];
-            currentTeams = data.currentTeams || [];
-            schedules = data.schedules || [];
-            matchMode = data.matchMode || 'single';
+            const fetched = await fetchGameFileFromGitHub();
+            if (!fetched) return;
+            if (fetched.raw.sha === fileSha) return; // 沒變動，不重繪
+            fileSha = fetched.raw.sha;
+            const data = normalizeGameData(JSON.parse(decodeURIComponent(escape(atob(fetched.raw.content)))));
+            if (data.hasLegacyData) return;
+            players = data.players;
+            currentTeams = data.currentTeams;
+            schedules = data.schedules;
+            matchMode = data.matchMode;
             saveStorage();
             renderAll();
             const statusEl = document.getElementById('syncStatus');
@@ -195,23 +236,26 @@
     }
 
     async function fetchFromGitHub() {
-        const token = getRealToken();
         const statusEl = document.getElementById('syncStatus');
         statusEl.innerText = '⏳ 載入雲端資料...';
 
-        const path = `${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
         try {
-            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
-                headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
-            });
-            if (res.ok) {
-                const raw = await res.json();
-                fileSha = raw.sha;
-                const data = JSON.parse(decodeURIComponent(escape(atob(raw.content))));
-                players = data.players || [];
-                currentTeams = data.currentTeams || [];
-                schedules = data.schedules || [];
-                matchMode = data.matchMode || 'single';
+            const fetched = await fetchGameFileFromGitHub();
+            if (fetched) {
+                fileSha = fetched.raw.sha;
+                const data = normalizeGameData(JSON.parse(decodeURIComponent(escape(atob(fetched.raw.content)))));
+
+                if (data.hasLegacyData) {
+                    statusEl.innerText = '⚠️ 舊版比賽資料請先回球員頁重新建立分組';
+                    saveStorage();
+                    renderAll();
+                    return;
+                }
+
+                players = data.players;
+                currentTeams = data.currentTeams;
+                schedules = data.schedules;
+                matchMode = data.matchMode;
                 saveStorage();
 
                 // 雲端完全沒有分組也沒有賽程 → 跳回 play 繼續設定
@@ -223,10 +267,8 @@
                 statusEl.innerText = '✅ 已載入雲端資料';
                 setTimeout(() => { if (statusEl.innerText === '✅ 已載入雲端資料') statusEl.innerText = ''; }, 3000);
                 startPolling();
-            } else if (res.status === 404) {
-                statusEl.innerText = '⚠️ 雲端尚無此比賽資料';
             } else {
-                statusEl.innerText = '❌ 雲端載入失敗';
+                statusEl.innerText = '⚠️ 雲端尚無此比賽資料';
             }
         } catch(e) {
             statusEl.innerText = '❌ 網路錯誤，無法載入雲端資料';
@@ -258,7 +300,9 @@
         }
 
         schedules.push({ id: newScheduleId, mode: matchMode, matches: newMatches, restMsg: restMsgArr.join('<br>') });
-        renderAll(); saveStorage();
+        renderAll();
+        saveStorage();
+        autoSync();
     }
 
     function generateRematch() { generateMatchesForCurrentTeams(""); }
@@ -368,39 +412,39 @@
     }
 
     // ── 靜默背景自動同步 ──
-    async function autoSync() {
+    async function autoSync(retryCount = 0) {
         const token=getRealToken(); if(!token) return;
         isSyncing = true;
         const statusEl=document.getElementById('syncStatus');
         const path=`${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
-        const base64=btoa(unescape(encodeURIComponent(JSON.stringify({players,currentTeams,schedules,matchMode},null,2))));
+        const base64=btoa(unescape(encodeURIComponent(JSON.stringify({players,currentTeams,schedules,matchMode,lastUpdated:new Date().toISOString()},null,2))));
         statusEl.innerText='☁️ 同步中...';
         try {
-            if (!fileSha) {
-                const gr=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,{headers:{'Authorization':`Bearer ${token}`},cache:'no-store'});
-                if(gr.ok) fileSha=(await gr.json()).sha;
-            }
+            const fetched = await fetchGameFileFromGitHub();
+            if (fetched) fileSha = fetched.raw.sha;
+            else fileSha = null;
             const pr=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,{method:'PUT',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({message:`自動同步: ${currentUser}/game_${GAME_ID}`,content:base64,...(fileSha&&{sha:fileSha})})});
             if(pr.ok) { fileSha=(await pr.json()).content.sha; statusEl.innerText='✅ 已自動同步'; setTimeout(()=>{ if(statusEl.innerText==='✅ 已自動同步') statusEl.innerText=''; },3000); }
+            else if (retryCount < 1) { fileSha = null; return autoSync(retryCount + 1); }
             else statusEl.innerText='⚠️ 自動同步失敗';
         } catch(e) { statusEl.innerText='⚠️ 網路錯誤'; }
         finally { isSyncing = false; }
     }
 
     // ── 手動雲端儲存（帶 alert） ──
-    async function syncToGitHub() {
+    async function syncToGitHub(retryCount = 0) {
         const token=getRealToken(); if(!token) return alert("❌ Token 錯誤！");
         const btn=document.getElementById('btnSync'); btn.innerText="⏳ 儲存中..."; btn.disabled=true;
         const statusEl=document.getElementById('syncStatus');
         const path=`${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
-        const base64=btoa(unescape(encodeURIComponent(JSON.stringify({players,currentTeams,schedules,matchMode},null,2))));
+        const base64=btoa(unescape(encodeURIComponent(JSON.stringify({players,currentTeams,schedules,matchMode,lastUpdated:new Date().toISOString()},null,2))));
         try {
-            if (!fileSha) {
-                const gr=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,{headers:{'Authorization':`Bearer ${token}`},cache:'no-store'});
-                if(gr.ok) fileSha=(await gr.json()).sha;
-            }
+            const fetched = await fetchGameFileFromGitHub();
+            if (fetched) fileSha = fetched.raw.sha;
+            else fileSha = null;
             const pr=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,{method:'PUT',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({message:`更新賽程: ${currentUser}/game_${GAME_ID}`,content:base64,...(fileSha&&{sha:fileSha})})});
             if(pr.ok) { fileSha=(await pr.json()).content.sha; statusEl.innerText='✅ 已儲存'; alert("✅ 已成功儲存至雲端！"); }
+            else if (retryCount < 1) { fileSha = null; btn.innerText="☁️ 儲存至雲端"; btn.disabled=false; return syncToGitHub(retryCount + 1); }
             else alert("❌ 儲存失敗：" + (await pr.json()).message);
         } catch(e) { alert("❌ 網路連線錯誤！"); }
         btn.innerText="☁️ 儲存至雲端"; btn.disabled=false;

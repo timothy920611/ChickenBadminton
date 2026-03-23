@@ -32,6 +32,9 @@
         .player-name { font-weight: bold; font-size: 16px; color: var(--secondary); }
         .progress-container { width: 100%; background-color: #e5e7eb; border-radius: 999px; height: 8px; margin-top: 8px; overflow: hidden; }
         .progress-bar { height: 100%; background-color: var(--primary); transition: width 0.3s ease; }
+        .sync-banner { margin: 12px 0 0; padding: 10px 12px; border-radius: 8px; background: #f8fafc; border: 1px solid #e5e7eb; font-size: 13px; color: var(--text-muted); }
+        .draft-toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+        .draft-status { font-size: 12px; color: var(--text-muted); }
         .dev-btn { background-color: #64748b; font-size: 12px; padding: 6px 12px; margin-bottom: 5px; }
         .mode-buttons { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
         .btn-mode-1 { flex: 1; background-color: #3b82f6; padding: 15px; font-size: 16px; }
@@ -101,7 +104,8 @@
             <button class="dev-btn" onclick="openFrequentPlayersModal()" style="background-color:#0ea5e9;">👥 常用選手</button>
         </span>
     </h2>
-    <div class="progress-container"><div class="progress-bar" id="progressBar" style="width:0%;"></div></div><br>
+    <div class="progress-container"><div class="progress-bar" id="progressBar" style="width:0%;"></div></div>
+    <div class="sync-banner" id="playerSyncStatus">☁️ 尚未同步到 GitHub</div><br>
     <div class="form-group">
         <input type="text" id="playerName" placeholder="球員姓名" style="flex:1;min-width:120px;">
         <select id="playerGender"><option value="男">男</option><option value="女">女</option></select>
@@ -115,13 +119,17 @@
             <option value="16">16 (職業)</option><option value="17">17</option><option value="18">18</option>
         </select>
         <button type="button" onclick="openLevelModal()" style="background-color:var(--secondary);">ℹ️ 分級</button>
-        <button onclick="addPlayer()">加入</button>
+        <button id="btnAddPlayer" type="button" onclick="addPlayer()">加入</button>
     </div>
     <div class="player-grid" id="playerList"></div>
 </div>
 
 <div class="card">
     <h2>2. 分組安排</h2>
+    <div class="draft-toolbar">
+        <button class="tool-btn" style="background-color:#0f766e;" onclick="loadSavedTeamDraft()" id="btnLoadDraft" hidden>📂 載入已儲存分組</button>
+        <span class="draft-status" id="draftStatus">尚未儲存分組草稿</span>
+    </div>
     <div class="mode-buttons">
         <button class="btn-mode-1" onclick="generateSchedule('single')">
             🎲 自動分組 → 單輪賽事<br><span style="font-size:12px;font-weight:normal;">(依實力均衡配對，可手動調整)</span>
@@ -141,6 +149,7 @@
         <div class="team-editor-actions">
             <button class="btn-confirm-teams" onclick="confirmTeamsAndStart('single')">✅ 確認 → 開始單輪賽事</button>
             <button class="btn-confirm-rr" onclick="confirmTeamsAndStart('round-robin')">🏆 確認 → 開始循環賽</button>
+            <button class="btn-cancel-edit" onclick="saveTeamDraft()" style="border-color:#0f766e;color:#0f766e;">💾 儲存分組草稿</button>
             <button class="btn-cancel-edit" onclick="cancelTeamEdit()">✕ 取消</button>
         </div>
     </div>
@@ -229,6 +238,9 @@
     let players = [], frequentPlayers = [], fpFileSha = null, hasFetchedFp = false, csvImportTarget = 'current';
     let pendingTeams = [], pendingRestPlayer = null, dragSrcInfo = null;
     let playerFileSha = null; // 快取 SHA 供靜默同步用
+    let playerSyncInFlight = false;
+    let pendingPlayerSync = false;
+    let playerSyncPromise = Promise.resolve(true);
 
     window.addEventListener('DOMContentLoaded', () => { initGameTitle(); loadPlayersFromStorage(); });
 
@@ -239,79 +251,235 @@
     function getStorage() { try { return JSON.parse(localStorage.getItem(LS_KEY)||'{}'); } catch(e) { return {}; } }
     function setStorage(patch) { const d = getStorage(); localStorage.setItem(LS_KEY, JSON.stringify({...d, ...patch})); }
 
+    function normalizeGameData(data) {
+        return {
+            players: Array.isArray(data?.players) ? data.players : [],
+            currentTeams: Array.isArray(data?.currentTeams) ? data.currentTeams : [],
+            schedules: Array.isArray(data?.schedules) ? data.schedules : [],
+            matchMode: data?.matchMode || 'single',
+            pendingRestMsg: data?.pendingRestMsg || '',
+            savedTeamDraft: Array.isArray(data?.savedTeamDraft) ? data.savedTeamDraft : [],
+            savedDraftMode: data?.savedDraftMode || '',
+            savedDraftRestMsg: data?.savedDraftRestMsg || '',
+            savedDraftRestPlayer: data?.savedDraftRestPlayer || null,
+            savedDraftUpdatedAt: data?.savedDraftUpdatedAt || null,
+            lastUpdated: data?.lastUpdated || null
+        };
+    }
+
+    function getTimestamp(value) {
+        const time = value ? Date.parse(value) : NaN;
+        return Number.isNaN(time) ? 0 : time;
+    }
+
+    async function fetchGameFileFromGitHub() {
+        const token = getRealToken();
+        if (!token) return null;
+
+        const candidatePaths = [
+            `${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`,
+            `${GITHUB_FOLDER}/${currentUser}/games/${GAME_ID}.json`
+        ];
+
+        for (const path of candidatePaths) {
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
+                });
+                if (res.ok) {
+                    return { path, raw: await res.json() };
+                }
+            } catch (e) {}
+        }
+        return null;
+    }
+
     async function loadPlayersFromStorage() {
         const d = getStorage();
         players = d.players || [];
-        // 換裝置時 localStorage 沒有資料，從 GitHub 拉取
-        if (players.length === 0) await fetchPlayersFromGitHub();
-        else updatePlayerUI();
+        updatePlayerUI();
+        await fetchPlayersFromGitHub();
     }
 
     async function fetchPlayersFromGitHub() {
-        const token = getRealToken(); if (!token) { updatePlayerUI(); return; }
-        const path = `${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
         try {
-            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
-                headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
-            });
-            if (res.ok) {
-                const raw = await res.json();
-                playerFileSha = raw.sha;
-                const data = JSON.parse(decodeURIComponent(escape(atob(raw.content))));
-                players = data.players || [];
-                if (players.length > 0) setStorage({ players });
+            const fetched = await fetchGameFileFromGitHub();
+            if (fetched) {
+                playerFileSha = fetched.raw.sha;
+                const data = normalizeGameData(JSON.parse(decodeURIComponent(escape(atob(fetched.raw.content)))));
+                const localData = normalizeGameData(getStorage());
+                const shouldUseCloud = localData.players.length === 0 || getTimestamp(data.lastUpdated) >= getTimestamp(localData.lastUpdated);
+                if (shouldUseCloud) {
+                    players = data.players;
+                    setStorage({
+                        players: data.players,
+                        currentTeams: data.currentTeams,
+                        schedules: data.schedules,
+                        matchMode: data.matchMode,
+                        pendingRestMsg: data.pendingRestMsg,
+                        savedTeamDraft: data.savedTeamDraft,
+                        savedDraftMode: data.savedDraftMode,
+                        savedDraftRestMsg: data.savedDraftRestMsg,
+                        savedDraftRestPlayer: data.savedDraftRestPlayer,
+                        savedDraftUpdatedAt: data.savedDraftUpdatedAt,
+                        lastUpdated: data.lastUpdated
+                    });
+                }
             }
         } catch(e) {}
         updatePlayerUI();
+        updateDraftUI();
     }
 
-    function savePlayersToStorage() {
-        setStorage({ players });
-        syncPlayersToGitHub(); // 靜默背景推送，不等待
+    function updateDraftUI() {
+        const data = normalizeGameData(getStorage());
+        const btn = document.getElementById('btnLoadDraft');
+        const status = document.getElementById('draftStatus');
+        const hasDraft = data.savedTeamDraft.length > 0;
+        if (btn) btn.hidden = !hasDraft;
+        if (!status) return;
+        if (hasDraft) {
+            const modeLabel = data.savedDraftMode === 'round-robin' ? '循環賽' : '單輪賽';
+            status.innerText = `已儲存分組草稿（${modeLabel}）`;
+        } else {
+            status.innerText = '尚未儲存分組草稿';
+        }
     }
 
-    async function syncPlayersToGitHub() {
-        const token = getRealToken(); if (!token) return;
-        const path = `${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
-        // 合併現有雲端資料（保留 currentTeams、schedules 等欄位）
-        const existing = getStorage();
-        const payload = { ...existing, players };
-        const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
-        try {
-            if (!playerFileSha) {
-                const gr = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
-                });
-                if (gr.ok) playerFileSha = (await gr.json()).sha;
+    function setPlayerSyncStatus(message, isError = false) {
+        const el = document.getElementById('playerSyncStatus');
+        if (!el) return;
+        el.innerText = message || '';
+        el.style.color = isError ? 'var(--danger)' : 'var(--text-muted)';
+    }
+
+    async function savePlayersToStorage(options = {}) {
+        const { awaitSync = true, silent = false } = options;
+        setStorage({ players, lastUpdated: new Date().toISOString() });
+        const success = await requestPlayerSync({ silent });
+        if (awaitSync && !success && !silent) {
+            alert('⚠️ 球員名單尚未成功同步到 GitHub，請稍後再試一次。');
+        }
+        return success;
+    }
+
+    function buildGamePayload(baseData = {}) {
+        const local = getStorage();
+        return {
+            ...baseData,
+            ...local,
+            players,
+            currentTeams: Array.isArray(local.currentTeams) && local.currentTeams.length > 0 ? local.currentTeams : (baseData.currentTeams || []),
+            schedules: Array.isArray(local.schedules) && local.schedules.length > 0 ? local.schedules : (baseData.schedules || []),
+            matchMode: local.matchMode || baseData.matchMode || 'single',
+            pendingRestMsg: local.pendingRestMsg || baseData.pendingRestMsg || '',
+            savedTeamDraft: Array.isArray(local.savedTeamDraft) ? local.savedTeamDraft : (baseData.savedTeamDraft || []),
+            savedDraftMode: local.savedDraftMode || baseData.savedDraftMode || '',
+            savedDraftRestMsg: local.savedDraftRestMsg || baseData.savedDraftRestMsg || '',
+            savedDraftRestPlayer: local.savedDraftRestPlayer || baseData.savedDraftRestPlayer || null,
+            savedDraftUpdatedAt: local.savedDraftUpdatedAt || baseData.savedDraftUpdatedAt || null,
+            lastUpdated: new Date().toISOString()
+        };
+    }
+
+    async function requestPlayerSync(options = {}) {
+        const { silent = false } = options;
+        pendingPlayerSync = true;
+        if (playerSyncInFlight) return playerSyncPromise;
+
+        playerSyncInFlight = true;
+        playerSyncPromise = (async () => {
+            let allSynced = true;
+            if (!silent) setPlayerSyncStatus('☁️ 同步中...');
+            try {
+                while (pendingPlayerSync) {
+                    pendingPlayerSync = false;
+                    const synced = await syncPlayersToGitHub();
+                    if (!synced) allSynced = false;
+                }
+            } finally {
+                playerSyncInFlight = false;
+                if (!silent) {
+                    if (allSynced) {
+                        setPlayerSyncStatus(`✅ 已同步（${new Date().toLocaleTimeString('zh-TW', { hour12: false })}）`);
+                        setTimeout(() => {
+                            const el = document.getElementById('playerSyncStatus');
+                            if (el && el.innerText.startsWith('✅')) setPlayerSyncStatus('');
+                        }, 2500);
+                    } else {
+                        setPlayerSyncStatus('❌ 同步失敗', true);
+                    }
+                }
             }
+            return allSynced;
+        })();
+        return playerSyncPromise;
+    }
+
+    async function syncPlayersToGitHub(retryCount = 0) {
+        const token = getRealToken(); if (!token) return false;
+        const defaultPath = `${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
+        try {
+            const fetched = await fetchGameFileFromGitHub();
+            let cloudData = {};
+            let path = defaultPath;
+            if (fetched) {
+                path = fetched.path;
+                playerFileSha = fetched.raw.sha;
+                cloudData = normalizeGameData(JSON.parse(decodeURIComponent(escape(atob(fetched.raw.content)))));
+            } else {
+                playerFileSha = null;
+            }
+
+            const payload = buildGamePayload(cloudData);
+            const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
             const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
                 method: 'PUT',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: `更新球員名單: game_${GAME_ID}`, content: base64, ...(playerFileSha && { sha: playerFileSha }) })
             });
-            if (res.ok) playerFileSha = (await res.json()).content.sha;
-            else playerFileSha = null; // SHA 過期，下次重取
-        } catch(e) {}
+
+            if (res.ok) {
+                const saved = await res.json();
+                playerFileSha = saved.content.sha;
+                setStorage({ ...payload, lastUpdated: payload.lastUpdated });
+                return true;
+            }
+
+            playerFileSha = null;
+            if (retryCount < 1) return syncPlayersToGitHub(retryCount + 1);
+        } catch(e) {
+            playerFileSha = null;
+        }
+        return false;
     }
 
-    function addPlayer(name=null, gender=null, level=null) {
-        if (players.length >= MAX_PLAYERS) return;
+    async function addPlayer(name=null, gender=null, level=null) {
+        if (players.length >= MAX_PLAYERS) return false;
         const n = name||document.getElementById('playerName').value.trim();
         const g = gender||document.getElementById('playerGender').value;
         const l = level||parseInt(document.getElementById('playerLevel').value);
-        if (!n||isNaN(l)||players.some(p=>p.name===n)) return;
+        if (!n||isNaN(l)||players.some(p=>p.name===n)) return false;
         players.push({id: Date.now()+Math.random(), name:n, gender:g, level:l});
         if (!name) { document.getElementById('playerName').value=''; document.getElementById('playerLevel').value=''; }
-        updatePlayerUI(); savePlayersToStorage();
+        updatePlayerUI();
+        await savePlayersToStorage();
+        return true;
     }
-    function removePlayer(id) { players=players.filter(p=>p.id!==id); updatePlayerUI(); savePlayersToStorage(); }
+    async function removePlayer(id) {
+        players=players.filter(p=>p.id!==id);
+        updatePlayerUI();
+        await savePlayersToStorage();
+    }
     function updatePlayerUI() {
-        document.getElementById('playerList').innerHTML = players.map(p=>`<div class="player-tag"><div class="player-info"><span class="player-name">${p.name}</span><span style="color:#64748b;">${p.gender} | 等級 ${p.level}</span></div><button class="btn-danger" onclick="removePlayer('${p.id}')">✕</button></div>`).join('');
+        document.getElementById('playerList').innerHTML = players.map(p=>`<div class="player-tag"><div class="player-info"><span class="player-name">${p.name}</span><span style="color:#64748b;">${p.gender} | 等級 ${p.level}</span></div><button type="button" class="btn-danger" onclick="removePlayer('${p.id}')">✕</button></div>`).join('');
         document.getElementById('playerCount').innerText = players.length;
         document.getElementById('progressBar').style.width = `${(players.length/MAX_PLAYERS)*100}%`;
     }
-    function generateMockPlayers() {
-        ["大谷","林書豪","戴資穎","周天成","李洋","王齊麟","安洗瑩","陳雨菲"].slice(0, 20-players.length).forEach(n => addPlayer(n+(players.some(p=>p.name===n)?'2':''), "男", Math.floor(Math.random()*18)+1));
+    async function generateMockPlayers() {
+        for (const n of ["大谷","林書豪","戴資穎","周天成","李洋","王齊麟","安洗瑩","陳雨菲"].slice(0, 20-players.length)) {
+            await addPlayer(n+(players.some(p=>p.name===n)?'2':''), "男", Math.floor(Math.random()*18)+1);
+        }
     }
 
     // ── 分組 ──
@@ -467,11 +635,48 @@
         renderTeamEditor();
     }
 
+    async function saveTeamDraft() {
+        if (pendingTeams.length === 0) {
+            alert('⚠️ 請先產生分組後再儲存草稿。');
+            return;
+        }
+        const draftMode = pendingTeams[0]?.mode || 'single';
+        const draftRestMsg = pendingRestPlayer ? `單數球員：<strong>${pendingRestPlayer.name}</strong> (本輪休息)` : '';
+        setStorage({
+            players,
+            savedTeamDraft: pendingTeams,
+            savedDraftMode: draftMode,
+            savedDraftRestMsg: draftRestMsg,
+            savedDraftRestPlayer: pendingRestPlayer,
+            savedDraftUpdatedAt: new Date().toISOString(),
+            lastUpdated: new Date().toISOString()
+        });
+        const synced = await savePlayersToStorage({ awaitSync: true });
+        if (synced) {
+            updateDraftUI();
+            alert('✅ 已儲存分組草稿，可之後再載入。');
+        }
+    }
+
+    function loadSavedTeamDraft() {
+        const data = normalizeGameData(getStorage());
+        if (!data.savedTeamDraft.length) {
+            alert('ℹ️ 目前沒有已儲存的分組草稿。');
+            return;
+        }
+        pendingTeams = data.savedTeamDraft.map(team => ({ ...team }));
+        pendingRestPlayer = data.savedDraftRestPlayer || null;
+        document.getElementById('teamEditorContainer').style.display = 'block';
+        renderTeamEditor();
+    }
+
     // ── 確認分組 → 寫入 storage → 跳到 gamestart ──
-    function confirmTeamsAndStart(mode) {
+    async function confirmTeamsAndStart(mode) {
         const currentTeams = pendingTeams.filter(t=>t.p1&&t.p2).map(t=>({id:t.id, name1:t.p1.name, name2:t.p2.name, totalLevel:t.p1.level+t.p2.level}));
         const restMsg = pendingRestPlayer ? `單數球員：<strong>${pendingRestPlayer.name}</strong> (本輪休息)` : "";
-        setStorage({ players, currentTeams, matchMode: mode, schedules: [], pendingRestMsg: restMsg });
+        setStorage({ players, currentTeams, matchMode: mode, schedules: [], pendingRestMsg: restMsg, savedTeamDraft: [], savedDraftMode: '', savedDraftRestMsg: '', savedDraftRestPlayer: null, savedDraftUpdatedAt: null, lastUpdated: new Date().toISOString() });
+        updateDraftUI();
+        await requestPlayerSync();
         window.location.href = `gamestart.html?gameId=${GAME_ID}&init=1`;
     }
 
@@ -496,7 +701,7 @@
                 if(csvImportTarget==='current') { if(players.length>=MAX_PLAYERS) break; if(!players.some(p=>p.name===name)){players.push({id:Date.now()+Math.random(),name,gender,level});count++;} }
                 else { if(!frequentPlayers.some(p=>p.name===name)){frequentPlayers.push({id:'FP_'+Date.now()+Math.random(),name,gender,level});fpUpdated=true;count++;} }
             }
-            if(csvImportTarget==='current'){updatePlayerUI();savePlayersToStorage();alert(count>0?`✅ 匯入${count}位`:'ℹ️ 無新選手');}
+            if(csvImportTarget==='current'){updatePlayerUI();if(count>0) await savePlayersToStorage();alert(count>0?`✅ 匯入${count}位`:'ℹ️ 無新選手');}
             else if(fpUpdated){saveFrequentPlayersLocally();renderFrequentPlayersList();await saveFrequentPlayersToGitHub();alert(`✅ 匯入${count}位常用選手`);}
             event.target.value='';
         };
@@ -553,8 +758,17 @@
         frequentPlayers=frequentPlayers.filter(p=>p.id!==id); saveFrequentPlayersLocally(); renderFrequentPlayersList();
         document.getElementById('fpSyncStatus').innerText="⏳ 刪除同步中..."; await saveFrequentPlayersToGitHub();
     }
-    function addSelectedFrequentPlayers() {
-        document.querySelectorAll('.fp-checkbox:checked:not(:disabled)').forEach(cb=>{const fp=frequentPlayers.find(p=>p.id===cb.value);if(fp&&!players.some(p=>p.name===fp.name)) addPlayer(fp.name,fp.gender,fp.level);});
+    async function addSelectedFrequentPlayers() {
+        let addedCount = 0;
+        document.querySelectorAll('.fp-checkbox:checked:not(:disabled)').forEach(cb=>{
+            const fp=frequentPlayers.find(p=>p.id===cb.value);
+            if(fp&&!players.some(p=>p.name===fp.name)&&players.length<MAX_PLAYERS){
+                players.push({id: Date.now()+Math.random(), name: fp.name, gender: fp.gender, level: fp.level});
+                addedCount++;
+            }
+        });
+        updatePlayerUI();
+        if (addedCount > 0) await savePlayersToStorage();
         closeFrequentPlayersModal();
     }
 </script>
