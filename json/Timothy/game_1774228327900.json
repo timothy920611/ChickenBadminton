@@ -124,9 +124,9 @@
             "name2": "海薇",
             "totalLevel": 9
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 9,
+          "score2": 11,
+          "isFinished": true
         },
         {
           "id": "M_1_2",
@@ -219,9 +219,9 @@
             "name2": "海薇",
             "totalLevel": 9
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 11,
+          "score2": 10,
+          "isFinished": true
         },
         {
           "id": "M_1_7",
@@ -238,9 +238,9 @@
             "name2": "則宇",
             "totalLevel": 9
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 11,
+          "score2": 9,
+          "isFinished": true
         },
         {
           "id": "M_1_8",
@@ -333,9 +333,9 @@
             "name2": "Yuna",
             "totalLevel": 9
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 8,
+          "score2": 11,
+          "isFinished": true
         },
         {
           "id": "M_1_13",
@@ -352,9 +352,9 @@
             "name2": "LaLa",
             "totalLevel": 9
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 11,
+          "score2": 3,
+          "isFinished": true
         },
         {
           "id": "M_1_14",
@@ -390,9 +390,9 @@
             "name2": "LaLa",
             "totalLevel": 9
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 2,
+          "score2": 11,
+          "isFinished": true
         },
         {
           "id": "M_1_16",
@@ -409,9 +409,9 @@
             "name2": "惠足",
             "totalLevel": 9
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 11,
+          "score2": 5,
+          "isFinished": true
         },
         {
           "id": "M_1_17",
@@ -466,9 +466,9 @@
             "name2": "佳世",
             "totalLevel": 8
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 11,
+          "score2": 6,
+          "isFinished": true
         },
         {
           "id": "M_1_20",
@@ -485,9 +485,9 @@
             "name2": "海薇",
             "totalLevel": 9
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 11,
+          "score2": 8,
+          "isFinished": true
         }
       ],
       "restMsg": ""
