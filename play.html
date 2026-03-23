@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -132,26 +131,22 @@
         </button>
     </div>
 
-```
-<div id="teamEditorContainer" style="display:none;">
-    <div style="border-top:2px dashed #e5e7eb;margin:5px 0 18px 0;"></div>
-    <div class="team-editor-header">
-        <h3 style="font-size:16px;color:var(--secondary);">✏️ 手動調整分組</h3>
-        <span class="team-editor-hint">💡 拖曳球員卡片到其他人身上來互換</span>
+    <div id="teamEditorContainer" style="display:none;">
+        <div style="border-top:2px dashed #e5e7eb;margin:5px 0 18px 0;"></div>
+        <div class="team-editor-header">
+            <h3 style="font-size:16px;color:var(--secondary);">✏️ 手動調整分組</h3>
+            <span class="team-editor-hint">💡 拖曳球員卡片到其他人身上來互換</span>
+        </div>
+        <div class="teams-drag-grid" id="teamsDragGrid"></div>
+        <div class="team-editor-actions">
+            <button class="btn-confirm-teams" onclick="confirmTeamsAndStart('single')">✅ 確認 → 開始單輪賽事</button>
+            <button class="btn-confirm-rr" onclick="confirmTeamsAndStart('round-robin')">🏆 確認 → 開始循環賽</button>
+            <button class="btn-cancel-edit" onclick="cancelTeamEdit()">✕ 取消</button>
+        </div>
     </div>
-    <div class="teams-drag-grid" id="teamsDragGrid"></div>
-    <div class="team-editor-actions">
-        <button class="btn-confirm-teams" onclick="confirmTeamsAndStart('single')">✅ 確認 → 開始單輪賽事</button>
-        <button class="btn-confirm-rr" onclick="confirmTeamsAndStart('round-robin')">🏆 確認 → 開始循環賽</button>
-        <button class="btn-cancel-edit" onclick="cancelTeamEdit()">✕ 取消</button>
-    </div>
-</div>
-```
-
 </div>
 
 <!-- 常用選手 Modal -->
-
 <div id="frequentPlayersModal" class="modal">
     <div class="modal-content" style="max-width:550px;">
         <div class="modal-header">
@@ -191,7 +186,6 @@
 </div>
 
 <!-- 分級說明 Modal -->
-
 <div id="levelModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -364,15 +358,26 @@
     let dragGhost = null; // 跟手移動的浮動卡片
 
     function bindDragEvents() {
-        document.getElementById('teamsDragGrid').querySelectorAll('.drag-handle').forEach(handle => {
+        const grid = document.getElementById('teamsDragGrid');
+
+        // 在 grid 層攔截所有 touchstart，只有從 drag-handle 開始的才啟動拖曳並阻止捲動
+        grid.addEventListener('touchstart', e => {
+            const handle = e.target.closest('.drag-handle');
+            if (!handle) return; // 不是從 handle 開始 → 允許捲動，直接忽略
+            const el = handle.closest('.drag-player');
+            if (!el) return;
+            e.preventDefault(); // 阻止捲動
+            onPointerDown(e, el);
+        }, { passive: false });
+
+        // 桌機滑鼠：只綁在 handle 上
+        grid.querySelectorAll('.drag-handle').forEach(handle => {
             const el = handle.closest('.drag-player');
             handle.addEventListener('mousedown', e => onPointerDown(e, el));
-            handle.addEventListener('touchstart', e => onPointerDown(e, el), { passive: false });
         });
     }
 
     function onPointerDown(e, el) {
-        e.preventDefault();
         dragSrcInfo = { playerId: el.dataset.playerId, teamId: el.dataset.teamId, slot: el.dataset.slot };
 
         // 建立浮動 ghost
@@ -553,6 +558,5 @@
         closeFrequentPlayersModal();
     }
 </script>
-
 </body>
 </html>
