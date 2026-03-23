@@ -416,9 +416,9 @@
             "name2": "戴資穎",
             "totalLevel": 15
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false,
+          "score1": 21,
+          "score2": 19,
+          "isFinished": true,
           "nextMatchId": "M_2_6",
           "slotInNext": "team2"
         },
@@ -432,7 +432,12 @@
             "name2": "小菜雞B",
             "totalLevel": 17
           },
-          "team2": null,
+          "team2": {
+            "id": "Team_1774281562638_2",
+            "name1": "安洗瑩",
+            "name2": "林書豪",
+            "totalLevel": 15
+          },
           "score1": null,
           "score2": null,
           "isFinished": false
@@ -444,5 +449,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-03-23T16:04:12.304Z"
+  "lastUpdated": "2026-03-23T16:04:25.620Z"
 }
