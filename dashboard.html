@@ -255,6 +255,77 @@
             return false;
         }
 
+        async function fetchGitHubFile(path) {
+            const token = getRealToken();
+            if (!token) return null;
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    cache: 'no-store'
+                });
+                if (res.ok) return await res.json();
+                if (res.status !== 404) throw new Error(`讀取失敗: ${path}`);
+            } catch (e) {
+                console.error(e);
+                throw e;
+            }
+            return null;
+        }
+
+        async function putGitHubFile(path, contentBase64, message, sha = null) {
+            const token = getRealToken();
+            if (!token) return false;
+            const body = { message, content: contentBase64 };
+            if (sha) body.sha = sha;
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            return res.ok ? await res.json() : null;
+        }
+
+        async function deleteGitHubFile(path, sha, message) {
+            const token = getRealToken();
+            if (!token) return false;
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message, sha })
+            });
+            return res.ok;
+        }
+
+        async function moveGameFilesToTrash(gameId) {
+            const candidatePaths = [
+                `json/${currentUser}/game_${gameId}.json`,
+                `json/${currentUser}/games/${gameId}.json`
+            ];
+            const trashPrefix = `json/${currentUser}/trash/${gameId}`;
+
+            for (const sourcePath of candidatePaths) {
+                const file = await fetchGitHubFile(sourcePath);
+                if (!file) continue;
+
+                const fileName = sourcePath.split('/').pop();
+                const trashPath = `${trashPrefix}/${fileName}`;
+                const moved = await putGitHubFile(
+                    trashPath,
+                    file.content,
+                    `移動刪除比賽到 trash: ${currentUser}/${gameId}`
+                );
+                if (!moved) return false;
+
+                const removed = await deleteGitHubFile(
+                    sourcePath,
+                    file.sha,
+                    `刪除原始比賽檔案: ${currentUser}/${gameId}`
+                );
+                if (!removed) return false;
+            }
+            return true;
+        }
+
         // 4. 建立新比賽
         async function createGame() {
             const gameName = document.getElementById('newGameName').value.trim();
@@ -285,37 +356,99 @@
 
         // 5. 刪除比賽
         async function deleteGame(gameId, gameName) {
-            if(!confirm(`確定要刪除「${gameName}」的紀錄嗎？\n(注意：此動作無法復原！)`)) return;
-            
+            if(!confirm(`確定要刪除「${gameName}」的紀錄嗎？
+(注意：此動作無法復原！)`)) return;
+
+            const archived = await moveGameFilesToTrash(gameId);
+            if (!archived) {
+                alert("❌ 刪除失敗：無法將比賽 JSON 移到 trash。");
+                return;
+            }
+
             const newList = gamesList.filter(g => g.id !== gameId);
             const success = await saveGamesIndex(newList);
             
             if(success) {
-                alert("✅ 已刪除比賽紀錄！");
+                localStorage.removeItem(`badmintonData_${gameId}`);
+                alert("✅ 已刪除比賽紀錄，並移動到 trash！");
             } else {
                 alert("❌ 刪除失敗，請稍後再試。");
             }
         }
 
+        function parseGameData(raw) {
+            if (!raw || !raw.content) return null;
+            try {
+                return JSON.parse(decodeURIComponent(escape(atob(raw.content))));
+            } catch (e) {
+                console.error('解析比賽資料失敗', e);
+                return null;
+            }
+        }
+
+        function getGameRouteFromData(data) {
+            const playersCount = (data?.players || []).length;
+            const hasSchedules = (data?.schedules || []).length > 0;
+            const hasTeams = (data?.currentTeams || []).length > 0;
+            const hasLegacyMatches = (data?.matches || []).length > 0;
+            const hasProgress = hasSchedules || hasTeams || hasLegacyMatches;
+            return (playersCount > 0 && !hasProgress) ? 'play' : 'gamestart';
+        }
+
+        async function fetchGameDataFromGitHub(gameId) {
+            const token = getRealToken();
+            if (!token) return null;
+
+            const candidatePaths = [
+                `json/${currentUser}/game_${gameId}.json`,
+                `json/${currentUser}/games/${gameId}.json`
+            ];
+
+            for (const path of candidatePaths) {
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        cache: 'no-store'
+                    });
+                    if (res.ok) {
+                        const raw = await res.json();
+                        const parsed = parseGameData(raw);
+                        if (parsed) return parsed;
+                    } else if (res.status !== 404) {
+                        console.warn(`讀取比賽資料失敗: ${path}`, res.status);
+                    }
+                } catch (e) {
+                    console.error(`讀取比賽資料失敗: ${path}`, e);
+                }
+            }
+            return null;
+        }
+
         // 6. 進入比賽頁面
-        // 判斷順序：有 currentTeams → 賽程已安排，跳 gamestart
-        //           只有 players → 還在設定階段，跳 play 繼續
-        //           都沒有 → 新比賽，跳 play
-        function enterGame(gameId) {
+        // 判斷順序：有 schedules/currentTeams/舊版 matches → gamestart
+        //           只有 players → play 繼續設定
+        //           都沒有 → play
+        async function enterGame(gameId) {
             const raw = localStorage.getItem(`badmintonData_${gameId}`);
             if (raw) {
                 try {
-                    const d = JSON.parse(raw);
-                    const hasProgress = (d.schedules||[]).length > 0 || (d.currentTeams||[]).length > 0;
-                    const onlyPlayers = (d.players||[]).length > 0 && !hasProgress;
-                    if (onlyPlayers) {
+                    const route = getGameRouteFromData(JSON.parse(raw));
+                    if (route === 'play') {
                         window.location.href = `play.html?gameId=${gameId}`;
                         return;
                     }
-                } catch(e) {}
+                    if (route === 'gamestart') {
+                        window.location.href = `gamestart.html?gameId=${gameId}`;
+                        return;
+                    }
+                } catch (e) {
+                    console.error('讀取本機比賽資料失敗', e);
+                }
             }
-            // localStorage 空（換裝置）或有賽程資料 → 一律跳 gamestart 讓它從 GitHub 拉
-            window.location.href = `gamestart.html?gameId=${gameId}`;
+
+            const gameData = await fetchGameDataFromGitHub(gameId);
+            const target = getGameRouteFromData(gameData);
+            window.location.href = `${target}.html?gameId=${gameId}`;
         }
 
         // =============================================
