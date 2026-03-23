@@ -1,0 +1,20 @@
+{
+  "players": [
+    {
+      "id": 1774279448842.507,
+      "name": "大谷",
+      "gender": "男",
+      "level": 8
+    }
+  ],
+  "lastUpdated": "2026-03-23T15:24:09.997Z",
+  "currentTeams": [],
+  "schedules": [],
+  "matchMode": "single",
+  "pendingRestMsg": "",
+  "savedTeamDraft": [],
+  "savedDraftMode": "",
+  "savedDraftRestMsg": "",
+  "savedDraftRestPlayer": null,
+  "savedDraftUpdatedAt": null
+}
