@@ -11,9 +11,11 @@
             --text-muted: #6b7280; --danger: #ef4444; --warning: #f59e0b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg); color: var(--text-main); padding: 20px; max-width: 1200px; margin: 0 auto; }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg); color: var(--text-main); padding: 12px; max-width: 1200px; margin: 0 auto; }
+        @media (min-width: 600px) { body { padding: 20px; } }
         h2 { font-size: 20px; margin-bottom: 15px; color: var(--primary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .card { background-color: var(--card-bg); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .card { background-color: var(--card-bg); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        @media (min-width: 600px) { .card { padding: 24px; margin-bottom: 24px; } }
         input, select, button { padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; outline: none; }
         input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(5,150,105,0.2); }
         button { background-color: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; transition: all 0.2s; }
@@ -34,15 +36,15 @@
         .schedule-details[open] .schedule-summary::after { transform: rotate(180deg); }
         .schedule-content { padding: 20px; background: #fafafa; }
         .round-header { grid-column: 1 / -1; background: #cbd5e1; color: #334155; padding: 8px 15px; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 10px; text-align: center; }
-        .matches-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .matches-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px; }
         .match-card { border: 2px solid #e5e7eb; border-radius: 12px; background: #ffffff; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
         .match-header { background: #f1f5f9; padding: 8px; text-align: center; font-weight: bold; color: var(--text-muted); border-bottom: 1px solid #e5e7eb; }
-        .match-body { padding: 16px; display: flex; justify-content: space-between; align-items: center; flex: 1; }
-        .team { flex: 1; text-align: center; }
-        .team-name { font-weight: bold; font-size: 16px; margin-bottom: 4px; line-height: 1.4; }
-        .vs-badge { background: var(--text-muted); color: white; font-weight: bold; padding: 4px 8px; border-radius: 8px; margin: 0 12px; font-size: 14px; }
-        .score-input { width: 60px; text-align: center; font-size: 20px; font-weight: bold; margin-top: 12px; padding: 4px; }
-        .score-display { font-size: 28px; font-weight: bold; margin-top: 8px; }
+        .match-body { padding: 12px 8px; display: flex; justify-content: space-between; align-items: center; flex: 1; }
+        .team { flex: 1; text-align: center; min-width: 0; }
+        .team-name { font-weight: bold; font-size: 15px; margin-bottom: 4px; line-height: 1.4; word-break: break-word; }
+        .vs-badge { background: var(--text-muted); color: white; font-weight: bold; padding: 4px 6px; border-radius: 8px; margin: 0 6px; font-size: 13px; flex-shrink: 0; }
+        .score-input { width: 54px; text-align: center; font-size: 20px; font-weight: bold; margin-top: 10px; padding: 4px; }
+        .score-display { font-size: 26px; font-weight: bold; margin-top: 8px; }
         .winner { color: var(--danger); }
         .match-footer { padding: 12px; background: #fff; border-top: 1px solid #e5e7eb; text-align: center; }
         .info-box { background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px; margin-bottom: 20px; border-radius: 4px; font-size: 14px; color: #1e3a8a; }
@@ -211,10 +213,17 @@
             if (sch.restMsg) html += `<div class="info-box">${sch.restMsg}</div>`;
             html += `<div class="matches-grid">`;
             let currentRound = 0;
+            let matchNumInRound = 0;
             sch.matches.forEach((m, mIndex) => {
-                if (sch.mode==='round-robin' && m.round!==currentRound) { html+=`<div class="round-header">🏆 第 ${m.round} 輪</div>`; currentRound=m.round; }
+                if (sch.mode==='round-robin' && m.round!==currentRound) {
+                    html+=`<div class="round-header">🏆 第 ${m.round} 輪</div>`;
+                    currentRound=m.round;
+                    matchNumInRound=0;
+                }
+                matchNumInRound++;
+                const headerLabel = sch.mode==='single' ? `場次 ${mIndex+1}` : `場次 ${matchNumInRound}`;
                 html += `<div class="match-card">
-                    <div class="match-header">${sch.mode==='single'?'場次 '+(mIndex+1):'第 '+m.round+' 輪'}</div>
+                    <div class="match-header">${headerLabel}</div>
                     <div class="match-body">
                         <div class="team">
                             <div class="team-name">${m.team1.name1}<br>& ${m.team1.name2}</div>
@@ -256,16 +265,38 @@
     function renderStandings() {
         if (schedules.length===0) { document.getElementById('standingsArea').innerHTML=''; return; }
         let stats={};
-        currentTeams.forEach(t => stats[t.id]={name:`${t.name1} & ${t.name2}`,win:0,loss:0,ptsDiff:0});
+        currentTeams.forEach(t => stats[t.id]={name:`${t.name1} & ${t.name2}`,win:0,loss:0,ptsFor:0,ptsAgainst:0});
         schedules.forEach(sch => sch.matches.forEach(m => {
             if(m.isFinished&&stats[m.team1.id]&&stats[m.team2.id]) {
-                stats[m.team1.id].ptsDiff+=(m.score1-m.score2); stats[m.team2.id].ptsDiff+=(m.score2-m.score1);
+                stats[m.team1.id].ptsFor+=m.score1; stats[m.team1.id].ptsAgainst+=m.score2;
+                stats[m.team2.id].ptsFor+=m.score2; stats[m.team2.id].ptsAgainst+=m.score1;
                 if(m.score1>m.score2){stats[m.team1.id].win++;stats[m.team2.id].loss++;}
                 else if(m.score2>m.score1){stats[m.team2.id].win++;stats[m.team1.id].loss++;}
             }
         }));
-        const sorted=Object.values(stats).sort((a,b)=>b.win!==a.win?b.win-a.win:b.ptsDiff-a.ptsDiff);
-        document.getElementById('standingsArea').innerHTML=`<h3 style="color:var(--secondary);margin-bottom:10px;">📊 總戰績表 <span style="font-size:14px;font-weight:normal;">(結算至目前所有賽程)</span></h3><div style="overflow-x:auto;margin-bottom:25px;"><table class="standings-table"><thead><tr><th>名次</th><th>隊伍</th><th>總勝</th><th>總負</th><th>淨勝分</th></tr></thead><tbody>${sorted.map((s,i)=>`<tr><td>${i+1}</td><td>${s.name}</td><td style="color:var(--primary);font-weight:bold;">${s.win}</td><td style="color:var(--danger);font-weight:bold;">${s.loss}</td><td style="color:${s.ptsDiff>=0?'var(--primary)':'var(--danger)'}">${s.ptsDiff>0?'+'+s.ptsDiff:s.ptsDiff}</td></tr>`).join('')}</tbody></table></div>`;
+        const sorted=Object.values(stats).sort((a,b)=>{
+            if(b.win!==a.win) return b.win-a.win;
+            const da=a.ptsFor-a.ptsAgainst, db=b.ptsFor-b.ptsAgainst;
+            return db-da;
+        });
+        document.getElementById('standingsArea').innerHTML=`
+            <h3 style="color:var(--secondary);margin-bottom:10px;">📊 總戰績表 <span style="font-size:14px;font-weight:normal;">(結算至目前所有賽程)</span></h3>
+            <div style="overflow-x:auto;margin-bottom:25px;">
+            <table class="standings-table">
+                <thead><tr><th>名次</th><th>隊伍</th><th>勝</th><th>負</th><th>得分</th><th>失分</th><th>淨勝分</th></tr></thead>
+                <tbody>${sorted.map((s,i)=>{
+                    const diff=s.ptsFor-s.ptsAgainst;
+                    return `<tr>
+                        <td>${i+1}</td>
+                        <td style="text-align:left;">${s.name}</td>
+                        <td style="color:var(--primary);font-weight:bold;">${s.win}</td>
+                        <td style="color:var(--danger);font-weight:bold;">${s.loss}</td>
+                        <td style="color:var(--primary);">${s.ptsFor}</td>
+                        <td style="color:var(--danger);">${s.ptsAgainst}</td>
+                        <td style="color:${diff>=0?'var(--primary)':'var(--danger)'};font-weight:bold;">${diff>0?'+'+diff:diff}</td>
+                    </tr>`;
+                }).join('')}</tbody>
+            </table></div>`;
     }
 
     // ── 靜默背景自動同步 ──
