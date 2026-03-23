@@ -1,0 +1,80 @@
+{
+  "players": [
+    {
+      "id": 1774279182770.4626,
+      "name": "沛恩",
+      "gender": "男",
+      "level": 4
+    },
+    {
+      "id": 1774279182770.0244,
+      "name": "重運",
+      "gender": "男",
+      "level": 4
+    },
+    {
+      "id": 1774279182770.2686,
+      "name": "則宇",
+      "gender": "女",
+      "level": 4
+    },
+    {
+      "id": 1774279182770.5168,
+      "name": "怡瑱",
+      "gender": "女",
+      "level": 5
+    },
+    {
+      "id": 1774279182770.2656,
+      "name": "慕華",
+      "gender": "男",
+      "level": 7
+    },
+    {
+      "id": 1774279182770.7156,
+      "name": "植敏",
+      "gender": "女",
+      "level": 5
+    },
+    {
+      "id": 1774279182770.0862,
+      "name": "海薇",
+      "gender": "女",
+      "level": 4
+    },
+    {
+      "id": 1774279182770.7158,
+      "name": "LaLa",
+      "gender": "女",
+      "level": 3
+    },
+    {
+      "id": 1774279182770.5698,
+      "name": "Dani",
+      "gender": "男",
+      "level": 6
+    },
+    {
+      "id": 1774279182770.1882,
+      "name": "Yuna",
+      "gender": "女",
+      "level": 4
+    },
+    {
+      "id": 1774279182770.652,
+      "name": "まや",
+      "gender": "女",
+      "level": 5
+    }
+  ],
+  "lastUpdated": "2026-03-23T15:19:43.368Z",
+  "currentTeams": [],
+  "schedules": [],
+  "matchMode": "single",
+  "pendingRestMsg": "",
+  "savedTeamDraft": [],
+  "savedDraftMode": "",
+  "savedDraftRestMsg": "",
+  "savedDraftRestPlayer": null,
+  "savedDraftUpdatedAt": null
+}
