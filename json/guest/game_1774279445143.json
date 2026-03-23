@@ -53,10 +53,75 @@
   "schedules": [],
   "matchMode": "single",
   "pendingRestMsg": "",
-  "savedTeamDraft": [],
-  "savedDraftMode": "",
+  "savedTeamDraft": [
+    {
+      "id": "Team_1774279465959_0",
+      "mode": "round-robin",
+      "p1": {
+        "id": 1774279456959.4038,
+        "name": "王齊麟",
+        "gender": "男",
+        "level": 18
+      },
+      "p2": {
+        "id": 1774279455397.8079,
+        "name": "李洋",
+        "gender": "男",
+        "level": 1
+      }
+    },
+    {
+      "id": "Team_1774279465959_1",
+      "mode": "round-robin",
+      "p1": {
+        "id": 1774279452745.1812,
+        "name": "戴資穎",
+        "gender": "男",
+        "level": 14
+      },
+      "p2": {
+        "id": 1774279451159.0613,
+        "name": "林書豪",
+        "gender": "男",
+        "level": 1
+      }
+    },
+    {
+      "id": "Team_1774279465959_2",
+      "mode": "round-robin",
+      "p1": {
+        "id": 1774279458404.819,
+        "name": "安洗瑩",
+        "gender": "男",
+        "level": 13
+      },
+      "p2": {
+        "id": 1774279454093.893,
+        "name": "周天成",
+        "gender": "男",
+        "level": 5
+      }
+    },
+    {
+      "id": "Team_1774279465959_3",
+      "mode": "round-robin",
+      "p1": {
+        "id": 1774279459846.2578,
+        "name": "陳雨菲",
+        "gender": "男",
+        "level": 10
+      },
+      "p2": {
+        "id": 1774279448842.507,
+        "name": "大谷",
+        "gender": "男",
+        "level": 8
+      }
+    }
+  ],
+  "savedDraftMode": "round-robin",
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
-  "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-03-23T15:24:20.438Z"
+  "savedDraftUpdatedAt": "2026-03-23T15:24:36.674Z",
+  "lastUpdated": "2026-03-23T15:24:37.447Z"
 }
