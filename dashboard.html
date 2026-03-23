@@ -3,434 +3,476 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏸 賽程計分</title>
+    <title>🏸 我的賽事管理</title>
     <style>
         :root {
-            --primary: #059669; --primary-hover: #047857; --secondary: #0f766e;
-            --bg: #f3f4f6; --card-bg: #ffffff; --text-main: #1f2937;
-            --text-muted: #6b7280; --danger: #ef4444; --warning: #f59e0b;
+            --primary: #059669;
+            --primary-hover: #047857;
+            --secondary: #0f766e;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --danger: #ef4444;
         }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg); color: var(--text-main); padding: 12px; max-width: 1200px; margin: 0 auto; }
-        @media (min-width: 600px) { body { padding: 20px; } }
-        h2 { font-size: 20px; margin-bottom: 15px; color: var(--primary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .card { background-color: var(--card-bg); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        @media (min-width: 600px) { .card { padding: 24px; margin-bottom: 24px; } }
-        input, select, button { padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; outline: none; }
-        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(5,150,105,0.2); }
-        button { background-color: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; transition: all 0.2s; }
-        button:hover { background-color: var(--primary-hover); }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg); color: var(--text-main); padding: 20px; max-width: 900px; margin: 0 auto; }
+        
+        /* 頂部導覽列 */
+        .header { display: flex; justify-content: space-between; align-items: center; background-color: var(--primary); color: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .header h1 { font-size: 20px; display: flex; align-items: center; gap: 10px; }
+        .user-info { display: flex; align-items: center; gap: 15px; font-size: 14px; }
+        
+        .card { background-color: var(--card-bg); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        h2 { font-size: 18px; color: var(--secondary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+
+        /* 表單與按鈕 */
+        .input-group { display: flex; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+        input { flex: 1; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; outline: none; min-width: 200px; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2); }
+        
+        button { padding: 12px 20px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-danger { background-color: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 8px 15px; font-size: 14px;}
+        .btn-danger:hover { background-color: #fef2f2; }
+        .btn-logout { background-color: rgba(255, 255, 255, 0.2); color: white; padding: 8px 15px; font-size: 14px;}
+        .btn-logout:hover { background-color: rgba(255, 255, 255, 0.3); }
         button:disabled { background-color: #9ca3af; cursor: not-allowed; }
-        .toolbar-container { position: sticky; top: 0; z-index: 1000; background-color: rgba(243,244,246,0.95); backdrop-filter: blur(4px); padding: 12px 0; margin-bottom: 20px; border-bottom: 1px solid #d1d5db; }
-        .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .tool-btn { background-color: var(--secondary); font-size: 15px; padding: 10px 16px; border-radius: 8px; color: white; cursor: pointer; border: none; font-weight: bold; }
-        .tool-btn:hover { filter: brightness(1.1); }
-        .btn-rematch { background-color: #10b981; color: white; padding: 14px; font-size: 16px; width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(16,185,129,0.3); }
-        .btn-rematch:hover { background-color: #059669; }
-        .schedule-details { background: #fff; border: 2px solid #e5e7eb; border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
-        .schedule-details[open] { border-color: var(--secondary); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .schedule-summary { background: #f1f5f9; color: var(--secondary); padding: 16px 20px; font-size: 18px; font-weight: bold; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid transparent; }
-        .schedule-details[open] .schedule-summary { background: var(--secondary); color: white; }
-        .schedule-summary::-webkit-details-marker { display: none; }
-        .schedule-summary::after { content: '▼'; font-size: 14px; transition: transform 0.3s; }
-        .schedule-details[open] .schedule-summary::after { transform: rotate(180deg); }
-        .schedule-content { padding: 20px; background: #fafafa; }
-        .round-header { grid-column: 1 / -1; background: #cbd5e1; color: #334155; padding: 8px 15px; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 10px; text-align: center; }
-        .matches-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px; }
-        .match-card { border: 2px solid #e5e7eb; border-radius: 12px; background: #ffffff; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
-        .match-header { background: #f1f5f9; padding: 8px; text-align: center; font-weight: bold; color: var(--text-muted); border-bottom: 1px solid #e5e7eb; }
-        .match-body { padding: 12px 8px; display: flex; justify-content: space-between; align-items: center; flex: 1; }
-        .team { flex: 1; text-align: center; min-width: 0; }
-        .team-name { font-weight: bold; font-size: 15px; margin-bottom: 4px; line-height: 1.4; word-break: break-word; }
-        .vs-badge { background: var(--text-muted); color: white; font-weight: bold; padding: 4px 6px; border-radius: 8px; margin: 0 6px; font-size: 13px; flex-shrink: 0; }
-        .score-input { width: 54px; text-align: center; font-size: 20px; font-weight: bold; margin-top: 10px; padding: 4px; }
-        .score-display { font-size: 26px; font-weight: bold; margin-top: 8px; }
-        .winner { color: var(--danger); }
-        .match-footer { padding: 12px; background: #fff; border-top: 1px solid #e5e7eb; text-align: center; }
-        .info-box { background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px; margin-bottom: 20px; border-radius: 4px; font-size: 14px; color: #1e3a8a; }
-        .standings-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .standings-table th, .standings-table td { padding: 12px; border: 1px solid #e5e7eb; text-align: center; }
-        .standings-table th { background-color: var(--secondary); color: white; font-weight: bold; white-space: nowrap; }
-        .standings-table tr:nth-child(even) { background-color: #f8fafc; }
-        .standings-table tr:hover { background-color: #f1f5f9; }
+
+        /* 比賽列表網格 */
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 10px; }
+        .game-card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; background: #fafafa; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s, box-shadow 0.2s; }
+        .game-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-color: #d1d5db; }
+        .game-card h3 { font-size: 18px; color: var(--text-main); margin-bottom: 8px; }
+        .game-date { font-size: 13px; color: var(--text-muted); }
+        .empty-state { grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-muted); background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db; }
+
+        /* 常用選手管理 */
+        select { padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 15px; outline: none; background: white; cursor: pointer; }
+        select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(5,150,105,0.2); }
+        .fp-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+        .fp-sync-status { font-size: 12px; color: var(--text-muted); }
+        .fp-add-form { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; padding: 16px; background: #f8fafc; border-radius: 10px; border: 1px solid #e5e7eb; }
+        .fp-add-form input { flex: 1; min-width: 120px; padding: 10px 12px; }
+        .fp-list { border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; max-height: 420px; overflow-y: auto; }
+        .fp-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f3f4f6; gap: 10px; flex-wrap: wrap; }
+        .fp-item:last-child { border-bottom: none; }
+        .fp-item:hover { background: #f8fafc; }
+        .fp-name { font-weight: bold; font-size: 16px; color: var(--text-main); }
+        .fp-meta { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+        .fp-actions { display: flex; align-items: center; gap: 8px; }
+        .level-select { padding: 5px 8px; font-size: 14px; border-radius: 6px; border: 1px solid #d1d5db; }
+        .btn-sm-danger { background-color: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 6px 12px; font-size: 13px; border-radius: 6px; }
+        .btn-sm-danger:hover { background-color: #fef2f2; }
+        .btn-sm { padding: 8px 14px; font-size: 14px; }
+        .fp-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
     </style>
 </head>
 <body>
 
-<div class="toolbar-container">
-    <div class="toolbar">
-        <button class="tool-btn" onclick="window.location.href='dashboard.html'" style="background-color:#4b5563;">◀ 回賽程管理</button>
-        <span id="gameTitle" style="font-size:15px;font-weight:bold;color:var(--secondary);flex:1;text-align:center;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
-        <div style="display:flex;align-items:center;gap:8px;">
-            <span id="syncStatus" style="font-size:12px;color:var(--text-muted);white-space:nowrap;"></span>
-            <button class="tool-btn" onclick="openShareModal()" style="background-color:#8b5cf6;">🔗 邀請協助計分</button>
-            <button class="tool-btn" id="btnSync" onclick="syncToGitHub()">☁️ 儲存至雲端</button>
+    <div class="header">
+        <h1>🏸 我的賽程管理</h1>
+        <div class="user-info">
+            <span>👤 <span id="displayUser">載入中...</span></span>
+            <button class="btn-logout" onclick="logout()">登出</button>
         </div>
     </div>
-</div>
 
-<!-- 分享 Modal -->
-<div id="shareModal" style="display:none;position:fixed;z-index:2000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.55);">
-    <div style="background:#fff;margin:5% auto;padding:24px;border-radius:16px;width:95%;max-width:480px;box-shadow:0 8px 30px rgba(0,0,0,0.2);">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-            <h3 style="font-size:18px;color:var(--secondary);">🔗 邀請朋友協助計分</h3>
-            <button onclick="closeShareModal()" style="background:none;border:none;font-size:26px;color:#aaa;cursor:pointer;padding:0;line-height:1;">&times;</button>
+    <!-- 新增比賽區塊 -->
+    <div class="card">
+        <h2>✨ 建立新比賽</h2>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">建立一個新的賽程群組，獨立管理當天的參賽人員與比分。</p>
+        <div class="input-group">
+            <input type="text" id="newGameName" placeholder="例如：3/23 週末羽球團" autocomplete="off">
+            <button class="btn-primary" id="createGameBtn" onclick="createGame()">➕ 新增並進入計分板</button>
         </div>
-        <p style="font-size:14px;color:var(--text-muted);margin-bottom:16px;">傳送連結或 QR Code 給朋友，對方不需要登入即可協助輸入比分。</p>
-        <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
-            <input id="shareUrl" type="text" readonly style="flex:1;border:none;background:transparent;font-size:13px;color:var(--text-main);outline:none;min-width:0;">
-            <button onclick="copyShareUrl()" id="btnCopy" style="background:var(--secondary);color:white;padding:8px 14px;font-size:13px;border-radius:7px;white-space:nowrap;">複製</button>
+    </div>
+
+    <!-- 過去比賽區塊 -->
+    <div class="card">
+        <h2>📂 過去的比賽紀錄</h2>
+        <div class="games-grid" id="gamesList">
+            <p style="color: #6b7280; padding: 20px;">⏳ 讀取賽事清單中...</p>
         </div>
-        <div id="qrcode" style="display:flex;justify-content:center;margin:16px 0;"></div>
-        <p style="font-size:12px;color:var(--text-muted);text-align:center;">⚠️ 持有此連結的人可以修改這場比賽的分數，請謹慎分享。</p>
-    </div>
-</div>
-
-<div class="card">
-    <h2>📋 賽程與計分</h2>
-
-    <!-- 同樣組合重打 -->
-    <div id="rematchContainer" style="display:none;margin-bottom:25px;">
-        <button class="btn-rematch" onclick="generateRematch()">
-            🔄 保留目前戰績：原班人馬「同樣組合重打」 (新增賽程 <span id="nextScheduleNum"></span>)
-        </button>
-        <div style="border-top:2px dashed #e5e7eb;margin:15px 0;"></div>
     </div>
 
-    <div id="standingsArea"></div>
-    <div id="schedulesWrapper">
-        <div style="text-align:center;color:var(--text-muted);padding:40px;">⏳ 載入賽程中...</div>
+    <!-- 常用選手管理 -->
+    <input type="file" id="fpCsvInput" accept=".csv" style="display:none;" onchange="handleFpCsvImport(event)">
+    <div class="card">
+        <h2>👥 常用選手名冊</h2>
+
+        <!-- 新增表單 -->
+        <div class="fp-add-form">
+            <input type="text" id="fpName" placeholder="球員姓名" style="flex:2; min-width:120px;">
+            <select id="fpGender"><option value="男">男</option><option value="女">女</option></select>
+            <select id="fpLevel" style="min-width:130px;">
+                <option value="" disabled selected>實力級數</option>
+                <option value="1">1 (新手)</option><option value="2">2</option><option value="3">3</option>
+                <option value="4">4 (初階)</option><option value="5">5</option><option value="6">6 (初中)</option>
+                <option value="7">7</option><option value="8">8 (中階)</option><option value="9">9</option>
+                <option value="10">10 (中進)</option><option value="11">11</option><option value="12">12</option>
+                <option value="13">13 (高階)</option><option value="14">14</option><option value="15">15</option>
+                <option value="16">16 (職業)</option><option value="17">17</option><option value="18">18</option>
+            </select>
+            <button class="btn-primary btn-sm" id="btnAddFp" onclick="addFrequentPlayer()">➕ 新增</button>
+        </div>
+
+        <!-- 工具列 -->
+        <div class="fp-toolbar">
+            <span class="fp-sync-status" id="fpSyncStatus"></span>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn-primary btn-sm" style="background-color:#8b5cf6;" onclick="document.getElementById('fpCsvInput').click()">📁 CSV 匯入</button>
+                <button class="btn-primary btn-sm" style="background-color:var(--secondary);" onclick="loadFrequentPlayers(true)">🔄 從雲端重新載入</button>
+            </div>
+        </div>
+
+        <!-- 名單 -->
+        <div class="fp-list" id="fpList">
+            <div class="fp-empty">⏳ 載入中...</div>
+        </div>
     </div>
-</div>
 
-<script>
-    const GITHUB_OWNER = 'timothy920611', GITHUB_REPO = 'ChickenBadminton', GITHUB_FOLDER = 'json';
-    const NOISE = "5d5502d0e27ded4a977810d55f13e615c201fe6f7e1c0ff57641e034d75e2b2f";
-    const OBFUSCATED_TOKEN = "Z2l0aHViX3BhdF8xMUI0TlFKR0EwUWJlSVdIcDRLeVdUX3RMbHJFSXVLMFdzWVF3Y2" + NOISE + "9LbEd5SFN1cXl6Z3dUQ04xTHdNSHJ0cndIWkdIQ1MzRUVOVG9XR1p5RTFC";
-    function getRealToken() { try { return atob(OBFUSCATED_TOKEN.replace(NOISE,"")); } catch(e) { return null; } }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const GAME_ID = urlParams.get('gameId') || 'default';
-    const IS_INIT = urlParams.get('init') === '1';
-    const currentUser = localStorage.getItem('badminton_currentUser') || 'guest';
-    const LS_KEY = `badmintonData_${GAME_ID}`;
-
-    let players = [], currentTeams = [], schedules = [], matchMode = 'single';
-    let fileSha = null;
-    let isSyncing = false; // 防止推送與拉取同時進行
-    let pollInterval = null;
-
-    function getStorage() { try { return JSON.parse(localStorage.getItem(LS_KEY)||'{}'); } catch(e) { return {}; } }
-    function saveStorage() { localStorage.setItem(LS_KEY, JSON.stringify({ players, currentTeams, schedules, matchMode })); }
-
-    window.addEventListener('DOMContentLoaded', () => {
-        initGameTitle();
-        loadData();
-    });
-
-    // 頁面可見時啟動輪詢，背景時暫停（省 API 額度）
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) stopPolling(); else startPolling();
-    });
-
-    function initGameTitle() {
-        try { const idx=JSON.parse(localStorage.getItem(`gamesIndex_${currentUser}`)||'[]'); const f=idx.find(g=>g.id===GAME_ID); document.getElementById('gameTitle').innerText = f?`🏸 ${f.name}`:'🏸 賽程計分'; } catch(e){}
-    }
-
-    async function loadData() {
-        const d = getStorage();
-        players = d.players || [];
-        currentTeams = d.currentTeams || [];
-        schedules = d.schedules || [];
-        matchMode = d.matchMode || 'single';
-
-        if (IS_INIT && schedules.length === 0) {
-            // 從 play.html 跳過來，產生第一個賽程
-            generateMatchesForCurrentTeams(d.pendingRestMsg || "");
-            return;
+    <script>
+        // GitHub API 設定
+        const GITHUB_OWNER = 'timothy920611';   
+        const GITHUB_REPO = 'ChickenBadminton'; 
+        const NOISE = "5d5502d0e27ded4a977810d55f13e615c201fe6f7e1c0ff57641e034d75e2b2f";
+        const OBFUSCATED_TOKEN = "Z2l0aHViX3BhdF8xMUI0TlFKR0EwUWJlSVdIcDRLeVdUX3RMbHJFSXVLMFdzWVF3Y2" + NOISE + "9LbEd5SFN1cXl6Z3dUQ04xTHdNSHJ0cndIWkdIQ1MzRUVOVG9XR1p5RTFC";
+        
+        function getRealToken() {
+            try { return atob(OBFUSCATED_TOKEN.replace(NOISE, "")); } 
+            catch (e) { return null; }
         }
 
-        // 沒有賽程資料時，嘗試從 GitHub 拉取（換裝置、或從未載入過）
-        if (schedules.length === 0 && !IS_INIT) {
-            await fetchFromGitHub();
-            return;
+        // 系統狀態
+        const currentUser = localStorage.getItem('badminton_currentUser') || 'guest';
+        let gamesIndexSha = null;
+        let gamesList = [];
+
+        // 常用選手狀態
+        let frequentPlayers = [];
+        let fpFileSha = null;
+
+        // 初始化
+        window.onload = () => {
+            document.getElementById('displayUser').innerText = currentUser === 'guest' ? '訪客 (共用區)' : currentUser;
+            loadGames();
+            loadFrequentPlayers();
+        };
+
+        // 登出
+        function logout() {
+            localStorage.removeItem('badminton_currentUser');
+            window.location.href = 'index.html';
         }
 
-        renderAll();
-        startPolling();
-    }
+        // 1. 讀取比賽列表 (讀取 games_index.json)
+        async function loadGames() {
+            const token = getRealToken();
+            if (!token) return alert("系統 Token 設定錯誤！");
 
-    function startPolling() {
-        if (pollInterval) return;
-        pollInterval = setInterval(() => pollFromGitHub(), 10000);
-    }
-    function stopPolling() {
-        clearInterval(pollInterval); pollInterval = null;
-    }
-
-    // 靜默輪詢：只比對 SHA，有變動才更新畫面
-    async function pollFromGitHub() {
-        if (isSyncing) return;
-        const token = getRealToken(); if (!token) return;
-        const path = `${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
-        try {
-            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
-                headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
-            });
-            if (!res.ok) return;
-            const raw = await res.json();
-            if (raw.sha === fileSha) return; // 沒變動，不重繪
-            fileSha = raw.sha;
-            const data = JSON.parse(decodeURIComponent(escape(atob(raw.content))));
-            players = data.players || [];
-            currentTeams = data.currentTeams || [];
-            schedules = data.schedules || [];
-            matchMode = data.matchMode || 'single';
-            saveStorage();
-            renderAll();
-            const statusEl = document.getElementById('syncStatus');
-            statusEl.innerText = `🔄 已接收更新（${new Date().toLocaleTimeString('zh-TW',{hour12:false})}）`;
-            setTimeout(() => { if (statusEl.innerText.startsWith('🔄')) statusEl.innerText = ''; }, 3000);
-        } catch(e) {}
-    }
-
-    async function fetchFromGitHub() {
-        const token = getRealToken();
-        const statusEl = document.getElementById('syncStatus');
-        statusEl.innerText = '⏳ 載入雲端資料...';
-
-        const path = `${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
-        try {
-            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
-                headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
-            });
-            if (res.ok) {
-                const raw = await res.json();
-                fileSha = raw.sha;
-                const data = JSON.parse(decodeURIComponent(escape(atob(raw.content))));
-                players = data.players || [];
-                currentTeams = data.currentTeams || [];
-                schedules = data.schedules || [];
-                matchMode = data.matchMode || 'single';
-                saveStorage();
-
-                // 雲端完全沒有分組也沒有賽程 → 跳回 play 繼續設定
-                if (currentTeams.length === 0 && schedules.length === 0 && players.length > 0) {
-                    window.location.href = `play.html?gameId=${GAME_ID}`;
-                    return;
+            const path = `json/${currentUser}/games_index.json`;
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    cache: 'no-store'
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    gamesIndexSha = data.sha;
+                    const content = decodeURIComponent(escape(atob(data.content)));
+                    gamesList = JSON.parse(content);
+                } else if (res.status === 404) {
+                    // 如果沒有這個檔案，代表是新帳號，清單為空
+                    gamesList = [];
+                    gamesIndexSha = null;
                 }
+                renderGames();
+            } catch(e) {
+                console.error(e);
+                document.getElementById('gamesList').innerHTML = '<p style="color: #ef4444;">❌ 讀取失敗，請檢查網路連線或重新整理。</p>';
+            }
+        }
 
-                statusEl.innerText = '✅ 已載入雲端資料';
-                setTimeout(() => { if (statusEl.innerText === '✅ 已載入雲端資料') statusEl.innerText = ''; }, 3000);
-                renderAll();
-                startPolling();
+        // 2. 將清單渲染到畫面上
+        function renderGames() {
+            // 快取比賽清單到 localStorage，供 play.html 讀取比賽名稱
+            localStorage.setItem(`gamesIndex_${currentUser}`, JSON.stringify(gamesList));
+
+            const listDiv = document.getElementById('gamesList');
+            listDiv.innerHTML = '';
+            
+            if (gamesList.length === 0) {
+                listDiv.innerHTML = '<div class="empty-state">目前還沒有比賽紀錄喔！趕快在上方建立一場吧 🏸</div>';
                 return;
-            } else if (res.status === 404) {
-                statusEl.innerText = '⚠️ 雲端尚無此比賽資料';
-            } else {
-                statusEl.innerText = '❌ 雲端載入失敗';
             }
-        } catch(e) {
-            statusEl.innerText = '❌ 網路錯誤，無法載入雲端資料';
-        }
-        renderAll();
-    }
-
-    function generateMatchesForCurrentTeams(restPlayersMsg="") {
-        let newScheduleId = schedules.length + 1;
-        let newMatches = [], restMsgArr = [];
-        if (restPlayersMsg) restMsgArr.push(restPlayersMsg);
-
-        if (matchMode === 'single') {
-            let tempTeams = [...currentTeams];
-            if (tempTeams.length%2!==0) { let rt=tempTeams.splice(Math.floor(Math.random()*tempTeams.length),1)[0]; restMsgArr.push(`單數隊伍：<strong>${rt.name1} & ${rt.name2}</strong> (本輪輪空)`); }
-            tempTeams.sort(()=>Math.random()-0.5);
-            for (let i=0; i<tempTeams.length; i+=2) newMatches.push({id:`M_${newScheduleId}_${i}`,round:1,team1:tempTeams[i],team2:tempTeams[i+1],score1:null,score2:null,isFinished:false});
-        } else {
-            let rrTeams = [...currentTeams];
-            if (rrTeams.length%2!==0) rrTeams.push({id:'BYE',name1:'輪空',name2:'休息',totalLevel:0});
-            let numTeams=rrTeams.length, mc=0;
-            for (let r=0; r<numTeams-1; r++) {
-                for (let i=0; i<numTeams/2; i++) {
-                    let t1=rrTeams[i], t2=rrTeams[numTeams-1-i];
-                    if(t1.id!=='BYE'&&t2.id!=='BYE') newMatches.push({id:`M_${newScheduleId}_${mc++}`,round:r+1,team1:t1,team2:t2,score1:null,score2:null,isFinished:false});
-                }
-                rrTeams.splice(1,0,rrTeams.pop());
-            }
-        }
-
-        schedules.push({ id: newScheduleId, mode: matchMode, matches: newMatches, restMsg: restMsgArr.join('<br>') });
-        renderAll(); saveStorage();
-    }
-
-    function generateRematch() { generateMatchesForCurrentTeams(""); }
-
-    function renderAll() { renderStandings(); renderSchedules(); updateRematchUI(); }
-
-    function updateRematchUI() {
-        const c = document.getElementById('rematchContainer');
-        if (schedules.length>0 && currentTeams.length>0) { c.style.display='block'; document.getElementById('nextScheduleNum').innerText=schedules.length+1; }
-        else c.style.display='none';
-    }
-
-    function renderSchedules() {
-        const wrapper = document.getElementById('schedulesWrapper');
-        if (schedules.length===0) { wrapper.innerHTML=`<div style="text-align:center;color:var(--text-muted);padding:40px;">尚未產生賽程。</div>`; return; }
-        let html = '';
-        schedules.forEach((sch, index) => {
-            const isOpen = index===schedules.length-1 ? 'open' : '';
-            html += `<details class="schedule-details" ${isOpen}><summary class="schedule-summary">🏸 賽程 ${sch.id} ${sch.mode==='single'?'(單輪配對賽)':'(循環賽)'}</summary><div class="schedule-content">`;
-            if (sch.restMsg) html += `<div class="info-box">${sch.restMsg}</div>`;
-            html += `<div class="matches-grid">`;
-            let currentRound = 0;
-            let matchNumInRound = 0;
-            sch.matches.forEach((m, mIndex) => {
-                if (sch.mode==='round-robin' && m.round!==currentRound) {
-                    html+=`<div class="round-header">🏆 第 ${m.round} 輪</div>`;
-                    currentRound=m.round;
-                    matchNumInRound=0;
-                }
-                matchNumInRound++;
-                const headerLabel = sch.mode==='single' ? `場次 ${mIndex+1}` : `場次 ${matchNumInRound}`;
-                html += `<div class="match-card">
-                    <div class="match-header">${headerLabel}</div>
-                    <div class="match-body">
-                        <div class="team">
-                            <div class="team-name">${m.team1.name1}<br>& ${m.team1.name2}</div>
-                            <div style="font-size:12px;color:#0369a1;background:#e0f2fe;border-radius:4px;padding:1px 8px;display:inline-block;margin-top:4px;">Lv.${m.team1.totalLevel||'?'}</div>
-                            ${m.isFinished?`<div class="score-display ${m.score1>m.score2?'winner':''}">${m.score1}</div>`:`<input type="number" id="s1-${m.id}" class="score-input">`}
-                        </div>
-                        <div class="vs-badge">VS</div>
-                        <div class="team">
-                            <div class="team-name">${m.team2.name1}<br>& ${m.team2.name2}</div>
-                            <div style="font-size:12px;color:#0369a1;background:#e0f2fe;border-radius:4px;padding:1px 8px;display:inline-block;margin-top:4px;">Lv.${m.team2.totalLevel||'?'}</div>
-                            ${m.isFinished?`<div class="score-display ${m.score2>m.score1?'winner':''}">${m.score2}</div>`:`<input type="number" id="s2-${m.id}" class="score-input">`}
-                        </div>
+            
+            gamesList.forEach(game => {
+                const card = document.createElement('div');
+                card.className = 'game-card';
+                card.innerHTML = `
+                    <div>
+                        <h3>${game.name}</h3>
+                        <p class="game-date">建立時間: ${game.date}</p>
                     </div>
-                    <div class="match-footer">
-                        ${m.isFinished
-                            ? `<button style="background:white;color:var(--primary);border:1px solid var(--primary);" onclick="editMatch(${sch.id},'${m.id}')">修改分數</button>`
-                            : `<button style="width:100%;" onclick="saveScore(${sch.id},'${m.id}')">確認分數</button>`}
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button class="btn-primary" style="flex: 1; padding: 8px;" onclick="enterGame('${game.id}')">進入計分板</button>
+                        <button class="btn-danger" onclick="deleteGame('${game.id}', '${game.name}')">刪除</button>
+                    </div>
+                `;
+                listDiv.appendChild(card);
+            });
+        }
+
+        // 3. 儲存/更新 比賽列表 到 GitHub
+        async function saveGamesIndex(newList) {
+            const token = getRealToken();
+            const path = `json/${currentUser}/games_index.json`;
+            const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(newList, null, 2))));
+            
+            const body = {
+                message: `更新賽事清單: ${currentUser}`,
+                content: contentBase64
+            };
+            if (gamesIndexSha) body.sha = gamesIndexSha;
+
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                gamesIndexSha = data.content.sha; // 更新檔案的 SHA，以便下次修改
+                gamesList = newList;
+                renderGames();
+                return true;
+            }
+            return false;
+        }
+
+        // 4. 建立新比賽
+        async function createGame() {
+            const gameName = document.getElementById('newGameName').value.trim();
+            if(!gameName) return alert("⚠️ 請輸入比賽名稱！");
+            
+            const btn = document.getElementById('createGameBtn');
+            btn.disabled = true;
+            btn.innerText = "⏳ 建立中...";
+            
+            const newGame = {
+                id: Date.now().toString(),
+                name: gameName,
+                date: new Date().toLocaleString('zh-TW', { hour12: false })
+            };
+            
+            const newList = [newGame, ...gamesList];
+            const success = await saveGamesIndex(newList);
+            
+            if(success) {
+                // 新比賽 → play.html 設定球員與分組
+                window.location.href = `play.html?gameId=${newGame.id}`;
+            } else {
+                alert("❌ 建立失敗，請稍後再試。");
+                btn.disabled = false;
+                btn.innerText = "➕ 新增並進入計分板";
+            }
+        }
+
+        // 5. 刪除比賽
+        async function deleteGame(gameId, gameName) {
+            if(!confirm(`確定要刪除「${gameName}」的紀錄嗎？\n(注意：此動作無法復原！)`)) return;
+            
+            const newList = gamesList.filter(g => g.id !== gameId);
+            const success = await saveGamesIndex(newList);
+            
+            if(success) {
+                alert("✅ 已刪除比賽紀錄！");
+            } else {
+                alert("❌ 刪除失敗，請稍後再試。");
+            }
+        }
+
+        // 6. 進入比賽頁面
+        // 判斷順序：有 currentTeams → 賽程已安排，跳 gamestart
+        //           只有 players → 還在設定階段，跳 play 繼續
+        //           都沒有 → 新比賽，跳 play
+        function enterGame(gameId) {
+            const raw = localStorage.getItem(`badmintonData_${gameId}`);
+            if (raw) {
+                try {
+                    const d = JSON.parse(raw);
+                    const hasProgress = (d.schedules||[]).length > 0 || (d.currentTeams||[]).length > 0;
+                    const onlyPlayers = (d.players||[]).length > 0 && !hasProgress;
+                    if (onlyPlayers) {
+                        window.location.href = `play.html?gameId=${gameId}`;
+                        return;
+                    }
+                } catch(e) {}
+            }
+            // localStorage 空（換裝置）或有賽程資料 → 一律跳 gamestart 讓它從 GitHub 拉
+            window.location.href = `gamestart.html?gameId=${gameId}`;
+        }
+
+        // =============================================
+        // 常用選手管理
+        // =============================================
+        const FP_PATH = `json/${currentUser}/frequent_players.json`;
+
+        async function loadFrequentPlayers(force = false) {
+            const token = getRealToken();
+            if (!token) return;
+            const statusEl = document.getElementById('fpSyncStatus');
+
+            // 先從 localStorage 快速渲染
+            const cached = localStorage.getItem(`frequentPlayersData_${currentUser}`);
+            if (cached && !force) {
+                try { frequentPlayers = JSON.parse(cached); renderFpList(); } catch(e) {}
+            } else {
+                statusEl.innerText = '⏳ 雲端同步中...';
+            }
+
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FP_PATH}`, {
+                    headers: { 'Authorization': `Bearer ${getRealToken()}` }, cache: 'no-store'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    frequentPlayers = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+                    fpFileSha = data.sha;
+                    localStorage.setItem(`frequentPlayersData_${currentUser}`, JSON.stringify(frequentPlayers));
+                    statusEl.innerText = '✅ 已同步雲端';
+                } else if (res.status === 404) {
+                    frequentPlayers = [];
+                    statusEl.innerText = '✅ 尚未建立名冊';
+                } else {
+                    statusEl.innerText = '❌ 雲端讀取失敗';
+                }
+            } catch(e) {
+                statusEl.innerText = '❌ 網路錯誤，顯示本地快取';
+            }
+            renderFpList();
+        }
+
+        async function saveFpToGitHub(actionLabel = '儲存') {
+            const token = getRealToken();
+            if (!token) return false;
+            const statusEl = document.getElementById('fpSyncStatus');
+            statusEl.innerText = `⏳ ${actionLabel}同步中...`;
+
+            // 寫入前先取最新 SHA 防止 409
+            try {
+                const gr = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FP_PATH}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
+                });
+                if (gr.ok) fpFileSha = (await gr.json()).sha;
+            } catch(e) {}
+
+            const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(frequentPlayers, null, 2))));
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FP_PATH}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: '更新常用選手名單', content: base64, ...(fpFileSha && { sha: fpFileSha }) })
+                });
+                if (res.ok) {
+                    fpFileSha = (await res.json()).content.sha;
+                    localStorage.setItem(`frequentPlayersData_${currentUser}`, JSON.stringify(frequentPlayers));
+                    statusEl.innerText = `✅ 已${actionLabel}`;
+                    return true;
+                } else {
+                    statusEl.innerText = `❌ ${actionLabel}失敗`;
+                    return false;
+                }
+            } catch(e) {
+                statusEl.innerText = '❌ 網路錯誤';
+                return false;
+            }
+        }
+
+        function renderFpList() {
+            const list = document.getElementById('fpList');
+            if (frequentPlayers.length === 0) {
+                list.innerHTML = '<div class="fp-empty">尚無常用選手，請從上方新增或匯入 CSV 📋</div>';
+                return;
+            }
+            const levelOpts = Array.from({length: 18}, (_, i) => i + 1);
+            list.innerHTML = frequentPlayers.map(p => {
+                const sel = `<select class="level-select" onchange="updateFpLevel('${p.id}', this.value)">${levelOpts.map(l => `<option value="${l}"${p.level===l?' selected':''}>${l}</option>`).join('')}</select>`;
+                return `<div class="fp-item">
+                    <div>
+                        <div class="fp-name">${p.name}</div>
+                        <div class="fp-meta">${p.gender} · 實力 Lv.${p.level}</div>
+                    </div>
+                    <div class="fp-actions">
+                        ${sel}
+                        <button class="btn-sm-danger" onclick="removeFrequentPlayer('${p.id}')">刪除</button>
                     </div>
                 </div>`;
-            });
-            html += `</div></div></details>`;
-        });
-        wrapper.innerHTML = html;
-    }
+            }).join('');
+        }
 
-    function saveScore(schId, matchId) {
-        const s1=document.getElementById(`s1-${matchId}`).value, s2=document.getElementById(`s2-${matchId}`).value;
-        if(s1===''||s2==='') return;
-        const m=schedules.find(s=>s.id===schId).matches.find(x=>x.id===matchId);
-        m.score1=parseInt(s1); m.score2=parseInt(s2); m.isFinished=true;
-        renderAll(); saveStorage(); autoSync();
-    }
+        async function addFrequentPlayer() {
+            const name = document.getElementById('fpName').value.trim();
+            const gender = document.getElementById('fpGender').value;
+            const levelVal = document.getElementById('fpLevel').value;
+            if (!name || !levelVal) return alert('請填寫完整姓名與級數！');
+            if (frequentPlayers.some(p => p.name === name)) return alert('此選手已在常用名單中！');
+            frequentPlayers.push({ id: 'FP_' + Date.now() + Math.random(), name, gender, level: parseInt(levelVal) });
+            renderFpList();
+            document.getElementById('fpName').value = '';
+            document.getElementById('fpLevel').value = '';
+            document.getElementById('btnAddFp').disabled = true;
+            await saveFpToGitHub('新增');
+            document.getElementById('btnAddFp').disabled = false;
+        }
 
-    function editMatch(schId, matchId) {
-        schedules.find(s=>s.id===schId).matches.find(x=>x.id===matchId).isFinished=false;
-        renderAll(); saveStorage(); autoSync();
-    }
+        async function removeFrequentPlayer(id) {
+            if (!confirm('確定要移除此選手嗎？')) return;
+            frequentPlayers = frequentPlayers.filter(p => p.id !== id);
+            renderFpList();
+            await saveFpToGitHub('刪除');
+        }
 
-    function renderStandings() {
-        if (schedules.length===0) { document.getElementById('standingsArea').innerHTML=''; return; }
-        let stats={};
-        currentTeams.forEach(t => stats[t.id]={name:`${t.name1} & ${t.name2}`,win:0,loss:0,ptsFor:0,ptsAgainst:0});
-        schedules.forEach(sch => sch.matches.forEach(m => {
-            if(m.isFinished&&stats[m.team1.id]&&stats[m.team2.id]) {
-                stats[m.team1.id].ptsFor+=m.score1; stats[m.team1.id].ptsAgainst+=m.score2;
-                stats[m.team2.id].ptsFor+=m.score2; stats[m.team2.id].ptsAgainst+=m.score1;
-                if(m.score1>m.score2){stats[m.team1.id].win++;stats[m.team2.id].loss++;}
-                else if(m.score2>m.score1){stats[m.team2.id].win++;stats[m.team1.id].loss++;}
-            }
-        }));
-        const sorted=Object.values(stats).sort((a,b)=>{
-            if(b.win!==a.win) return b.win-a.win;
-            const da=a.ptsFor-a.ptsAgainst, db=b.ptsFor-b.ptsAgainst;
-            return db-da;
-        });
-        document.getElementById('standingsArea').innerHTML=`
-            <h3 style="color:var(--secondary);margin-bottom:10px;">📊 總戰績表 <span style="font-size:14px;font-weight:normal;">(結算至目前所有賽程)</span></h3>
-            <div style="overflow-x:auto;margin-bottom:25px;">
-            <table class="standings-table">
-                <thead><tr><th>名次</th><th>隊伍</th><th>勝</th><th>負</th><th>得分</th><th>失分</th><th>淨勝分</th></tr></thead>
-                <tbody>${sorted.map((s,i)=>{
-                    const diff=s.ptsFor-s.ptsAgainst;
-                    return `<tr>
-                        <td>${i+1}</td>
-                        <td style="text-align:left;">${s.name}</td>
-                        <td style="color:var(--primary);font-weight:bold;">${s.win}</td>
-                        <td style="color:var(--danger);font-weight:bold;">${s.loss}</td>
-                        <td style="color:var(--primary);">${s.ptsFor}</td>
-                        <td style="color:var(--danger);">${s.ptsAgainst}</td>
-                        <td style="color:${diff>=0?'var(--primary)':'var(--danger)'};font-weight:bold;">${diff>0?'+'+diff:diff}</td>
-                    </tr>`;
-                }).join('')}</tbody>
-            </table></div>`;
-    }
+        async function updateFpLevel(id, val) {
+            const p = frequentPlayers.find(p => p.id === id);
+            if (!p) return;
+            p.level = parseInt(val);
+            localStorage.setItem(`frequentPlayersData_${currentUser}`, JSON.stringify(frequentPlayers));
+            await saveFpToGitHub('級數更新');
+        }
 
-    // ── 靜默背景自動同步 ──
-    async function autoSync() {
-        const token=getRealToken(); if(!token) return;
-        isSyncing = true;
-        const statusEl=document.getElementById('syncStatus');
-        const path=`${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
-        const base64=btoa(unescape(encodeURIComponent(JSON.stringify({players,currentTeams,schedules,matchMode},null,2))));
-        statusEl.innerText='☁️ 同步中...';
-        try {
-            if (!fileSha) {
-                const gr=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,{headers:{'Authorization':`Bearer ${token}`},cache:'no-store'});
-                if(gr.ok) fileSha=(await gr.json()).sha;
-            }
-            const pr=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,{method:'PUT',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({message:`自動同步: ${currentUser}/game_${GAME_ID}`,content:base64,...(fileSha&&{sha:fileSha})})});
-            if(pr.ok) { fileSha=(await pr.json()).content.sha; statusEl.innerText='✅ 已自動同步'; setTimeout(()=>{ if(statusEl.innerText==='✅ 已自動同步') statusEl.innerText=''; },3000); }
-            else statusEl.innerText='⚠️ 自動同步失敗';
-        } catch(e) { statusEl.innerText='⚠️ 網路錯誤'; }
-        finally { isSyncing = false; }
-    }
-
-    // ── 手動雲端儲存（帶 alert） ──
-    async function syncToGitHub() {
-        const token=getRealToken(); if(!token) return alert("❌ Token 錯誤！");
-        const btn=document.getElementById('btnSync'); btn.innerText="⏳ 儲存中..."; btn.disabled=true;
-        const statusEl=document.getElementById('syncStatus');
-        const path=`${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
-        const base64=btoa(unescape(encodeURIComponent(JSON.stringify({players,currentTeams,schedules,matchMode},null,2))));
-        try {
-            if (!fileSha) {
-                const gr=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,{headers:{'Authorization':`Bearer ${token}`},cache:'no-store'});
-                if(gr.ok) fileSha=(await gr.json()).sha;
-            }
-            const pr=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,{method:'PUT',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({message:`更新賽程: ${currentUser}/game_${GAME_ID}`,content:base64,...(fileSha&&{sha:fileSha})})});
-            if(pr.ok) { fileSha=(await pr.json()).content.sha; statusEl.innerText='✅ 已儲存'; alert("✅ 已成功儲存至雲端！"); }
-            else alert("❌ 儲存失敗：" + (await pr.json()).message);
-        } catch(e) { alert("❌ 網路連線錯誤！"); }
-        btn.innerText="☁️ 儲存至雲端"; btn.disabled=false;
-    }
-    // ── 分享 Modal ──
-    function openShareModal() {
-        const base = window.location.href.split('?')[0].replace('gamestart.html','helper.html');
-        const url = `${base}?gameId=${GAME_ID}&user=${encodeURIComponent(currentUser)}`;
-        document.getElementById('shareUrl').value = url;
-
-        const qrDiv = document.getElementById('qrcode');
-        qrDiv.innerHTML = '';
-        new QRCode(qrDiv, { text: url, width: 200, height: 200, colorDark: '#0f766e', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
-
-        document.getElementById('shareModal').style.display = 'block';
-    }
-    function closeShareModal() { document.getElementById('shareModal').style.display = 'none'; }
-    window.addEventListener('click', e => { if(e.target===document.getElementById('shareModal')) closeShareModal(); });
-
-    function copyShareUrl() {
-        const input = document.getElementById('shareUrl');
-        navigator.clipboard.writeText(input.value).then(() => {
-            const btn = document.getElementById('btnCopy');
-            btn.innerText = '已複製 ✓'; btn.style.background = '#059669';
-            setTimeout(() => { btn.innerText = '複製'; btn.style.background = 'var(--secondary)'; }, 2000);
-        }).catch(() => { input.select(); document.execCommand('copy'); });
-    }
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+        function handleFpCsvImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async e => {
+                let count = 0;
+                for (const line of e.target.result.split(/\r?\n/)) {
+                    const cols = line.trim().split(',');
+                    if (cols.length < 3) continue;
+                    const name = cols[0].trim(), gender = cols[1].trim(), level = parseInt(cols[2].trim());
+                    if (isNaN(level)) continue;
+                    if (!frequentPlayers.some(p => p.name === name)) {
+                        frequentPlayers.push({ id: 'FP_' + Date.now() + Math.random(), name, gender, level });
+                        count++;
+                    }
+                }
+                if (count > 0) {
+                    renderFpList();
+                    await saveFpToGitHub(`批次匯入 ${count} 位`);
+                    alert(`✅ 成功匯入 ${count} 位選手！`);
+                } else {
+                    alert('ℹ️ 沒有匯入任何新選手（可能皆已存在名單中）');
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+    </script>
 </body>
 </html>
