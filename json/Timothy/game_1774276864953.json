@@ -47,6 +47,15 @@
       "name": "まや",
       "gender": "女",
       "level": 5
+    },
+    {
+      "id": 1774277648643.4956,
+      "name": "沛恩",
+      "gender": "男",
+      "level": 4
     }
-  ]
+  ],
+  "currentTeams": [],
+  "schedules": [],
+  "matchMode": "single"
 }
