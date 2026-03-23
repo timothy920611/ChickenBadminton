@@ -47,6 +47,12 @@
       "name": "陳雨菲",
       "gender": "男",
       "level": 17
+    },
+    {
+      "id": 1774281537554.1836,
+      "name": "小菜雞A",
+      "gender": "男",
+      "level": 8
     }
   ],
   "currentTeams": [],
@@ -58,6 +64,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-03-23T15:58:47.284Z",
+  "lastUpdated": "2026-03-23T15:58:58.148Z",
   "needsInitialSchedule": false
 }
