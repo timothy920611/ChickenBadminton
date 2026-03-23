@@ -297,14 +297,9 @@
             }
         }
 
-        // 6. 進入比賽頁面：舊比賽 → gamestart（直接看賽程），新比賽 → play（設定球員）
+        // 6. 進入比賽頁面：舊比賽 → gamestart，新比賽由 createGame 直接導向 play
         function enterGame(gameId) {
-            const d = localStorage.getItem(`badmintonData_${gameId}`);
-            let hasSchedules = false;
-            if (d) { try { const parsed = JSON.parse(d); hasSchedules = (parsed.schedules||[]).length > 0 || (parsed.currentTeams||[]).length > 0; } catch(e) {} }
-            window.location.href = hasSchedules
-                ? `gamestart.html?gameId=${gameId}`
-                : `play.html?gameId=${gameId}`;
+            window.location.href = `gamestart.html?gameId=${gameId}`;
         }
 
         // =============================================
