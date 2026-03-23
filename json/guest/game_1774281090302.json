@@ -35,6 +35,12 @@
       "name": "王齊麟",
       "gender": "男",
       "level": 11
+    },
+    {
+      "id": 1774281102098.9163,
+      "name": "安洗瑩",
+      "gender": "男",
+      "level": 8
     }
   ],
   "currentTeams": [],
@@ -46,6 +52,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-03-23T15:51:41.232Z",
+  "lastUpdated": "2026-03-23T15:51:42.451Z",
   "needsInitialSchedule": false
 }
