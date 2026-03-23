@@ -61,10 +61,28 @@
     <div class="toolbar">
         <button class="tool-btn" onclick="window.location.href='dashboard.html'" style="background-color:#4b5563;">◀ 回賽程管理</button>
         <span id="gameTitle" style="font-size:15px;font-weight:bold;color:var(--secondary);flex:1;text-align:center;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
-        <div style="display:flex;align-items:center;gap:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
             <span id="syncStatus" style="font-size:12px;color:var(--text-muted);white-space:nowrap;"></span>
-            <button class="tool-btn" id="btnSync" onclick="syncToGitHub(true)">☁️ 儲存至雲端</button>
+            <button class="tool-btn" onclick="openShareModal()" style="background-color:#8b5cf6;">🔗 邀請協助計分</button>
+            <button class="tool-btn" id="btnSync" onclick="syncToGitHub()">☁️ 儲存至雲端</button>
         </div>
+    </div>
+</div>
+
+<!-- 分享 Modal -->
+<div id="shareModal" style="display:none;position:fixed;z-index:2000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.55);">
+    <div style="background:#fff;margin:5% auto;padding:24px;border-radius:16px;width:95%;max-width:480px;box-shadow:0 8px 30px rgba(0,0,0,0.2);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+            <h3 style="font-size:18px;color:var(--secondary);">🔗 邀請朋友協助計分</h3>
+            <button onclick="closeShareModal()" style="background:none;border:none;font-size:26px;color:#aaa;cursor:pointer;padding:0;line-height:1;">&times;</button>
+        </div>
+        <p style="font-size:14px;color:var(--text-muted);margin-bottom:16px;">傳送連結或 QR Code 給朋友，對方不需要登入即可協助輸入比分。</p>
+        <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+            <input id="shareUrl" type="text" readonly style="flex:1;border:none;background:transparent;font-size:13px;color:var(--text-main);outline:none;min-width:0;">
+            <button onclick="copyShareUrl()" id="btnCopy" style="background:var(--secondary);color:white;padding:8px 14px;font-size:13px;border-radius:7px;white-space:nowrap;">複製</button>
+        </div>
+        <div id="qrcode" style="display:flex;justify-content:center;margin:16px 0;"></div>
+        <p style="font-size:12px;color:var(--text-muted);text-align:center;">⚠️ 持有此連結的人可以修改這場比賽的分數，請謹慎分享。</p>
     </div>
 </div>
 
@@ -335,6 +353,30 @@
         } catch(e) { alert("❌ 網路連線錯誤！"); }
         btn.innerText="☁️ 儲存至雲端"; btn.disabled=false;
     }
+    // ── 分享 Modal ──
+    function openShareModal() {
+        const base = window.location.href.split('?')[0].replace('gamestart.html','helper.html');
+        const url = `${base}?gameId=${GAME_ID}&user=${encodeURIComponent(currentUser)}`;
+        document.getElementById('shareUrl').value = url;
+
+        const qrDiv = document.getElementById('qrcode');
+        qrDiv.innerHTML = '';
+        new QRCode(qrDiv, { text: url, width: 200, height: 200, colorDark: '#0f766e', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+
+        document.getElementById('shareModal').style.display = 'block';
+    }
+    function closeShareModal() { document.getElementById('shareModal').style.display = 'none'; }
+    window.addEventListener('click', e => { if(e.target===document.getElementById('shareModal')) closeShareModal(); });
+
+    function copyShareUrl() {
+        const input = document.getElementById('shareUrl');
+        navigator.clipboard.writeText(input.value).then(() => {
+            const btn = document.getElementById('btnCopy');
+            btn.innerText = '已複製 ✓'; btn.style.background = '#059669';
+            setTimeout(() => { btn.innerText = '複製'; btn.style.background = 'var(--secondary)'; }, 2000);
+        }).catch(() => { input.select(); document.execCommand('copy'); });
+    }
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </body>
 </html>
