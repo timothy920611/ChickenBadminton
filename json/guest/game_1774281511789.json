@@ -11,6 +11,12 @@
       "name": "林書豪",
       "gender": "男",
       "level": 6
+    },
+    {
+      "id": 1774281519571.8752,
+      "name": "戴資穎",
+      "gender": "男",
+      "level": 7
     }
   ],
   "currentTeams": [],
@@ -22,6 +28,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-03-23T15:58:38.753Z",
+  "lastUpdated": "2026-03-23T15:58:40.142Z",
   "needsInitialSchedule": false
 }
