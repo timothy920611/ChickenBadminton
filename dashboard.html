@@ -139,6 +139,9 @@
 
         // 2. 將清單渲染到畫面上
         function renderGames() {
+            // 快取比賽清單到 localStorage，供 play.html 讀取比賽名稱
+            localStorage.setItem(`gamesIndex_${currentUser}`, JSON.stringify(gamesList));
+
             const listDiv = document.getElementById('gamesList');
             listDiv.innerHTML = '';
             
