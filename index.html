@@ -15,7 +15,7 @@
             --text-muted: #6b7280;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg); color: var(--text-main); display: flex; flex-direction: column; justify-content: flex-start; align-items: center; min-height: 100vh; padding: 24px 20px 40px; }
         .login-card { background-color: var(--card-bg); border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); text-align: center; }
         .logo { font-size: 48px; margin-bottom: 10px; }
         h1 { color: var(--secondary); font-size: 24px; margin-bottom: 5px; }
@@ -40,6 +40,19 @@
         .loading { color: #3b82f6; }
         
         .warning-text { font-size: 12px; color: #9ca3af; margin-top: 20px; line-height: 1.5; }
+
+        /* 使用說明 */
+        .guide { width: 100%; max-width: 480px; margin-top: 24px; }
+        .guide-title { font-size: 15px; font-weight: bold; color: var(--secondary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+        .guide-steps { display: flex; flex-direction: column; gap: 10px; }
+        .step { background: var(--card-bg); border-radius: 12px; padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .step-num { background: var(--primary); color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; flex-shrink: 0; margin-top: 1px; }
+        .step-body { flex: 1; }
+        .step-title { font-size: 14px; font-weight: bold; color: var(--text-main); margin-bottom: 3px; }
+        .step-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+        .step-tag { display: inline-block; font-size: 11px; background: #f0fdf4; color: var(--primary); border: 1px solid #bbf7d0; border-radius: 4px; padding: 1px 6px; margin-top: 5px; margin-right: 4px; }
+        .step-tag.purple { background: #faf5ff; color: #7c3aed; border-color: #ddd6fe; }
+        .step-tag.blue { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
     </style>
 </head>
 <body>
@@ -68,6 +81,72 @@
             * 註冊帳號可擁有獨立的賽程與常用選手紀錄。<br>
             * 密碼已啟用 SHA-256 單向加密保護。
         </p>
+    </div>
+
+    <!-- 使用說明 -->
+    <div class="guide">
+        <div class="guide-title">📖 使用說明</div>
+        <div class="guide-steps">
+
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-body">
+                    <div class="step-title">登入 / 註冊</div>
+                    <div class="step-desc">註冊帳號可擁有獨立的比賽紀錄與常用選手名冊；也可直接用訪客身分進入共用區體驗。</div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-body">
+                    <div class="step-title">建立比賽</div>
+                    <div class="step-desc">在賽程管理頁輸入比賽名稱（如「3/23 週末球局」）建立新賽事，每場比賽資料完全獨立。也可在此統一管理常用選手名冊，供下次快速加入。</div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-body">
+                    <div class="step-title">加入球員與分組</div>
+                    <div class="step-desc">新增球員（姓名、性別、實力級數 1–18），或從常用選手名冊勾選、CSV 批次匯入。完成名單後點「自動分組」，系統依實力均衡配對，再用拖曳手動微調隊伍。</div>
+                    <span class="step-tag">自動依實力均衡</span>
+                    <span class="step-tag">拖曳調整隊伍</span>
+                    <span class="step-tag">支援休息區</span>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-body">
+                    <div class="step-title">計分與賽程</div>
+                    <div class="step-desc">確認分組後進入計分頁，輸入每場比數即可自動更新戰績表（勝、負、得分、失分、淨勝分）。打完一輪可「同樣組合重打」，或重新分組再打一輪。</div>
+                    <span class="step-tag">單輪配對賽</span>
+                    <span class="step-tag">循環賽</span>
+                    <span class="step-tag">戰績自動排名</span>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">5</div>
+                <div class="step-body">
+                    <div class="step-title">邀請朋友協助計分</div>
+                    <div class="step-desc">計分頁點「🔗 邀請協助計分」，分享連結或 QR Code 給朋友。朋友不需登入即可輸入比分，雙方畫面每 10 秒自動同步。</div>
+                    <span class="step-tag purple">朋友無需登入</span>
+                    <span class="step-tag blue">10 秒自動同步</span>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">6</div>
+                <div class="step-body">
+                    <div class="step-title">雲端儲存與跨裝置</div>
+                    <div class="step-desc">每次確認分數時自動同步至雲端。換手機或其他裝置登入後，進入同一場比賽會自動載入雲端資料，不怕遺失。</div>
+                    <span class="step-tag">確認分數自動存雲端</span>
+                    <span class="step-tag blue">跨裝置同步</span>
+                </div>
+            </div>
+
+        </div>
     </div>
 
     <script>
