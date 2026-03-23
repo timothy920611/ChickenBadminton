@@ -59,7 +59,10 @@
     <div class="toolbar">
         <button class="tool-btn" onclick="window.location.href='dashboard.html'" style="background-color:#4b5563;">◀ 回賽程管理</button>
         <span id="gameTitle" style="font-size:15px;font-weight:bold;color:var(--secondary);flex:1;text-align:center;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
-        <button class="tool-btn" id="btnSync" onclick="syncToGitHub()">☁️ 儲存至雲端</button>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span id="syncStatus" style="font-size:12px;color:var(--text-muted);white-space:nowrap;"></span>
+            <button class="tool-btn" id="btnSync" onclick="syncToGitHub(true)">☁️ 儲存至雲端</button>
+        </div>
     </div>
 </div>
 
@@ -93,6 +96,7 @@
     const LS_KEY = `badmintonData_${GAME_ID}`;
 
     let players = [], currentTeams = [], schedules = [], matchMode = 'single';
+    let fileSha = null; // 快取 SHA，避免自動同步每次都多一次 GET
 
     function getStorage() { try { return JSON.parse(localStorage.getItem(LS_KEY)||'{}'); } catch(e) { return {}; } }
     function saveStorage() { localStorage.setItem(LS_KEY, JSON.stringify({ players, currentTeams, schedules, matchMode })); }
@@ -203,12 +207,12 @@
         if(s1===''||s2==='') return;
         const m=schedules.find(s=>s.id===schId).matches.find(x=>x.id===matchId);
         m.score1=parseInt(s1); m.score2=parseInt(s2); m.isFinished=true;
-        renderAll(); saveStorage();
+        renderAll(); saveStorage(); autoSync();
     }
 
     function editMatch(schId, matchId) {
         schedules.find(s=>s.id===schId).matches.find(x=>x.id===matchId).isFinished=false;
-        renderAll(); saveStorage();
+        renderAll(); saveStorage(); autoSync();
     }
 
     function renderStandings() {
@@ -226,18 +230,39 @@
         document.getElementById('standingsArea').innerHTML=`<h3 style="color:var(--secondary);margin-bottom:10px;">📊 總戰績表 <span style="font-size:14px;font-weight:normal;">(結算至目前所有賽程)</span></h3><div style="overflow-x:auto;margin-bottom:25px;"><table class="standings-table"><thead><tr><th>名次</th><th>隊伍</th><th>總勝</th><th>總負</th><th>淨勝分</th></tr></thead><tbody>${sorted.map((s,i)=>`<tr><td>${i+1}</td><td>${s.name}</td><td style="color:var(--primary);font-weight:bold;">${s.win}</td><td style="color:var(--danger);font-weight:bold;">${s.loss}</td><td style="color:${s.ptsDiff>=0?'var(--primary)':'var(--danger)'}">${s.ptsDiff>0?'+'+s.ptsDiff:s.ptsDiff}</td></tr>`).join('')}</tbody></table></div>`;
     }
 
-    // ── 雲端儲存 ──
+    // ── 靜默背景自動同步 ──
+    async function autoSync() {
+        const token=getRealToken(); if(!token) return;
+        const statusEl=document.getElementById('syncStatus');
+        const path=`${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
+        const base64=btoa(unescape(encodeURIComponent(JSON.stringify({players,currentTeams,schedules,matchMode},null,2))));
+        statusEl.innerText='☁️ 同步中...';
+        try {
+            if (!fileSha) {
+                const gr=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,{headers:{'Authorization':`Bearer ${token}`},cache:'no-store'});
+                if(gr.ok) fileSha=(await gr.json()).sha;
+            }
+            const pr=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,{method:'PUT',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({message:`自動同步: ${currentUser}/game_${GAME_ID}`,content:base64,...(fileSha&&{sha:fileSha})})});
+            if(pr.ok) { fileSha=(await pr.json()).content.sha; statusEl.innerText='✅ 已自動同步'; setTimeout(()=>{ if(statusEl.innerText==='✅ 已自動同步') statusEl.innerText=''; },3000); }
+            else statusEl.innerText='⚠️ 自動同步失敗';
+        } catch(e) { statusEl.innerText='⚠️ 網路錯誤'; }
+    }
+
+    // ── 手動雲端儲存（帶 alert） ──
     async function syncToGitHub() {
         const token=getRealToken(); if(!token) return alert("❌ Token 錯誤！");
         const btn=document.getElementById('btnSync'); btn.innerText="⏳ 儲存中..."; btn.disabled=true;
+        const statusEl=document.getElementById('syncStatus');
         const path=`${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
         const base64=btoa(unescape(encodeURIComponent(JSON.stringify({players,currentTeams,schedules,matchMode},null,2))));
         try {
-            let sha=null;
-            const gr=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,{headers:{'Authorization':`Bearer ${token}`},cache:'no-store'});
-            if(gr.ok) sha=(await gr.json()).sha;
-            const pr=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,{method:'PUT',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({message:`更新賽程: ${currentUser}/game_${GAME_ID}`,content:base64,...(sha&&{sha})})});
-            if(pr.ok) alert("✅ 已成功儲存至雲端！"); else alert("❌ 儲存失敗：" + (await pr.json()).message);
+            if (!fileSha) {
+                const gr=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,{headers:{'Authorization':`Bearer ${token}`},cache:'no-store'});
+                if(gr.ok) fileSha=(await gr.json()).sha;
+            }
+            const pr=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,{method:'PUT',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({message:`更新賽程: ${currentUser}/game_${GAME_ID}`,content:base64,...(fileSha&&{sha:fileSha})})});
+            if(pr.ok) { fileSha=(await pr.json()).content.sha; statusEl.innerText='✅ 已儲存'; alert("✅ 已成功儲存至雲端！"); }
+            else alert("❌ 儲存失敗：" + (await pr.json()).message);
         } catch(e) { alert("❌ 網路連線錯誤！"); }
         btn.innerText="☁️ 儲存至雲端"; btn.disabled=false;
     }
