@@ -93,13 +93,205 @@
       "totalLevel": 8
     }
   ],
-  "schedules": [],
+  "schedules": [
+    {
+      "id": 1,
+      "mode": "round-robin",
+      "matches": [
+        {
+          "id": "M_1_0",
+          "round": 1,
+          "team1": {
+            "id": "Team_1774279202995_1",
+            "name1": "Dani",
+            "name2": "Yuna",
+            "totalLevel": 10
+          },
+          "team2": {
+            "id": "Team_1774279202995_4",
+            "name1": "重運",
+            "name2": "沛恩",
+            "totalLevel": 8
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_1",
+          "round": 1,
+          "team1": {
+            "id": "Team_1774279202995_2",
+            "name1": "植敏",
+            "name2": "則宇",
+            "totalLevel": 9
+          },
+          "team2": {
+            "id": "Team_1774279202995_3",
+            "name1": "怡瑱",
+            "name2": "海薇",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_2",
+          "round": 2,
+          "team1": {
+            "id": "Team_1774279202995_0",
+            "name1": "慕華",
+            "name2": "まや",
+            "totalLevel": 12
+          },
+          "team2": {
+            "id": "Team_1774279202995_4",
+            "name1": "重運",
+            "name2": "沛恩",
+            "totalLevel": 8
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_3",
+          "round": 2,
+          "team1": {
+            "id": "Team_1774279202995_1",
+            "name1": "Dani",
+            "name2": "Yuna",
+            "totalLevel": 10
+          },
+          "team2": {
+            "id": "Team_1774279202995_2",
+            "name1": "植敏",
+            "name2": "則宇",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_4",
+          "round": 3,
+          "team1": {
+            "id": "Team_1774279202995_0",
+            "name1": "慕華",
+            "name2": "まや",
+            "totalLevel": 12
+          },
+          "team2": {
+            "id": "Team_1774279202995_3",
+            "name1": "怡瑱",
+            "name2": "海薇",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_5",
+          "round": 3,
+          "team1": {
+            "id": "Team_1774279202995_4",
+            "name1": "重運",
+            "name2": "沛恩",
+            "totalLevel": 8
+          },
+          "team2": {
+            "id": "Team_1774279202995_2",
+            "name1": "植敏",
+            "name2": "則宇",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_6",
+          "round": 4,
+          "team1": {
+            "id": "Team_1774279202995_0",
+            "name1": "慕華",
+            "name2": "まや",
+            "totalLevel": 12
+          },
+          "team2": {
+            "id": "Team_1774279202995_2",
+            "name1": "植敏",
+            "name2": "則宇",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_7",
+          "round": 4,
+          "team1": {
+            "id": "Team_1774279202995_3",
+            "name1": "怡瑱",
+            "name2": "海薇",
+            "totalLevel": 9
+          },
+          "team2": {
+            "id": "Team_1774279202995_1",
+            "name1": "Dani",
+            "name2": "Yuna",
+            "totalLevel": 10
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_8",
+          "round": 5,
+          "team1": {
+            "id": "Team_1774279202995_0",
+            "name1": "慕華",
+            "name2": "まや",
+            "totalLevel": 12
+          },
+          "team2": {
+            "id": "Team_1774279202995_1",
+            "name1": "Dani",
+            "name2": "Yuna",
+            "totalLevel": 10
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_9",
+          "round": 5,
+          "team1": {
+            "id": "Team_1774279202995_3",
+            "name1": "怡瑱",
+            "name2": "海薇",
+            "totalLevel": 9
+          },
+          "team2": {
+            "id": "Team_1774279202995_4",
+            "name1": "重運",
+            "name2": "沛恩",
+            "totalLevel": 8
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        }
+      ],
+      "restMsg": ""
+    }
+  ],
   "matchMode": "round-robin",
-  "pendingRestMsg": "",
-  "savedTeamDraft": [],
-  "savedDraftMode": "round-robin",
-  "savedDraftRestMsg": "",
-  "savedDraftRestPlayer": null,
-  "savedDraftUpdatedAt": "2026-03-23T15:21:25.827Z",
-  "lastUpdated": "2026-03-23T15:22:06.336Z"
+  "lastUpdated": "2026-03-23T15:22:07.731Z"
 }
