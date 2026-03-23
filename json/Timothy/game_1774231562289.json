@@ -114,9 +114,9 @@
             "name2": "王齊麟",
             "totalLevel": 18
           },
-          "score1": 21,
-          "score2": 1,
-          "isFinished": true
+          "score1": null,
+          "score2": null,
+          "isFinished": false
         },
         {
           "id": "M_1_2",
@@ -133,9 +133,9 @@
             "name2": "王齊麟",
             "totalLevel": 18
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 3,
+          "score2": 11,
+          "isFinished": true
         },
         {
           "id": "M_1_3",
