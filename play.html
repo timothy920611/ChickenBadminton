@@ -97,7 +97,33 @@
         .info-box { background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px; margin-bottom: 20px; border-radius: 4px; font-size: 14px; color: #1e3a8a; }
         .dev-btn { background-color: #64748b; font-size: 12px; padding: 6px 12px; margin-bottom: 5px; }
         
-        /* 戰績表 */
+        /* 手動調整分組 UI */
+        .team-editor { margin-bottom: 20px; }
+        .team-editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+        .team-editor-hint { font-size: 13px; color: var(--text-muted); background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 8px 12px; display: flex; align-items: center; gap: 6px; }
+        .teams-drag-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+        .team-slot { border: 2px dashed #d1d5db; border-radius: 10px; padding: 10px; min-height: 90px; background: #f9fafb; transition: all 0.2s; }
+        .team-slot.drag-over { border-color: var(--primary); background: #ecfdf5; box-shadow: 0 0 0 3px rgba(5,150,105,0.15); }
+        .team-slot-label { font-size: 12px; font-weight: bold; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .team-slot-players { display: flex; flex-direction: column; gap: 6px; min-height: 50px; }
+        .drag-player { background: white; border: 1px solid #e5e7eb; border-radius: 7px; padding: 8px 10px; cursor: grab; display: flex; justify-content: space-between; align-items: center; user-select: none; transition: all 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+        .drag-player:active { cursor: grabbing; opacity: 0.7; transform: scale(0.97); }
+        .drag-player.dragging { opacity: 0.4; border-style: dashed; }
+        .drag-player-name { font-weight: bold; font-size: 15px; color: var(--text-main); }
+        .drag-player-info { font-size: 12px; color: var(--text-muted); }
+        .drag-player.drag-over-card { border: 2px dashed var(--primary); background: #ecfdf5; box-shadow: 0 0 0 3px rgba(5,150,105,0.15); transform: scale(1.03); }
+        .bench-drop-target { border: 2px dashed #f59e0b; border-radius: 7px; padding: 8px 10px; min-height: 42px; display: flex; align-items: center; justify-content: center; color: #d97706; font-size: 13px; }
+        .bench-drop-target.drag-over-card { background: #fef3c7; border-color: #d97706; }
+
+        .bench-slot .team-slot-label { color: #d97706; }
+        .team-editor-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+        .btn-confirm-teams { background-color: #3b82f6; color: white; padding: 12px 20px; font-size: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; flex: 1; }
+        .btn-confirm-teams:hover { background-color: #2563eb; }
+        .btn-confirm-rr { background-color: var(--warning); color: white; padding: 12px 20px; font-size: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; flex: 1; }
+        .btn-confirm-rr:hover { background-color: #d97706; }
+        .btn-cancel-edit { background-color: transparent; color: var(--text-muted); border: 1px solid #d1d5db; padding: 12px 20px; font-size: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-cancel-edit:hover { background-color: #f3f4f6; }
+
         .standings-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .standings-table th, .standings-table td { padding: 12px; border: 1px solid #e5e7eb; text-align: center; }
         .standings-table th { background-color: var(--secondary); color: white; font-weight: bold; white-space: nowrap; }
@@ -205,6 +231,23 @@
             <button class="btn-mode-2" onclick="generateSchedule('round-robin')">
                 🏆 產生「新組合」循環賽<br><span style="font-size: 12px; font-weight: normal;">(清除紀錄，重新分隊打循環)</span>
             </button>
+        </div>
+
+        <!-- 手動調整分組區塊 -->
+        <div id="teamEditorContainer" style="display: none; margin-bottom: 25px;">
+            <div style="border-top: 2px dashed #e5e7eb; margin: 5px 0 18px 0;"></div>
+            <div class="team-editor">
+                <div class="team-editor-header">
+                    <h3 style="font-size: 16px; color: var(--secondary);">✏️ 手動調整分組</h3>
+                    <span class="team-editor-hint">💡 拖曳球員卡片到其他隊伍格子來交換位置</span>
+                </div>
+                <div class="teams-drag-grid" id="teamsDragGrid"></div>
+                <div class="team-editor-actions">
+                    <button class="btn-confirm-teams" onclick="confirmTeamsAndGenerate('single')">✅ 確認分組 → 產生單輪賽事</button>
+                    <button class="btn-confirm-rr" onclick="confirmTeamsAndGenerate('round-robin')">🏆 確認分組 → 產生循環賽</button>
+                    <button class="btn-cancel-edit" onclick="cancelTeamEdit()">✕ 取消調整</button>
+                </div>
+            </div>
         </div>
 
         <!-- 同樣組合重打按鈕 -->
@@ -755,27 +798,197 @@
                 }
             }
 
-            matchMode = mode; 
-            schedules = []; 
+            // 先自動分組，進入手動調整模式
+            pendingMatchMode = mode;
+            schedules = [];
             currentTeams = [];
 
             let currentPlayers = [...players].sort(() => Math.random() - 0.5).sort((a, b) => b.level - a.level);
-            let restPlayersMsg = "";
+            pendingRestPlayer = null;
             if (currentPlayers.length % 2 !== 0) {
-                let rp = currentPlayers.splice(Math.floor(currentPlayers.length / 2), 1)[0];
-                restPlayersMsg = `單數球員：<strong>${rp.name}</strong> (本輪休息)`;
+                pendingRestPlayer = currentPlayers.splice(Math.floor(currentPlayers.length / 2), 1)[0];
             }
 
+            pendingTeams = [];
             for (let i = 0; i < currentPlayers.length / 2; i++) {
-                currentTeams.push({ 
-                    id: `Team_${Date.now()}_${i}`, 
-                    name1: currentPlayers[i].name, 
-                    name2: currentPlayers[currentPlayers.length - 1 - i].name, 
-                    totalLevel: currentPlayers[i].level + currentPlayers[currentPlayers.length - 1 - i].level 
+                pendingTeams.push({
+                    id: `Team_${Date.now()}_${i}`,
+                    p1: currentPlayers[i],
+                    p2: currentPlayers[currentPlayers.length - 1 - i]
                 });
             }
 
-            generateMatchesForCurrentTeams(restPlayersMsg);
+            openTeamEditor();
+        }
+
+        // ==========================================
+        // 手動調整分組邏輯
+        // ==========================================
+        let pendingTeams = [];       // 暫存隊伍 [{id, p1, p2}]
+        let pendingRestPlayer = null; // 暫存休息球員
+        let pendingMatchMode = 'single';
+        let dragSrcInfo = null;      // { teamId, slot: 'p1'|'p2'|'bench' }
+
+        function openTeamEditor() {
+            document.getElementById('teamEditorContainer').style.display = 'block';
+            document.getElementById('rematchContainer').style.display = 'none';
+            document.getElementById('standingsArea').innerHTML = '';
+            document.getElementById('schedulesWrapper').innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">確認分組後才會產生賽程。</div>`;
+            renderTeamEditor();
+        }
+
+        function cancelTeamEdit() {
+            document.getElementById('teamEditorContainer').style.display = 'none';
+            pendingTeams = [];
+            pendingRestPlayer = null;
+        }
+
+        function renderTeamEditor() {
+            const grid = document.getElementById('teamsDragGrid');
+            let html = '';
+
+            pendingTeams.forEach((team, idx) => {
+                html += `
+                <div class="team-slot" id="slot-team-${team.id}">
+                    <div class="team-slot-label" style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>隊伍 ${idx + 1}</span>
+                        <span style="font-size:12px; background:#e0f2fe; color:#0369a1; border-radius:4px; padding:1px 7px; font-weight:bold;">Lv.${(team.p1?.level||0)+(team.p2?.level||0)}</span>
+                    </div>
+                    <div class="team-slot-players">
+                        ${renderDragPlayer(team.p1, team.id, 'p1')}
+                        ${renderDragPlayer(team.p2, team.id, 'p2')}
+                    </div>
+                </div>`;
+            });
+
+            // 休息區
+            const benchInner = pendingRestPlayer
+                ? renderDragPlayer(pendingRestPlayer, 'bench', 'bench')
+                : `<div class="bench-drop-target" id="bench-empty-target"
+                        ondragover="onCardDragOver(event)"
+                        ondragleave="onCardDragLeave(event)"
+                        ondrop="onCardDrop(event, 'bench', 'bench')">拖曳到此休息</div>`;
+
+            html += `
+            <div class="team-slot bench-slot" id="slot-bench">
+                <div class="team-slot-label">😴 休息區</div>
+                <div class="team-slot-players">${benchInner}</div>
+            </div>`;
+
+            grid.innerHTML = html;
+
+            // 綁定拖曳事件到所有球員卡片
+            grid.querySelectorAll('.drag-player').forEach(el => {
+                el.addEventListener('dragstart', onDragStart);
+                el.addEventListener('dragend', onDragEnd);
+                el.addEventListener('dragover', onCardDragOver);
+                el.addEventListener('dragleave', onCardDragLeave);
+                el.addEventListener('drop', (e) => {
+                    const dstTeamId = el.dataset.teamId;
+                    const dstSlot = el.dataset.slot;
+                    onCardDrop(e, dstTeamId, dstSlot);
+                });
+            });
+        }
+
+        function renderDragPlayer(player, teamId, slot) {
+            if (!player) return '';
+            return `<div class="drag-player" draggable="true"
+                data-player-id="${player.id}"
+                data-team-id="${teamId}"
+                data-slot="${slot}">
+                <div>
+                    <div class="drag-player-name">${player.name}</div>
+                    <div class="drag-player-info">${player.gender} · Lv.${player.level}</div>
+                </div>
+                <span style="font-size:18px; color:#9ca3af; cursor:grab;">⠿</span>
+            </div>`;
+        }
+
+        function onDragStart(e) {
+            const el = e.currentTarget;
+            dragSrcInfo = {
+                playerId: el.dataset.playerId,
+                teamId: el.dataset.teamId,
+                slot: el.dataset.slot
+            };
+            el.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function onDragEnd(e) {
+            e.currentTarget.classList.remove('dragging');
+            document.querySelectorAll('.drag-over-card').forEach(s => s.classList.remove('drag-over-card'));
+        }
+
+        function onCardDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = 'move';
+            e.currentTarget.classList.add('drag-over-card');
+        }
+
+        function onCardDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over-card');
+        }
+
+        function onCardDrop(e, dstTeamId, dstSlot) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.classList.remove('drag-over-card');
+            if (!dragSrcInfo) return;
+
+            const srcTeamId = dragSrcInfo.teamId;
+            const srcSlot = dragSrcInfo.slot;
+            if (srcTeamId === dstTeamId && srcSlot === dstSlot) return; // 拖到自己，不動
+
+            const isSrcBench = srcTeamId === 'bench';
+            const isDstBench = dstTeamId === 'bench';
+
+            // 取得來源與目標球員
+            const srcPlayer = isSrcBench
+                ? pendingRestPlayer
+                : (pendingTeams.find(t => t.id === srcTeamId) || {})[srcSlot];
+            const dstPlayer = isDstBench
+                ? pendingRestPlayer
+                : (pendingTeams.find(t => t.id === dstTeamId) || {})[dstSlot];
+
+            if (!srcPlayer) return;
+
+            // 互換
+            if (isSrcBench) pendingRestPlayer = dstPlayer || null;
+            else { const st = pendingTeams.find(t => t.id === srcTeamId); if (st) st[srcSlot] = dstPlayer || null; }
+
+            if (isDstBench) pendingRestPlayer = srcPlayer;
+            else { const dt = pendingTeams.find(t => t.id === dstTeamId); if (dt) dt[dstSlot] = srcPlayer; }
+
+            dragSrcInfo = null;
+            renderTeamEditor();
+        }
+
+        function confirmTeamsAndGenerate(mode) {
+            matchMode = mode;
+            pendingMatchMode = mode;
+
+            // 把 pendingTeams 轉成 currentTeams 格式
+            currentTeams = pendingTeams
+                .filter(t => t.p1 && t.p2)
+                .map(t => ({
+                    id: t.id,
+                    name1: t.p1.name,
+                    name2: t.p2.name,
+                    totalLevel: t.p1.level + t.p2.level
+                }));
+
+            const restMsg = pendingRestPlayer
+                ? `單數球員：<strong>${pendingRestPlayer.name}</strong> (本輪休息)`
+                : "";
+
+            document.getElementById('teamEditorContainer').style.display = 'none';
+            pendingTeams = [];
+            pendingRestPlayer = null;
+
+            generateMatchesForCurrentTeams(restMsg);
         }
 
         function generateRematch() {
@@ -833,7 +1046,8 @@
 
         function updateRematchUI() {
             const container = document.getElementById('rematchContainer');
-            if (schedules.length > 0 && currentTeams.length > 0) {
+            const editorOpen = document.getElementById('teamEditorContainer').style.display !== 'none';
+            if (schedules.length > 0 && currentTeams.length > 0 && !editorOpen) {
                 container.style.display = 'block';
                 document.getElementById('nextScheduleNum').innerText = schedules.length + 1;
             } else {
@@ -873,11 +1087,15 @@
                         <div class="match-card">
                             <div class="match-header">${sch.mode === 'single' ? '場次 ' + (mIndex+1) : '第 ' + m.round + ' 輪'}</div>
                             <div class="match-body">
-                                <div class="team"><div class="team-name">${m.team1.name1}<br>& ${m.team1.name2}</div>
+                                <div class="team">
+                                    <div class="team-name">${m.team1.name1}<br>& ${m.team1.name2}</div>
+                                    <div style="font-size:12px; color:#0369a1; background:#e0f2fe; border-radius:4px; padding:1px 8px; display:inline-block; margin-top:4px;">Lv.${m.team1.totalLevel||'?'}</div>
                                     ${m.isFinished ? `<div class="score-display ${m.score1 > m.score2 ? 'winner' : ''}">${m.score1}</div>` : `<input type="number" id="s1-${m.id}" class="score-input">`}
                                 </div>
                                 <div class="vs-badge">VS</div>
-                                <div class="team"><div class="team-name">${m.team2.name1}<br>& ${m.team2.name2}</div>
+                                <div class="team">
+                                    <div class="team-name">${m.team2.name1}<br>& ${m.team2.name2}</div>
+                                    <div style="font-size:12px; color:#0369a1; background:#e0f2fe; border-radius:4px; padding:1px 8px; display:inline-block; margin-top:4px;">Lv.${m.team2.totalLevel||'?'}</div>
                                     ${m.isFinished ? `<div class="score-display ${m.score2 > m.score1 ? 'winner' : ''}">${m.score2}</div>` : `<input type="number" id="s2-${m.id}" class="score-input">`}
                                 </div>
                             </div>
