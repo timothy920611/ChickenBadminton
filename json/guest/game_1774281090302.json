@@ -49,15 +49,40 @@
       "level": 8
     }
   ],
-  "currentTeams": [],
+  "currentTeams": [
+    {
+      "id": "Team_1774281112860_0",
+      "name1": "李洋",
+      "name2": "林書豪",
+      "totalLevel": 14
+    },
+    {
+      "id": "Team_1774281112860_1",
+      "name1": "大谷",
+      "name2": "周天成",
+      "totalLevel": 15
+    },
+    {
+      "id": "Team_1774281112860_2",
+      "name1": "王齊麟",
+      "name2": "安洗瑩",
+      "totalLevel": 19
+    },
+    {
+      "id": "Team_1774281112860_3",
+      "name1": "戴資穎",
+      "name2": "陳雨菲",
+      "totalLevel": 17
+    }
+  ],
   "schedules": [],
-  "matchMode": "single",
+  "matchMode": "round-robin",
   "pendingRestMsg": "",
   "savedTeamDraft": [],
   "savedDraftMode": "",
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-03-23T15:51:43.549Z",
-  "needsInitialSchedule": false
+  "lastUpdated": "2026-03-23T15:51:56.094Z",
+  "needsInitialSchedule": true
 }
