@@ -48,6 +48,26 @@
         .game-card h3 { font-size: 18px; color: var(--text-main); margin-bottom: 8px; }
         .game-date { font-size: 13px; color: var(--text-muted); }
         .empty-state { grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-muted); background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db; }
+
+        /* 常用選手管理 */
+        select { padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 15px; outline: none; background: white; cursor: pointer; }
+        select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(5,150,105,0.2); }
+        .fp-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+        .fp-sync-status { font-size: 12px; color: var(--text-muted); }
+        .fp-add-form { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; padding: 16px; background: #f8fafc; border-radius: 10px; border: 1px solid #e5e7eb; }
+        .fp-add-form input { flex: 1; min-width: 120px; padding: 10px 12px; }
+        .fp-list { border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; max-height: 420px; overflow-y: auto; }
+        .fp-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f3f4f6; gap: 10px; flex-wrap: wrap; }
+        .fp-item:last-child { border-bottom: none; }
+        .fp-item:hover { background: #f8fafc; }
+        .fp-name { font-weight: bold; font-size: 16px; color: var(--text-main); }
+        .fp-meta { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+        .fp-actions { display: flex; align-items: center; gap: 8px; }
+        .level-select { padding: 5px 8px; font-size: 14px; border-radius: 6px; border: 1px solid #d1d5db; }
+        .btn-sm-danger { background-color: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 6px 12px; font-size: 13px; border-radius: 6px; }
+        .btn-sm-danger:hover { background-color: #fef2f2; }
+        .btn-sm { padding: 8px 14px; font-size: 14px; }
+        .fp-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
     </style>
 </head>
 <body>
@@ -74,8 +94,43 @@
     <div class="card">
         <h2>📂 過去的比賽紀錄</h2>
         <div class="games-grid" id="gamesList">
-            <!-- 比賽卡片會動態載入到這裡 -->
             <p style="color: #6b7280; padding: 20px;">⏳ 讀取賽事清單中...</p>
+        </div>
+    </div>
+
+    <!-- 常用選手管理 -->
+    <input type="file" id="fpCsvInput" accept=".csv" style="display:none;" onchange="handleFpCsvImport(event)">
+    <div class="card">
+        <h2>👥 常用選手名冊</h2>
+
+        <!-- 新增表單 -->
+        <div class="fp-add-form">
+            <input type="text" id="fpName" placeholder="球員姓名" style="flex:2; min-width:120px;">
+            <select id="fpGender"><option value="男">男</option><option value="女">女</option></select>
+            <select id="fpLevel" style="min-width:130px;">
+                <option value="" disabled selected>實力級數</option>
+                <option value="1">1 (新手)</option><option value="2">2</option><option value="3">3</option>
+                <option value="4">4 (初階)</option><option value="5">5</option><option value="6">6 (初中)</option>
+                <option value="7">7</option><option value="8">8 (中階)</option><option value="9">9</option>
+                <option value="10">10 (中進)</option><option value="11">11</option><option value="12">12</option>
+                <option value="13">13 (高階)</option><option value="14">14</option><option value="15">15</option>
+                <option value="16">16 (職業)</option><option value="17">17</option><option value="18">18</option>
+            </select>
+            <button class="btn-primary btn-sm" id="btnAddFp" onclick="addFrequentPlayer()">➕ 新增</button>
+        </div>
+
+        <!-- 工具列 -->
+        <div class="fp-toolbar">
+            <span class="fp-sync-status" id="fpSyncStatus"></span>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn-primary btn-sm" style="background-color:#8b5cf6;" onclick="document.getElementById('fpCsvInput').click()">📁 CSV 匯入</button>
+                <button class="btn-primary btn-sm" style="background-color:var(--secondary);" onclick="loadFrequentPlayers(true)">🔄 從雲端重新載入</button>
+            </div>
+        </div>
+
+        <!-- 名單 -->
+        <div class="fp-list" id="fpList">
+            <div class="fp-empty">⏳ 載入中...</div>
         </div>
     </div>
 
@@ -96,10 +151,15 @@
         let gamesIndexSha = null;
         let gamesList = [];
 
+        // 常用選手狀態
+        let frequentPlayers = [];
+        let fpFileSha = null;
+
         // 初始化
         window.onload = () => {
             document.getElementById('displayUser').innerText = currentUser === 'guest' ? '訪客 (共用區)' : currentUser;
             loadGames();
+            loadFrequentPlayers();
         };
 
         // 登出
@@ -204,19 +264,18 @@
             btn.disabled = true;
             btn.innerText = "⏳ 建立中...";
             
-            // 產生唯一 ID (用時間戳記)
             const newGame = {
                 id: Date.now().toString(),
                 name: gameName,
                 date: new Date().toLocaleString('zh-TW', { hour12: false })
             };
             
-            // 將新比賽加到清單最前面
             const newList = [newGame, ...gamesList];
             const success = await saveGamesIndex(newList);
             
             if(success) {
-                enterGame(newGame.id); // 成功後直接進入計分板
+                // 新比賽 → play.html 設定球員與分組
+                window.location.href = `play.html?gameId=${newGame.id}`;
             } else {
                 alert("❌ 建立失敗，請稍後再試。");
                 btn.disabled = false;
@@ -232,17 +291,176 @@
             const success = await saveGamesIndex(newList);
             
             if(success) {
-                // 這裡未來可以加一段邏輯：同步刪除 GitHub 上該場比賽的 JSON 檔案
                 alert("✅ 已刪除比賽紀錄！");
             } else {
                 alert("❌ 刪除失敗，請稍後再試。");
             }
         }
 
-        // 6. 進入計分板頁面
+        // 6. 進入比賽頁面：舊比賽 → gamestart（直接看賽程），新比賽 → play（設定球員）
         function enterGame(gameId) {
-            // 透過網址參數將 gameId 傳遞給 play.html
-            window.location.href = `play.html?gameId=${gameId}`;
+            const d = localStorage.getItem(`badmintonData_${gameId}`);
+            let hasSchedules = false;
+            if (d) { try { const parsed = JSON.parse(d); hasSchedules = (parsed.schedules||[]).length > 0 || (parsed.currentTeams||[]).length > 0; } catch(e) {} }
+            window.location.href = hasSchedules
+                ? `gamestart.html?gameId=${gameId}`
+                : `play.html?gameId=${gameId}`;
+        }
+
+        // =============================================
+        // 常用選手管理
+        // =============================================
+        const FP_PATH = 'json/frequent_players.json';
+
+        async function loadFrequentPlayers(force = false) {
+            const token = getRealToken();
+            if (!token) return;
+            const statusEl = document.getElementById('fpSyncStatus');
+
+            // 先從 localStorage 快速渲染
+            const cached = localStorage.getItem('frequentPlayersData');
+            if (cached && !force) {
+                try { frequentPlayers = JSON.parse(cached); renderFpList(); } catch(e) {}
+            } else {
+                statusEl.innerText = '⏳ 雲端同步中...';
+            }
+
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FP_PATH}`, {
+                    headers: { 'Authorization': `Bearer ${getRealToken()}` }, cache: 'no-store'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    frequentPlayers = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+                    fpFileSha = data.sha;
+                    localStorage.setItem('frequentPlayersData', JSON.stringify(frequentPlayers));
+                    statusEl.innerText = '✅ 已同步雲端';
+                } else if (res.status === 404) {
+                    frequentPlayers = [];
+                    statusEl.innerText = '✅ 尚未建立名冊';
+                } else {
+                    statusEl.innerText = '❌ 雲端讀取失敗';
+                }
+            } catch(e) {
+                statusEl.innerText = '❌ 網路錯誤，顯示本地快取';
+            }
+            renderFpList();
+        }
+
+        async function saveFpToGitHub(actionLabel = '儲存') {
+            const token = getRealToken();
+            if (!token) return false;
+            const statusEl = document.getElementById('fpSyncStatus');
+            statusEl.innerText = `⏳ ${actionLabel}同步中...`;
+
+            // 寫入前先取最新 SHA 防止 409
+            try {
+                const gr = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FP_PATH}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
+                });
+                if (gr.ok) fpFileSha = (await gr.json()).sha;
+            } catch(e) {}
+
+            const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(frequentPlayers, null, 2))));
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FP_PATH}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: '更新常用選手名單', content: base64, ...(fpFileSha && { sha: fpFileSha }) })
+                });
+                if (res.ok) {
+                    fpFileSha = (await res.json()).content.sha;
+                    localStorage.setItem('frequentPlayersData', JSON.stringify(frequentPlayers));
+                    statusEl.innerText = `✅ 已${actionLabel}`;
+                    return true;
+                } else {
+                    statusEl.innerText = `❌ ${actionLabel}失敗`;
+                    return false;
+                }
+            } catch(e) {
+                statusEl.innerText = '❌ 網路錯誤';
+                return false;
+            }
+        }
+
+        function renderFpList() {
+            const list = document.getElementById('fpList');
+            if (frequentPlayers.length === 0) {
+                list.innerHTML = '<div class="fp-empty">尚無常用選手，請從上方新增或匯入 CSV 📋</div>';
+                return;
+            }
+            const levelOpts = Array.from({length: 18}, (_, i) => i + 1);
+            list.innerHTML = frequentPlayers.map(p => {
+                const sel = `<select class="level-select" onchange="updateFpLevel('${p.id}', this.value)">${levelOpts.map(l => `<option value="${l}"${p.level===l?' selected':''}>${l}</option>`).join('')}</select>`;
+                return `<div class="fp-item">
+                    <div>
+                        <div class="fp-name">${p.name}</div>
+                        <div class="fp-meta">${p.gender} · 實力 Lv.${p.level}</div>
+                    </div>
+                    <div class="fp-actions">
+                        ${sel}
+                        <button class="btn-sm-danger" onclick="removeFrequentPlayer('${p.id}')">刪除</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function addFrequentPlayer() {
+            const name = document.getElementById('fpName').value.trim();
+            const gender = document.getElementById('fpGender').value;
+            const levelVal = document.getElementById('fpLevel').value;
+            if (!name || !levelVal) return alert('請填寫完整姓名與級數！');
+            if (frequentPlayers.some(p => p.name === name)) return alert('此選手已在常用名單中！');
+            frequentPlayers.push({ id: 'FP_' + Date.now() + Math.random(), name, gender, level: parseInt(levelVal) });
+            renderFpList();
+            document.getElementById('fpName').value = '';
+            document.getElementById('fpLevel').value = '';
+            document.getElementById('btnAddFp').disabled = true;
+            await saveFpToGitHub('新增');
+            document.getElementById('btnAddFp').disabled = false;
+        }
+
+        async function removeFrequentPlayer(id) {
+            if (!confirm('確定要移除此選手嗎？')) return;
+            frequentPlayers = frequentPlayers.filter(p => p.id !== id);
+            renderFpList();
+            await saveFpToGitHub('刪除');
+        }
+
+        async function updateFpLevel(id, val) {
+            const p = frequentPlayers.find(p => p.id === id);
+            if (!p) return;
+            p.level = parseInt(val);
+            localStorage.setItem('frequentPlayersData', JSON.stringify(frequentPlayers));
+            await saveFpToGitHub('級數更新');
+        }
+
+        function handleFpCsvImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async e => {
+                let count = 0;
+                for (const line of e.target.result.split(/\r?\n/)) {
+                    const cols = line.trim().split(',');
+                    if (cols.length < 3) continue;
+                    const name = cols[0].trim(), gender = cols[1].trim(), level = parseInt(cols[2].trim());
+                    if (isNaN(level)) continue;
+                    if (!frequentPlayers.some(p => p.name === name)) {
+                        frequentPlayers.push({ id: 'FP_' + Date.now() + Math.random(), name, gender, level });
+                        count++;
+                    }
+                }
+                if (count > 0) {
+                    renderFpList();
+                    await saveFpToGitHub(`批次匯入 ${count} 位`);
+                    alert(`✅ 成功匯入 ${count} 位選手！`);
+                } else {
+                    alert('ℹ️ 沒有匯入任何新選手（可能皆已存在名單中）');
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
         }
     </script>
 </body>
