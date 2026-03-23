@@ -5,9 +5,14 @@
       "name": "大谷",
       "gender": "男",
       "level": 8
+    },
+    {
+      "id": 1774279451159.0613,
+      "name": "林書豪",
+      "gender": "男",
+      "level": 1
     }
   ],
-  "lastUpdated": "2026-03-23T15:24:09.997Z",
   "currentTeams": [],
   "schedules": [],
   "matchMode": "single",
@@ -16,5 +21,6 @@
   "savedDraftMode": "",
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
-  "savedDraftUpdatedAt": null
+  "savedDraftUpdatedAt": null,
+  "lastUpdated": "2026-03-23T15:24:11.944Z"
 }
