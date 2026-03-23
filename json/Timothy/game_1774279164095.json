@@ -92,8 +92,8 @@
         "level": 6
       },
       "p2": {
-        "id": 1774279182770.0862,
-        "name": "海薇",
+        "id": 1774279182770.1882,
+        "name": "Yuna",
         "gender": "女",
         "level": 4
       }
@@ -108,8 +108,8 @@
         "level": 5
       },
       "p2": {
-        "id": 1774279182770.1882,
-        "name": "Yuna",
+        "id": 1774279182770.2686,
+        "name": "則宇",
         "gender": "女",
         "level": 4
       }
@@ -124,9 +124,9 @@
         "level": 5
       },
       "p2": {
-        "id": 1774279182770.0244,
-        "name": "重運",
-        "gender": "男",
+        "id": 1774279182770.0862,
+        "name": "海薇",
+        "gender": "女",
         "level": 4
       }
     },
@@ -134,9 +134,9 @@
       "id": "Team_1774279202995_4",
       "mode": "round-robin",
       "p1": {
-        "id": 1774279182770.2686,
-        "name": "則宇",
-        "gender": "女",
+        "id": 1774279182770.0244,
+        "name": "重運",
+        "gender": "男",
         "level": 4
       },
       "p2": {
@@ -150,6 +150,6 @@
   "savedDraftMode": "round-robin",
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
-  "savedDraftUpdatedAt": "2026-03-23T15:20:33.393Z",
-  "lastUpdated": "2026-03-23T15:20:33.881Z"
+  "savedDraftUpdatedAt": "2026-03-23T15:21:25.827Z",
+  "lastUpdated": "2026-03-23T15:21:26.396Z"
 }
