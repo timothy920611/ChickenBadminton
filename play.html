@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏸 羽球雙打賽程與計分系統 (雲端同步版)</title>
+    <title>🏸 羽球雙打賽程與計分系統</title>
     <style>
         /* CSS 變數與基礎設定 */
         :root {
@@ -19,104 +19,145 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg); color: var(--text-main); padding: 20px; max-width: 1200px; margin: 0 auto; }
-        
-        /* 頂部導覽列 */
-        .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background-color: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .nav-left { display: flex; align-items: center; gap: 15px; }
-        .nav-right { display: flex; align-items: center; gap: 15px; font-size: 14px; font-weight: bold; }
-        .back-btn { background-color: #e5e7eb; color: #4b5563; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; transition: 0.2s; border: none; cursor: pointer; }
-        .back-btn:hover { background-color: #d1d5db; }
-        
-        h1 { color: var(--secondary); font-size: 24px; margin: 0; }
+        h1 { text-align: center; color: var(--secondary); margin-bottom: 10px; font-size: 28px; }
         h2 { font-size: 20px; margin-bottom: 15px; color: var(--primary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-
         .card { background-color: var(--card-bg); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        
-        /* 表單與按鈕 */
-        .form-group { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        .form-group { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
         input, select, button { padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; outline: none; }
         input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2); }
-        
         button { background-color: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; transition: all 0.2s; }
         button:hover { background-color: var(--primary-hover); }
         button:disabled { background-color: #9ca3af; cursor: not-allowed; }
         .btn-danger { background-color: var(--danger); padding: 6px 12px; font-size: 14px; }
         .btn-danger:hover { background-color: #dc2626; }
-        .btn-secondary { background-color: #64748b; color: white; }
-        .btn-secondary:hover { background-color: #475569; }
-        .btn-outline { background-color: transparent; color: var(--primary); border: 1px solid var(--primary); }
-        .btn-outline:hover { background-color: #f0fdf4; }
-
-        /* 常用球員區塊 */
-        .frequent-pool { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed #e5e7eb; }
-        .frequent-pool-title { font-size: 14px; color: var(--text-muted); margin-bottom: 10px; font-weight: bold; display: flex; justify-content: space-between; }
-        .fp-chip { display: inline-flex; align-items: center; background: #e0f2fe; color: #0369a1; padding: 6px 12px; border-radius: 999px; font-size: 14px; margin-right: 8px; margin-bottom: 8px; cursor: pointer; border: 1px solid #bae6fd; transition: 0.2s; }
-        .fp-chip:hover:not(.disabled) { background: #bae6fd; }
-        .fp-chip.disabled { background: #f3f4f6; color: #9ca3af; border-color: #e5e7eb; cursor: not-allowed; }
-        .fp-remove { margin-left: 8px; color: #7dd3fc; font-weight: bold; padding: 0 4px; border-radius: 50%; }
-        .fp-remove:hover { color: #0284c7; background: rgba(0,0,0,0.05); }
+        
+        /* 浮動置頂工具列 */
+        .toolbar-container {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: rgba(243, 244, 246, 0.95);
+            backdrop-filter: blur(4px);
+            padding: 12px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #d1d5db;
+            box-shadow: 0 4px 6px -6px rgba(0,0,0,0.1);
+        }
+        .toolbar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            gap: 10px; 
+            flex-wrap: wrap; 
+        }
+        .tool-btn { background-color: var(--secondary); font-size: 15px; padding: 10px 16px; border-radius: 8px; color: white; cursor: pointer; border: none; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .tool-btn:hover { filter: brightness(1.1); }
 
         /* 玩家列表區塊 */
         .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
         .player-tag { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
         .player-info { display: flex; flex-direction: column; font-size: 14px; }
         .player-name { font-weight: bold; font-size: 16px; color: var(--secondary); }
-
-        /* 賽程與計分區塊 */
-        .round-container { border: 2px solid #e5e7eb; border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
-        .round-header { background-color: #f1f5f9; padding: 12px 20px; font-weight: bold; color: var(--secondary); display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e5e7eb; }
-        .rest-players { font-size: 14px; color: var(--text-muted); font-weight: normal; }
-        .matches-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 0; }
-        .match-card { padding: 16px; border-bottom: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; background: #fafafa; display: flex; flex-direction: column; }
-        .match-body { display: flex; justify-content: space-between; align-items: center; flex: 1; margin-bottom: 10px; }
-        .team { flex: 1; text-align: center; }
-        .team-name { font-weight: bold; font-size: 15px; margin-bottom: 4px; line-height: 1.4; }
-        .team-level { font-size: 12px; color: var(--text-muted); background: #e2e8f0; padding: 2px 8px; border-radius: 999px; display: inline-block; }
-        .vs-badge { background: var(--warning); color: white; font-weight: bold; padding: 4px 8px; border-radius: 8px; margin: 0 12px; font-size: 14px; }
-        .score-input { width: 60px; text-align: center; font-size: 20px; font-weight: bold; padding: 4px; }
-        .score-display { font-size: 28px; font-weight: bold; }
-        .winner { color: var(--danger); }
-        .match-footer { text-align: center; margin-top: auto; }
-
-        /* 戰績表 */
-        .standings-table { width: 100%; border-collapse: collapse; text-align: left; }
-        .standings-table th, .standings-table td { padding: 12px; border-bottom: 1px solid #e5e7eb; }
-        .standings-table th { background-color: #f8fafc; color: var(--text-muted); font-weight: bold; }
         
-        #globalLoader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; justify-content: center; align-items: center; z-index: 1000; flex-direction: column; gap: 10px; font-size: 18px; font-weight: bold; color: var(--primary); }
+        /* 進度條 */
+        .progress-container { width: 100%; background-color: #e5e7eb; border-radius: 999px; height: 8px; margin-top: 8px; overflow: hidden; }
+        .progress-bar { height: 100%; background-color: var(--primary); transition: width 0.3s ease; }
+        
+        /* 賽程區塊 */
+        .mode-buttons { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn-mode-1 { flex: 1; background-color: #3b82f6; padding: 15px; font-size: 16px; }
+        .btn-mode-1:hover { background-color: #2563eb; }
+        .btn-mode-2 { flex: 1; background-color: var(--warning); color: #fff; padding: 15px; font-size: 16px; }
+        .btn-mode-2:hover { background-color: #d97706; }
+        .btn-rematch { background-color: #10b981; color: white; padding: 14px; font-size: 16px; width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); }
+        .btn-rematch:hover { background-color: #059669; }
+
+        /* 摺疊式賽程 UI */
+        .schedule-details { background: #fff; border: 2px solid #e5e7eb; border-radius: 12px; margin-bottom: 20px; overflow: hidden; transition: all 0.3s ease; }
+        .schedule-details[open] { border-color: var(--secondary); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .schedule-summary { background: #f1f5f9; color: var(--secondary); padding: 16px 20px; font-size: 18px; font-weight: bold; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid transparent; }
+        .schedule-details[open] .schedule-summary { background: var(--secondary); color: white; border-bottom: 1px solid var(--secondary); }
+        .schedule-summary::-webkit-details-marker { display: none; }
+        .schedule-summary::after { content: '▼'; font-size: 14px; transition: transform 0.3s; }
+        .schedule-details[open] .schedule-summary::after { transform: rotate(180deg); }
+        .schedule-content { padding: 20px; background: #fafafa; }
+        
+        .round-header { grid-column: 1 / -1; background: #cbd5e1; color: #334155; padding: 8px 15px; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 10px; text-align: center; }
+        .matches-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .match-card { border: 2px solid #e5e7eb; border-radius: 12px; background: #ffffff; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
+        .match-header { background: #f1f5f9; padding: 8px; text-align: center; font-weight: bold; color: var(--text-muted); border-bottom: 1px solid #e5e7eb; }
+        .match-body { padding: 16px; display: flex; justify-content: space-between; align-items: center; flex: 1; }
+        .team { flex: 1; text-align: center; }
+        .team-name { font-weight: bold; font-size: 16px; margin-bottom: 4px; line-height: 1.4; }
+        .vs-badge { background: var(--text-muted); color: white; font-weight: bold; padding: 4px 8px; border-radius: 8px; margin: 0 12px; font-size: 14px; }
+        .score-input { width: 60px; text-align: center; font-size: 20px; font-weight: bold; margin-top: 12px; padding: 4px; }
+        .score-display { font-size: 28px; font-weight: bold; margin-top: 8px; }
+        .winner { color: var(--danger); }
+        .match-footer { padding: 12px; background: #fff; border-top: 1px solid #e5e7eb; text-align: center; }
+        .info-box { background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px; margin-bottom: 20px; border-radius: 4px; font-size: 14px; color: #1e3a8a; }
+        .dev-btn { background-color: #64748b; font-size: 12px; padding: 6px 12px; margin-bottom: 5px; }
+        
+        /* 戰績表 */
+        .standings-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .standings-table th, .standings-table td { padding: 12px; border: 1px solid #e5e7eb; text-align: center; }
+        .standings-table th { background-color: var(--secondary); color: white; font-weight: bold; white-space: nowrap; }
+        .standings-table tr:nth-child(even) { background-color: #f8fafc; }
+        .standings-table tr:hover { background-color: #f1f5f9; }
+
+        /* 常用選手 UI */
+        .fp-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #f3f4f6; flex-wrap: wrap; gap: 10px; }
+        .fp-item:hover { background-color: #f8fafc; }
+        .fp-label { display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer; user-select: none; min-width: 150px; }
+        .fp-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
+        .level-select { padding: 4px 8px; font-size: 14px; border-radius: 6px; border: 1px solid #d1d5db; background-color: #fff; cursor: pointer; outline: none; }
+        .level-select:focus { border-color: var(--primary); }
+
+        /* 分級說明 Modal 樣式 */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border-radius: 12px; width: 95%; max-width: 850px; max-height: 85vh; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
+        .modal-title { font-size: 20px; color: var(--secondary); font-weight: bold; }
+        .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; background: none; border: none; padding: 0; }
+        .close-btn:hover { color: #333; background: none; }
+        .level-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .level-table th, .level-table td { border: 1px solid #e5e7eb; padding: 10px; text-align: left; vertical-align: top; }
+        .level-table th { background-color: #f8fafc; color: var(--secondary); white-space: nowrap; text-align: center; }
+        .level-table tr:nth-child(even) { background-color: #f9fafb; }
     </style>
 </head>
 <body>
 
-    <!-- 載入中遮罩 -->
-    <div id="globalLoader">
-        <div style="font-size: 40px;">🏸</div>
-        讀取賽事資料中...
-    </div>
+    <!-- 隱藏的 CSV 檔案上傳輸入框 -->
+    <input type="file" id="csvInput" accept=".csv" style="display: none;" onchange="handleCSVImport(event)">
 
-    <!-- 頂部導覽 -->
-    <div class="top-nav">
-        <div class="nav-left">
-            <button class="back-btn" onclick="window.location.href='dashboard.html'">← 返回面板</button>
-            <h1>羽球雙打計分板</h1>
-        </div>
-        <div class="nav-right" id="saveStatus">
-            <!-- 儲存狀態顯示區 -->
+    <h1>🏸 羽球雙打賽程與計分系統</h1>
+
+    <!-- 浮動置頂的工具列 -->
+    <div class="toolbar-container">
+        <div class="toolbar">
+            <button class="tool-btn" onclick="window.location.href='dashboard.html'" style="background-color: #4b5563;">◀ 回賽程管理</button>
+            <span id="gameTitle" style="font-size: 15px; font-weight: bold; color: var(--secondary); flex: 1; text-align: center; padding: 0 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
+            <button class="tool-btn" id="btnSync" onclick="syncToGitHub()" style="background-color: var(--primary);">☁️ 儲存至雲端</button>
         </div>
     </div>
 
-    <!-- 1. 球員管理區塊 -->
+    <!-- 新增球員區塊 -->
     <div class="card">
         <h2>
-            <span>1. 參賽球員名單 <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">(已加入：<span id="playerCount">0</span>人)</span></span>
-            <div style="display: flex; gap: 8px;">
-                <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleCSVImport(event)">
-                <button class="btn-secondary" style="padding: 6px 12px; font-size: 14px;" onclick="document.getElementById('csvFileInput').click()">📄 匯入 CSV</button>
-                <button class="btn-outline" style="padding: 6px 12px; font-size: 14px;" onclick="generateMockPlayers()">🤖 測試假資料</button>
-            </div>
+            1. 球員名單 
+            <span style="font-size: 14px; font-weight: normal; color: var(--text-muted); display: flex; align-items: center; flex-wrap: wrap; gap: 5px;">
+                <span>已加入：<span id="playerCount">0</span> / 20</span>
+                <button class="dev-btn" onclick="generateMockPlayers()" style="margin-left: 10px;">快速加入測試假資料</button>
+                <button class="dev-btn" onclick="triggerCSVImport('current')" style="background-color: #8b5cf6;">📁 匯入本次名單 (CSV)</button>
+                <button class="dev-btn" onclick="openFrequentPlayersModal()" style="background-color: #0ea5e9;">👥 選擇常用選手</button>
+            </span>
         </h2>
         
-        <!-- 手動新增球員 -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+        </div>
+        <br>
+
         <div class="form-group">
             <input type="text" id="playerName" placeholder="球員姓名" required style="flex: 1; min-width: 120px;">
             <select id="playerGender">
@@ -124,298 +165,217 @@
                 <option value="女">女</option>
             </select>
             <select id="playerLevel">
-                <option value="" disabled selected>實力級數 (1弱 ~ 10強)</option>
-                <option value="1">1 (新手)</option>
+                <option value="" disabled selected>實力級數 (1弱 ~ 18強)</option>
+                <option value="1">1 (新手階)</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5 (中階)</option>
-                <option value="6">6</option>
+                <option value="4">4 (初階)</option>
+                <option value="5">5</option>
+                <option value="6">6 (初中階)</option>
                 <option value="7">7</option>
-                <option value="8">8</option>
+                <option value="8">8 (中階)</option>
                 <option value="9">9</option>
-                <option value="10">10 (高手)</option>
+                <option value="10">10 (中進階)</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="13">13 (高階)</option>
+                <option value="14">14</option>
+                <option value="15">15</option>
+                <option value="16">16 (職業級)</option>
+                <option value="17">17</option>
+                <option value="18">18</option>
             </select>
+            <button type="button" onclick="openLevelModal()" style="background-color: var(--secondary); padding: 10px 14px; display: flex; align-items: center; gap: 5px;">
+                ℹ️ <span>分級說明</span>
+            </button>
             <button id="addBtn" onclick="addPlayer()">加入球員</button>
         </div>
 
-        <!-- 常用球員庫 -->
-        <div class="frequent-pool" id="frequentPoolArea" style="display: none;">
-            <div class="frequent-pool-title">
-                <span>⭐ 常用球員庫 (點擊快速加入)：</span>
-                <span style="cursor: pointer; font-weight: normal;" onclick="clearFrequentPlayers()">清空紀錄</span>
-            </div>
-            <div id="frequentList">
-                <!-- 常用球員按鈕動態產生 -->
-            </div>
-        </div>
-
-        <!-- 當前名單 -->
-        <div class="player-grid" id="playerList">
-            <!-- 球員卡片動態產生 -->
-        </div>
+        <div class="player-grid" id="playerList"></div>
     </div>
 
-    <!-- 2. 賽程安排與計分 -->
+    <!-- 賽程安排區塊 -->
     <div class="card">
-        <h2>2. 賽程安排與計分</h2>
-        <button onclick="generateSchedule()" style="width: 100%; margin-bottom: 20px; padding: 15px; font-size: 18px;">
-            🎲 智能安排下一輪賽程
-        </button>
+        <h2>2. 賽程安排</h2>
         
-        <div id="allRoundsArea">
-            <div style="text-align: center; color: var(--text-muted); padding: 40px;">
-                尚未產生賽程。請確認至少有 4 位球員在名單中。
+        <div class="mode-buttons">
+            <button class="btn-mode-1" onclick="generateSchedule('single')">
+                🎲 產生「新組合」單輪賽事<br><span style="font-size: 12px; font-weight: normal;">(清除紀錄，重新打亂配對)</span>
+            </button>
+            <button class="btn-mode-2" onclick="generateSchedule('round-robin')">
+                🏆 產生「新組合」循環賽<br><span style="font-size: 12px; font-weight: normal;">(清除紀錄，重新分隊打循環)</span>
+            </button>
+        </div>
+
+        <!-- 同樣組合重打按鈕 -->
+        <div id="rematchContainer" style="display: none; margin-bottom: 25px;">
+            <div style="border-top: 2px dashed #e5e7eb; margin: 15px 0;"></div>
+            <button class="btn-rematch" onclick="generateRematch()">
+                🔄 保留目前戰績：原班人馬「同樣組合重打」 (新增賽程 <span id="nextScheduleNum"></span>)
+            </button>
+        </div>
+        
+        <div id="standingsArea"></div>
+        <div id="schedulesWrapper">
+            <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px;">
+                尚未產生賽程。請確認至少有 4 位球員在名單中，並選擇上方模式。
             </div>
         </div>
     </div>
 
-    <!-- 3. 戰績統計 -->
-    <div class="card" id="standingsCard" style="display: none;">
-        <!-- 戰績表動態產生 -->
-        <div id="standingsArea"></div>
+    <!-- 常用選手 Modal -->
+    <div id="frequentPlayersModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">👥 選擇常用選手</div>
+                <button class="close-btn" onclick="closeFrequentPlayersModal()">&times;</button>
+            </div>
+            
+            <div style="text-align: right; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <span id="fpSyncStatus" style="font-size: 12px; color: var(--text-muted);"></span>
+                <div>
+                    <button class="dev-btn" onclick="triggerCSVImport('frequent')" style="background-color: #8b5cf6; margin-left: 5px;">📁 批次匯入 (CSV)</button>
+                    <button class="dev-btn" onclick="fetchFrequentPlayers(true)" style="background-color: var(--secondary); margin-left: 5px;">🔄 從雲端重新載入</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px; max-height: 40vh; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px;" id="frequentPlayersList">
+                <div style="padding: 20px; text-align: center; color: var(--text-muted);">載入中...</div>
+            </div>
+
+            <div style="border-top: 1px solid #e5e7eb; padding-top: 15px; margin-top: 15px;">
+                <h3 style="font-size: 15px; margin-bottom: 10px; color: var(--secondary);">➕ 新增單一常用選手 (將同步至 GitHub)</h3>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <input type="text" id="fpName" placeholder="姓名" style="flex: 1; min-width: 80px;">
+                    <select id="fpGender">
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                    </select>
+                    <select id="fpLevel" style="max-width: 100px;">
+                        <option value="" disabled selected>級數</option>
+                        <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+                        <option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option>
+                        <option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                        <option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option>
+                        <option value="17">17</option><option value="18">18</option>
+                    </select>
+                    <button onclick="addFrequentPlayer()" id="btnAddFp" style="background-color: var(--secondary);">儲存</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                <button onclick="addSelectedFrequentPlayers()" style="background-color: var(--primary); width: 100%; padding: 12px; font-size: 16px; border-radius: 8px;">
+                    ✅ 將勾選的選手加入本次賽程
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分級說明 Modal -->
+    <div id="levelModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🏸 台灣羽球推廣協會羽球程度分級制度</div>
+                <button class="close-btn" onclick="closeLevelModal()">&times;</button>
+            </div>
+            <!-- 分級表格省略，保持與之前相同 -->
+            <table class="level-table">
+                <thead><tr><th width="60">級數</th><th width="160">比賽階級</th><th>程度說明</th></tr></thead>
+                <tbody>
+                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">1</td><td rowspan="3" style="background-color: #bbf7d0; text-align: center; vertical-align: middle;"><div style="font-size: 20px; font-weight: bold; color: #166534;">新手階</div></td><td>剛接觸羽球學會比賽規則，並懂得比賽禮儀</td></tr>
+                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">2</td><td>在中場距離中高球來回10拍，發球有一半以上成功率</td></tr>
+                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">3</td><td>定點有一半可以打到2/3場後，發球有九成以上成功率</td></tr>
+                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">4</td><td rowspan="2" style="background-color: #fbcfe8; text-align: center; vertical-align: middle;"><div style="font-size: 20px; font-weight: bold; color: #831843;">初階</div></td><td>清楚正確握拍法。長球男生定點可以打到後場，女生可以打到中後場</td></tr>
+                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">5</td><td>清楚正確握拍法，略懂基本腳步，基本球路有一定的表現</td></tr>
+                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">6</td><td rowspan="2" style="background-color: #fed7aa; text-align: center; vertical-align: middle;"><div style="font-size: 20px; font-weight: bold; color: #9a3412;">初中階</div></td><td>懂基本輪轉，已開始會殺球及切球，移動長球可至中後場</td></tr>
+                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">7</td><td>殺切長球穩定性七成以上。已有基本防守能力。</td></tr>
+                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">8</td><td rowspan="2" style="background-color: #fef08a; text-align: center; vertical-align: middle;"><div style="font-size: 20px; font-weight: bold; color: #854d0e;">中階</div></td><td>有基本戰略及打點，熟悉輪轉，防守有些微變化。</td></tr>
+                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">9</td><td>切殺長吊有九成準確性及質量，防守有一定程度的變化。</td></tr>
+                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">10</td><td rowspan="3" style="background-color: #bae6fd; text-align: center; vertical-align: middle;"><div style="font-size: 20px; font-weight: bold; color: #075985;">中進階</div></td><td>輪轉概念熟念並能活化運用，策略性戰略皆能有效得分</td></tr>
+                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">11</td><td>發力及速度兼具，輕鬆完成反拍各種球路。防守具威脅性。</td></tr>
+                    <tr><td style="text-align: center; font-weight: bold; font-size: 18px;">12</td><td>有高速度移位及靈敏步法，殺切吊都具高強度侵略性</td></tr>
+                    <tr><td style="text-align: center; font-weight: bold; font-size: 16px;">13-15</td><td style="text-align: center; vertical-align: middle;"><div style="font-size: 20px; font-weight: bold;">高階</div></td><td style="vertical-align: middle;">各種球路都穩定熟練，防守無死角、球速快質量高</td></tr>
+                    <tr><td style="text-align: center; font-weight: bold; font-size: 16px; background-color: #000; color: #fff;">16-18</td><td style="background-color: #000; color: #fff; text-align: center; vertical-align: middle;"><div style="font-size: 20px; font-weight: bold;">職業級</div></td><td style="background-color: #000; color: #fff; vertical-align: middle;">球路、戰術已爐火純青，且發展出個人獨特風格</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
         // ==========================================
-        // 🔒 GitHub API 與系統變數設定
+        // ☁️ 雲端設定區：防禦型 Token 混淆機制
         // ==========================================
         const GITHUB_OWNER = 'timothy920611';   
         const GITHUB_REPO = 'ChickenBadminton'; 
+        const GITHUB_FOLDER = 'json';           
+
         const NOISE = "5d5502d0e27ded4a977810d55f13e615c201fe6f7e1c0ff57641e034d75e2b2f";
         const OBFUSCATED_TOKEN = "Z2l0aHViX3BhdF8xMUI0TlFKR0EwUWJlSVdIcDRLeVdUX3RMbHJFSXVLMFdzWVF3Y2" + NOISE + "9LbEd5SFN1cXl6Z3dUQ04xTHdNSHJ0cndIWkdIQ1MzRUVOVG9XR1p5RTFC";
         
-        function getRealToken() { try { return atob(OBFUSCATED_TOKEN.replace(NOISE, "")); } catch (e) { return null; } }
+        function getRealToken() {
+            try { return atob(OBFUSCATED_TOKEN.replace(NOISE, "")); } 
+            catch (e) { return null; }
+        }
+        // ==========================================
 
-        // 系統與雲端狀態
-        const currentUser = localStorage.getItem('badminton_currentUser') || 'guest';
+        // 從 URL 讀取 gameId 與使用者資訊
         const urlParams = new URLSearchParams(window.location.search);
-        const gameId = urlParams.get('gameId');
-        
-        // 常用球員 LocalStorage Key
-        const LOCAL_FP_KEY = `badminton_frequentPlayers_${currentUser}`;
+        const GAME_ID = urlParams.get('gameId') || 'default';
+        const currentUser = localStorage.getItem('badminton_currentUser') || 'guest';
+        const LOCAL_STORAGE_KEY = `badmintonData_${GAME_ID}`;
 
-        let fileSha = null;
-        let isSaving = false;
+        // 初始化時顯示比賽名稱
+        function initGameTitle() {
+            const gamesIndexStr = localStorage.getItem(`gamesIndex_${currentUser}`);
+            let gameName = '';
+            if (gamesIndexStr) {
+                try {
+                    const index = JSON.parse(gamesIndexStr);
+                    const found = index.find(g => g.id === GAME_ID);
+                    if (found) gameName = found.name;
+                } catch(e) {}
+            }
+            const titleEl = document.getElementById('gameTitle');
+            if (titleEl) titleEl.innerText = gameName ? `🏸 ${gameName}` : '';
+        }
 
-        // 核心遊戲資料結構
+        const MAX_PLAYERS = 20;
         let players = [];
-        let frequentPlayers = []; // 常用球員庫
-        let rounds = []; 
-        let matchHistory = {
-            partners: {},  
-            opponents: {}  
-        };
+        let currentTeams = []; 
+        let matchMode = 'single'; 
+        let schedules = [];
 
-        // ==========================================
-        // 🚀 初始化與資料讀取
-        // ==========================================
-        window.onload = () => {
-            if (!gameId) {
-                alert("⚠️ 無法取得比賽 ID，請從「我的賽程管理」進入！");
-                window.location.href = 'dashboard.html';
-                return;
-            }
-            loadFrequentPlayers(); // 載入常用名單
-            loadGameData();        // 載入當前比賽
-        };
+        // 常用選手狀態
+        let frequentPlayers = []; 
+        let fpFileSha = null;
+        let hasFetchedFp = false;
+        let csvImportTarget = 'current';
 
-        // 讀取常用球員庫 (跨比賽共用)
-        function loadFrequentPlayers() {
-            const stored = localStorage.getItem(LOCAL_FP_KEY);
-            if (stored) {
-                frequentPlayers = JSON.parse(stored);
-            }
-            updateFrequentPlayersUI();
-        }
-
-        // 將球員加入常用庫
-        function addToFrequent(name, gender, level) {
-            if (!frequentPlayers.some(p => p.name === name)) {
-                frequentPlayers.push({ name, gender, level });
-                localStorage.setItem(LOCAL_FP_KEY, JSON.stringify(frequentPlayers));
-                updateFrequentPlayersUI();
+        // Modal 視窗控制
+        function openLevelModal() { document.getElementById('levelModal').style.display = 'block'; }
+        function closeLevelModal() { document.getElementById('levelModal').style.display = 'none'; }
+        
+        function openFrequentPlayersModal() { 
+            document.getElementById('frequentPlayersModal').style.display = 'block'; 
+            loadFrequentPlayersLocally(); // 先嘗試從本地載入讓畫面瞬間出現
+            renderFrequentPlayersList();
+            if (!hasFetchedFp) {
+                fetchFrequentPlayers(); // 背景拉取雲端最新資料
             }
         }
+        function closeFrequentPlayersModal() { document.getElementById('frequentPlayersModal').style.display = 'none'; }
 
-        // 從常用庫移除
-        function removeFrequent(event, name) {
-            event.stopPropagation(); // 避免觸發加入事件
-            frequentPlayers = frequentPlayers.filter(p => p.name !== name);
-            localStorage.setItem(LOCAL_FP_KEY, JSON.stringify(frequentPlayers));
-            updateFrequentPlayersUI();
+        window.onclick = function(event) {
+            const modal = document.getElementById('levelModal');
+            const fpModal = document.getElementById('frequentPlayersModal');
+            if (event.target == modal) modal.style.display = 'none';
+            if (event.target == fpModal) fpModal.style.display = 'none';
         }
 
-        // 清空常用庫
-        function clearFrequentPlayers() {
-            if(!confirm("確定要清空所有常用球員紀錄嗎？")) return;
-            frequentPlayers = [];
-            localStorage.removeItem(LOCAL_FP_KEY);
-            updateFrequentPlayersUI();
-        }
-
-        // 讀取雲端比賽資料
-        async function loadGameData() {
-            const token = getRealToken();
-            const path = `json/${currentUser}/games/${gameId}.json`;
-            
-            try {
-                const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    cache: 'no-store'
-                });
-                
-                if (res.ok) {
-                    const data = await res.json();
-                    fileSha = data.sha;
-                    const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-                    
-                    players = content.players || [];
-                    rounds = content.rounds || [];
-                    matchHistory = content.matchHistory || { partners: {}, opponents: {} };
-                } else if (res.status === 404) {
-                    await saveGameData(true);
-                }
-            } catch(e) {
-                console.error(e);
-                alert("❌ 讀取資料失敗，請檢查網路連線！");
-            }
-            
-            document.getElementById('globalLoader').style.display = 'none';
-            updatePlayerUI();
-            updateFrequentPlayersUI(); // 更新常用名單的按鈕狀態 (已加入則反灰)
-            renderAllRounds();
-            updateStandings();
-        }
-
-        // 儲存資料至雲端
-        async function saveGameData(isInitial = false) {
-            if(isSaving) return;
-            isSaving = true;
-            
-            const statusEl = document.getElementById('saveStatus');
-            statusEl.innerHTML = '<span style="color:#3b82f6;">⏳ 儲存中...</span>';
-
-            const token = getRealToken();
-            const path = `json/${currentUser}/games/${gameId}.json`;
-            
-            const payload = { players, rounds, matchHistory, lastUpdated: new Date().toISOString() };
-            const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
-            const body = { message: `更新比賽狀態: ${gameId}`, content: contentBase64 };
-            if (fileSha) body.sha = fileSha;
-
-            try {
-                const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    fileSha = data.content.sha;
-                    statusEl.innerHTML = '<span style="color:#10b981;">✅ 已儲存至雲端</span>';
-                } else {
-                    statusEl.innerHTML = '<span style="color:#ef4444;">❌ 儲存失敗</span>';
-                }
-            } catch (e) {
-                statusEl.innerHTML = '<span style="color:#ef4444;">❌ 連線錯誤</span>';
-            }
-            
-            isSaving = false;
-            setTimeout(() => { if(statusEl.innerText.includes('已儲存')) statusEl.innerHTML = ''; }, 3000);
-        }
-
-        // ==========================================
-        // 👥 球員管理與 UI 更新
-        // ==========================================
-        async function addPlayer(name = null, gender = null, level = null) {
-            const inputName = name || document.getElementById('playerName').value.trim();
-            const inputGender = gender || document.getElementById('playerGender').value;
-            const inputLevel = level || parseInt(document.getElementById('playerLevel').value);
-
-            if (!inputName || isNaN(inputLevel)) return alert("請填寫完整名稱與級數！");
-            if (players.some(p => p.name === inputName)) return alert("此名稱已存在，請使用不同名稱！");
-
-            players.push({ 
-                id: 'P_' + Date.now() + Math.floor(Math.random() * 1000), 
-                name: inputName, 
-                gender: inputGender, 
-                level: inputLevel 
-            });
-            
-            // 加入的同時，存入常用球員庫
-            addToFrequent(inputName, inputGender, inputLevel);
-            
-            if(!name) { 
-                document.getElementById('playerName').value = '';
-                document.getElementById('playerLevel').value = '';
-                document.getElementById('playerName').focus();
-            }
-            
-            updatePlayerUI();
-            await saveGameData(); 
-        }
-
-        async function removePlayer(id) {
-            let hasPlayed = rounds.some(r => r.matches.some(m => 
-                m.team1.p1.id === id || m.team1.p2.id === id || 
-                m.team2.p1.id === id || m.team2.p2.id === id
-            ));
-            
-            if(hasPlayed) {
-                if(!confirm("⚠️ 此球員已經有比賽紀錄，移除可能會影響戰績表顯示。\n確定要移除嗎？")) return;
-            }
-
-            players = players.filter(p => p.id !== id);
-            updatePlayerUI();
-            await saveGameData(); 
-        }
-
-        function updatePlayerUI() {
-            const list = document.getElementById('playerList');
-            list.innerHTML = '';
-            players.forEach(p => {
-                list.innerHTML += `
-                    <div class="player-tag">
-                        <div class="player-info">
-                            <span class="player-name">${p.name}</span>
-                            <span style="color: #64748b;">${p.gender} | 等級 ${p.level}</span>
-                        </div>
-                        <button class="btn-danger" onclick="removePlayer('${p.id}')">✕</button>
-                    </div>
-                `;
-            });
-            document.getElementById('playerCount').innerText = players.length;
-            updateFrequentPlayersUI(); // 連動更新常用名單的按鈕狀態
-        }
-
-        function updateFrequentPlayersUI() {
-            const area = document.getElementById('frequentPoolArea');
-            const list = document.getElementById('frequentList');
-            
-            if (frequentPlayers.length === 0) {
-                area.style.display = 'none';
-                return;
-            }
-            
-            area.style.display = 'block';
-            list.innerHTML = '';
-            
-            frequentPlayers.forEach(fp => {
-                const isAlreadyAdded = players.some(p => p.name === fp.name);
-                
-                if (isAlreadyAdded) {
-                    list.innerHTML += `<div class="fp-chip disabled">${fp.name} (已加入)</div>`;
-                } else {
-                    list.innerHTML += `
-                        <div class="fp-chip" onclick="addPlayer('${fp.name}', '${fp.gender}', ${fp.level})">
-                            ＋ ${fp.name} <span style="color:#7dd3fc; margin-left:4px;">Lv.${fp.level}</span>
-                            <span class="fp-remove" onclick="removeFrequent(event, '${fp.name}')">×</span>
-                        </div>
-                    `;
-                }
-            });
+        // --- CSV 匯入功能 ---
+        function triggerCSVImport(target) {
+            csvImportTarget = target;
+            document.getElementById('csvInput').click();
         }
 
         function handleCSVImport(event) {
@@ -425,267 +385,566 @@
             const reader = new FileReader();
             reader.onload = async function(e) {
                 const text = e.target.result;
-                const lines = text.split('\n');
-                let addedCount = 0;
+                const lines = text.split(/\r?\n/);
+                let importedCount = 0;
+                let fpUpdated = false;
 
-                for(let i = 1; i < lines.length; i++) {
-                    if(!lines[i].trim()) continue;
-                    const cols = lines[i].split(',');
-                    if(cols.length >= 3) {
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    const cols = line.split(',');
+                    if (cols.length >= 3) {
                         const name = cols[0].trim();
                         const gender = cols[1].trim();
                         const level = parseInt(cols[2].trim());
-                        
-                        if(!players.some(p => p.name === name)) {
-                            players.push({ id: 'P_' + Date.now() + Math.floor(Math.random()*1000) + addedCount, name, gender, level });
-                            addToFrequent(name, gender, level); // 匯入 CSV 也是常用名單
-                            addedCount++;
+
+                        if (isNaN(level)) continue; // 略過標題列
+
+                        if (csvImportTarget === 'current') {
+                            if (players.length >= MAX_PLAYERS) break;
+                            if (!players.some(p => p.name === name)) {
+                                players.push({ id: Date.now() + Math.random(), name, gender, level });
+                                importedCount++;
+                            }
+                        } else if (csvImportTarget === 'frequent') {
+                            if (!frequentPlayers.some(p => p.name === name)) {
+                                frequentPlayers.push({ id: 'FP_' + Date.now() + Math.random(), name, gender, level });
+                                fpUpdated = true;
+                                importedCount++;
+                            }
                         }
                     }
                 }
-                
-                event.target.value = ''; 
-                if(addedCount > 0) {
-                    updatePlayerUI();
-                    await saveGameData();
-                    alert(`✅ 成功匯入 ${addedCount} 位球員！`);
-                } else {
-                    alert("⚠️ 沒有匯入新球員 (可能格式錯誤或人員已存在)。");
+
+                if (csvImportTarget === 'current') {
+                    if (importedCount > 0) {
+                        updatePlayerUI();
+                        saveToLocalStorage();
+                        alert(`✅ 成功匯入 ${importedCount} 位選手至本次賽程！`);
+                    } else {
+                        alert(`ℹ️ 沒有匯入任何新選手 (可能格式不符或皆已存在名單中)。`);
+                    }
+                } else if (csvImportTarget === 'frequent') {
+                    if (fpUpdated) {
+                        saveFrequentPlayersLocally(); // 本地備份
+                        renderFrequentPlayersList();
+                        const statusEl = document.getElementById('fpSyncStatus');
+                        statusEl.innerText = "⏳ 批次同步至雲端中...";
+                        await saveFrequentPlayersToGitHub();
+                        alert(`✅ 成功匯入 ${importedCount} 位選手，已存入常用名單！`);
+                    } else {
+                        alert(`ℹ️ 沒有匯入任何新選手 (可能皆已存在常用名單中)。`);
+                    }
                 }
+                event.target.value = ''; // 清空 input
             };
             reader.readAsText(file);
         }
 
-        // ==========================================
-        // 🎲 智能賽程排配演算法
-        // ==========================================
-        async function generateSchedule() {
-            if (players.length < 4) return alert("人數不足！至少需要 4 位球員。");
-            
-            if (rounds.length > 0) {
-                const lastRound = rounds[rounds.length - 1];
-                const hasUnfinished = lastRound.matches.some(m => !m.isFinished);
-                if (hasUnfinished && !confirm("上一輪還有未輸入比分的比賽，確定要直接產生新一輪嗎？")) return;
+        // --- 本地資料雙重備份機制 (避免斷網資料遺失) ---
+        function saveToLocalStorage() {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ players, schedules, currentTeams, matchMode }));
+        }
+        function saveFrequentPlayersLocally() {
+            localStorage.setItem('frequentPlayersData', JSON.stringify(frequentPlayers));
+        }
+        function loadFrequentPlayersLocally() {
+            const dataStr = localStorage.getItem('frequentPlayersData');
+            if (dataStr) {
+                try { 
+                    frequentPlayers = JSON.parse(dataStr); 
+                    hasFetchedFp = true;
+                } catch(e) {}
             }
-
-            let availablePlayers = [...players];
-            let restPlayers = [];
-
-            // 1. 處理輪空
-            if (availablePlayers.length % 4 !== 0) {
-                const restCount = availablePlayers.length % 4;
-                let playCounts = availablePlayers.map(p => {
-                    let count = 0;
-                    rounds.forEach(r => r.matches.forEach(m => {
-                        if([m.team1.p1.id, m.team1.p2.id, m.team2.p1.id, m.team2.p2.id].includes(p.id)) count++;
-                    }));
-                    return { player: p, count: count };
-                });
-                
-                playCounts.sort((a, b) => a.count !== b.count ? a.count - b.count : Math.random() - 0.5);
-                playCounts.reverse(); 
-                
-                for(let i=0; i<restCount; i++) {
-                    let target = playCounts[i].player;
-                    restPlayers.push(target);
-                    availablePlayers = availablePlayers.filter(p => p.id !== target.id);
-                }
-            }
-
-            // 2. 組隊
-            availablePlayers.sort(() => Math.random() - 0.5).sort((a, b) => b.level - a.level);
-            let teams = [];
-            let tempPlayers = [...availablePlayers];
-            
-            while(tempPlayers.length >= 2) {
-                let p1 = tempPlayers.shift(); 
-                let p2Index = tempPlayers.length - 1; 
-                
-                for(let i = tempPlayers.length - 1; i >= 0; i--) {
-                    let p2 = tempPlayers[i];
-                    if(!matchHistory.partners[`${p1.id}_${p2.id}`] && !matchHistory.partners[`${p2.id}_${p1.id}`]) {
-                        p2Index = i;
-                        break;
-                    }
-                }
-                
-                let p2 = tempPlayers.splice(p2Index, 1)[0];
-                teams.push({ id: `T_${Date.now()}_${Math.random()}`, p1: p1, p2: p2, totalLevel: p1.level + p2.level });
-                matchHistory.partners[`${p1.id}_${p2.id}`] = true;
-            }
-
-            // 3. 配對比賽
-            teams.sort((a, b) => b.totalLevel - a.totalLevel);
-            let currentRoundMatches = [];
-            
-            for (let i = 0; i < teams.length; i += 2) {
-                if (i + 1 < teams.length) {
-                    let t1 = teams[i];
-                    let t2 = teams[i+1];
-                    currentRoundMatches.push({ id: `M_${Date.now()}_${i}`, team1: t1, team2: t2, score1: null, score2: null, isFinished: false });
-                    
-                    [t1.p1, t1.p2].forEach(pA => {
-                        [t2.p1, t2.p2].forEach(pB => {
-                            matchHistory.opponents[`${pA.id}_${pB.id}`] = true;
-                            matchHistory.opponents[`${pB.id}_${pA.id}`] = true;
-                        });
-                    });
-                }
-            }
-
-            rounds.push({ roundNum: rounds.length + 1, restPlayers: restPlayers, matches: currentRoundMatches });
-            renderAllRounds();
-            updateStandings();
-            await saveGameData(); 
         }
 
-        // ==========================================
-        // 📊 畫面渲染與計分邏輯
-        // ==========================================
-        function renderAllRounds() {
-            const area = document.getElementById('allRoundsArea');
-            if (rounds.length === 0) {
-                area.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 40px;">尚未產生賽程。請確認至少有 4 位球員在名單中。</div>';
+        // --- GitHub 雲端功能 ---
+        async function syncToGitHub() {
+            const token = getRealToken();
+            if (!token) return alert("❌ Token 錯誤！請確認混淆字串設定。");
+            
+            const btn = document.getElementById('btnSync');
+            btn.innerText = "⏳ 儲存中...";
+            btn.disabled = true;
+
+            const path = `${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
+            const dataObj = { players, schedules, currentTeams, matchMode };
+            const contentStr = JSON.stringify(dataObj, null, 2);
+            const base64Content = btoa(unescape(encodeURIComponent(contentStr)));
+
+            try {
+                let fileSha = null;
+                const getRes = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' });
+                if (getRes.ok) fileSha = (await getRes.json()).sha;
+
+                const body = { message: `更新賽程: ${currentUser}/game_${GAME_ID}`, content: base64Content, ...(fileSha && { sha: fileSha }) };
+                const putRes = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+                if (putRes.ok) alert(`✅ 已成功儲存至雲端！`);
+                else alert("❌ 儲存失敗：" + (await putRes.json()).message);
+            } catch (e) {
+                alert("❌ 網路連線錯誤！");
+            }
+            btn.innerText = "☁️ 儲存至雲端";
+            btn.disabled = false;
+        }
+
+        async function fetchFrequentPlayers(force = false) {
+            const token = getRealToken();
+            if (!token) return;
+            
+            const statusEl = document.getElementById('fpSyncStatus');
+            statusEl.innerText = "⏳ 雲端同步中...";
+
+            try {
+                const path = `${GITHUB_FOLDER}/frequent_players.json`;
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, { 
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    cache: 'no-store'
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    const content = decodeURIComponent(escape(atob(data.content)));
+                    frequentPlayers = JSON.parse(content);
+                    fpFileSha = data.sha;
+                    hasFetchedFp = true;
+                    saveFrequentPlayersLocally(); // 更新本地快取
+                    statusEl.innerText = "✅ 已同步雲端最新名單";
+                } else if (res.status === 404) {
+                    hasFetchedFp = true;
+                    statusEl.innerText = "✅ 尚未建立雲端名冊";
+                } else {
+                    statusEl.innerText = "❌ 讀取雲端失敗(使用本地)";
+                }
+            } catch (e) {
+                statusEl.innerText = "❌ 網路錯誤(使用本地)";
+            }
+            renderFrequentPlayersList();
+        }
+
+        async function saveFrequentPlayersToGitHub() {
+            const token = getRealToken();
+            if (!token) return false;
+            
+            const statusEl = document.getElementById('fpSyncStatus');
+            const path = `${GITHUB_FOLDER}/frequent_players.json`;
+
+            // 【重要修復】寫入前先拉取最新 SHA，解決多人編輯或狀態錯亂導致的 409 Conflict (刪不掉的主因)
+            try {
+                const getRes = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, { 
+                    headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' 
+                });
+                if (getRes.ok) {
+                    const currentData = await getRes.json();
+                    fpFileSha = currentData.sha;
+                }
+            } catch(e) { /* 忽略，可能是還沒建立 */ }
+
+            const contentStr = JSON.stringify(frequentPlayers, null, 2);
+            const base64Content = btoa(unescape(encodeURIComponent(contentStr)));
+
+            try {
+                const body = { 
+                    message: `更新常用選手名單`, 
+                    content: base64Content, 
+                    ...(fpFileSha && { sha: fpFileSha }) 
+                };
+                const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, { 
+                    method: 'PUT', 
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(body) 
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    fpFileSha = data.content.sha;
+                    statusEl.innerText = "✅ 已儲存至雲端";
+                    return true;
+                } else {
+                    statusEl.innerText = "❌ 雲端儲存失敗(僅存本地)";
+                    return false;
+                }
+            } catch (e) {
+                statusEl.innerText = "❌ 網路錯誤(僅存本地)";
+                return false;
+            }
+        }
+
+        function renderFrequentPlayersList() {
+            const list = document.getElementById('frequentPlayersList');
+            if (!hasFetchedFp && frequentPlayers.length === 0) return; 
+
+            if (frequentPlayers.length === 0) {
+                list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 30px;">尚無常用選手，請從下方新增，或使用右上角的 CSV 匯入。<br><small>(新增後將會自動同步至 GitHub 雲端)</small></div>';
+                return;
+            }
+
+            // 產生級數下拉選單的選項
+            const levelOptions = Array.from({length: 18}, (_, i) => i + 1);
+
+            let html = '';
+            frequentPlayers.forEach(p => {
+                const isAlreadyInGame = players.some(gamePlayer => gamePlayer.name === p.name);
+                
+                // 組合下拉選單 HTML
+                let selectHtml = `<select class="level-select" onchange="updateFpLevel('${p.id}', this.value)" title="修改級數">`;
+                levelOptions.forEach(l => { selectHtml += `<option value="${l}" ${p.level === l ? 'selected' : ''}>Lv.${l}</option>`; });
+                selectHtml += `</select>`;
+
+                html += `
+                <div class="fp-item">
+                    <label class="fp-label" ${isAlreadyInGame ? 'style="opacity: 0.5;"' : ''}>
+                        <input type="checkbox" class="fp-checkbox" value="${p.id}" ${isAlreadyInGame ? 'disabled checked' : ''}>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-weight: bold; font-size: 16px; color: var(--text-main);">${p.name}</span>
+                            <span style="color: #64748b; font-size: 14px;">(${p.gender})</span>
+                            ${isAlreadyInGame ? '<span style="color: var(--danger); font-size: 12px;">(已在今日名單)</span>' : ''}
+                        </div>
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        ${selectHtml}
+                        <button class="btn-danger" style="padding: 6px 10px; border-radius: 6px;" onclick="removeFrequentPlayer('${p.id}')">刪除</button>
+                    </div>
+                </div>`;
+            });
+            list.innerHTML = html;
+        }
+
+        // 修改常用選手級數
+        async function updateFpLevel(id, newLevelStr) {
+            const newLevel = parseInt(newLevelStr);
+            const targetPlayer = frequentPlayers.find(p => p.id === id);
+            if (targetPlayer) {
+                targetPlayer.level = newLevel;
+                saveFrequentPlayersLocally(); // 優先存本地
+                
+                const statusEl = document.getElementById('fpSyncStatus');
+                statusEl.innerText = "⏳ 級數更新同步中...";
+                await saveFrequentPlayersToGitHub(); // 背景同步雲端
+            }
+        }
+
+        async function addFrequentPlayer() {
+            const name = document.getElementById('fpName').value.trim();
+            const gender = document.getElementById('fpGender').value;
+            const levelVal = document.getElementById('fpLevel').value;
+            
+            if (!name || !levelVal) return alert('請填寫完整選手姓名與級數！');
+            const level = parseInt(levelVal);
+            
+            if (frequentPlayers.some(p => p.name === name)) return alert('此選手已經在常用名單中了！');
+
+            const newPlayer = { id: 'FP_' + Date.now() + Math.random(), name, gender, level };
+            frequentPlayers.push(newPlayer);
+            
+            saveFrequentPlayersLocally(); // 優先存本地
+            renderFrequentPlayersList();
+            
+            document.getElementById('fpName').value = '';
+            document.getElementById('fpLevel').value = '';
+            
+            const btnAdd = document.getElementById('btnAddFp');
+            btnAdd.disabled = true;
+            await saveFrequentPlayersToGitHub();
+            btnAdd.disabled = false;
+        }
+
+        async function removeFrequentPlayer(id) {
+            if(!confirm('確定要移除此選手嗎？')) return;
+            
+            // 從陣列中移除
+            frequentPlayers = frequentPlayers.filter(p => p.id !== id);
+            
+            // 優先存本地並更新畫面，創造「秒刪」的流暢感
+            saveFrequentPlayersLocally(); 
+            renderFrequentPlayersList(); 
+            
+            const statusEl = document.getElementById('fpSyncStatus');
+            statusEl.innerText = "⏳ 雲端刪除同步中...";
+            
+            // 背景同步到 GitHub，就算失敗本地也已經刪掉了 (不會強迫還原，避免遇到卡住的 bug)
+            await saveFrequentPlayersToGitHub();
+        }
+
+        function addSelectedFrequentPlayers() {
+            const checkboxes = document.querySelectorAll('.fp-checkbox:checked:not(:disabled)');
+            checkboxes.forEach(cb => {
+                const fp = frequentPlayers.find(p => p.id === cb.value);
+                if (fp && !players.some(p => p.name === fp.name)) {
+                    addPlayer(fp.name, fp.gender, fp.level);
+                }
+            });
+            closeFrequentPlayersModal();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initGameTitle();
+            loadFromLocalStorage();
+        });
+
+        // --- 本次賽程核心邏輯 ---
+        function loadFromLocalStorage() {
+            const dataStr = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (dataStr) {
+                try {
+                    const data = JSON.parse(dataStr);
+                    players = data.players || []; 
+                    currentTeams = data.currentTeams || [];
+                    matchMode = data.matchMode || 'single'; 
+                    
+                    if (data.schedules) {
+                        schedules = data.schedules;
+                    } else if (data.matches && data.matches.length > 0) {
+                        let restMsgArr = [];
+                        if (data.currentRestingPlayers && data.currentRestingPlayers.length > 0) 
+                            restMsgArr.push(`單數球員：<strong>${data.currentRestingPlayers[0].name}</strong> (休息)`);
+                        if (data.currentRestingTeams && data.currentRestingTeams.length > 0) 
+                            restMsgArr.push(`單數隊伍：<strong>${data.currentRestingTeams[0].name1} & ${data.currentRestingTeams[0].name2}</strong> (輪空)`);
+                        
+                        schedules = [{
+                            id: 1,
+                            mode: matchMode,
+                            matches: data.matches,
+                            restMsg: restMsgArr.join('<br>')
+                        }];
+                    } else {
+                        schedules = [];
+                    }
+
+                    updatePlayerUI();
+                    if (schedules.length > 0) renderAll();
+                } catch (e) { console.error("資料載入異常", e); }
+            }
+        }
+
+        function addPlayer(name = null, gender = null, level = null) {
+            if (players.length >= MAX_PLAYERS) return;
+            const inputName = name || document.getElementById('playerName').value.trim();
+            const inputGender = gender || document.getElementById('playerGender').value;
+            const inputLevel = level || parseInt(document.getElementById('playerLevel').value);
+            if (!inputName || isNaN(inputLevel) || players.some(p => p.name === inputName)) return;
+
+            players.push({ id: Date.now() + Math.random(), name: inputName, gender: inputGender, level: inputLevel });
+            if(!name) { document.getElementById('playerName').value = ''; document.getElementById('playerLevel').value = ''; }
+            updatePlayerUI(); saveToLocalStorage();
+        }
+
+        function removePlayer(id) {
+            players = players.filter(p => p.id !== id);
+            updatePlayerUI(); saveToLocalStorage();
+        }
+
+        function updatePlayerUI() {
+            const list = document.getElementById('playerList');
+            list.innerHTML = '';
+            players.forEach(p => {
+                list.innerHTML += `<div class="player-tag"><div class="player-info"><span class="player-name">${p.name}</span><span style="color: #64748b;">${p.gender} | 等級 ${p.level}</span></div><button class="btn-danger" onclick="removePlayer('${p.id}')">✕</button></div>`;
+            });
+            document.getElementById('playerCount').innerText = players.length;
+            document.getElementById('progressBar').style.width = `${(players.length / MAX_PLAYERS) * 100}%`;
+        }
+
+        function generateSchedule(mode) {
+            if (players.length < 4) return alert("球員不足，請至少加入4名球員！");
+            
+            if (schedules.length > 0) {
+                if (!confirm("⚠️ 警告：這會清除當前所有的戰績與賽程，並為所有人「重新抽籤分隊」！\n\n如果你只是想保留原隊伍再打一局，請按取消，並點擊下方綠色的「同樣組合重打」。\n\n確定要重新分隊嗎？")) {
+                    return;
+                }
+            }
+
+            matchMode = mode; 
+            schedules = []; 
+            currentTeams = [];
+
+            let currentPlayers = [...players].sort(() => Math.random() - 0.5).sort((a, b) => b.level - a.level);
+            let restPlayersMsg = "";
+            if (currentPlayers.length % 2 !== 0) {
+                let rp = currentPlayers.splice(Math.floor(currentPlayers.length / 2), 1)[0];
+                restPlayersMsg = `單數球員：<strong>${rp.name}</strong> (本輪休息)`;
+            }
+
+            for (let i = 0; i < currentPlayers.length / 2; i++) {
+                currentTeams.push({ 
+                    id: `Team_${Date.now()}_${i}`, 
+                    name1: currentPlayers[i].name, 
+                    name2: currentPlayers[currentPlayers.length - 1 - i].name, 
+                    totalLevel: currentPlayers[i].level + currentPlayers[currentPlayers.length - 1 - i].level 
+                });
+            }
+
+            generateMatchesForCurrentTeams(restPlayersMsg);
+        }
+
+        function generateRematch() {
+            if (currentTeams.length === 0) return;
+            generateMatchesForCurrentTeams(""); 
+        }
+
+        function generateMatchesForCurrentTeams(restPlayersMsg = "") {
+            let newScheduleId = schedules.length + 1;
+            let newMatches = [];
+            let restMsgArr = [];
+            if (restPlayersMsg) restMsgArr.push(restPlayersMsg);
+
+            if (matchMode === 'single') {
+                let tempTeams = [...currentTeams];
+                if (tempTeams.length % 2 !== 0) {
+                    let rt = tempTeams.splice(Math.floor(Math.random() * tempTeams.length), 1)[0];
+                    restMsgArr.push(`單數隊伍：<strong>${rt.name1} & ${rt.name2}</strong> (本輪輪空)`);
+                }
+                tempTeams.sort(() => Math.random() - 0.5); 
+                for (let i = 0; i < tempTeams.length; i += 2) {
+                    newMatches.push({ id: `M_${newScheduleId}_${i}`, round: 1, team1: tempTeams[i], team2: tempTeams[i+1], score1: null, score2: null, isFinished: false });
+                }
+            } else if (matchMode === 'round-robin') {
+                let rrTeams = [...currentTeams];
+                if (rrTeams.length % 2 !== 0) rrTeams.push({ id: 'BYE', name1: '輪空', name2: '休息', totalLevel: 0 });
+                let numTeams = rrTeams.length, matchIdCounter = 0;
+                for (let r = 0; r < numTeams - 1; r++) {
+                    for (let i = 0; i < numTeams / 2; i++) {
+                        let t1 = rrTeams[i], t2 = rrTeams[numTeams - 1 - i];
+                        if (t1.id !== 'BYE' && t2.id !== 'BYE') {
+                            newMatches.push({ id: `M_${newScheduleId}_${matchIdCounter++}`, round: r + 1, team1: t1, team2: t2, score1: null, score2: null, isFinished: false });
+                        }
+                    }
+                    rrTeams.splice(1, 0, rrTeams.pop());
+                }
+            }
+
+            schedules.push({
+                id: newScheduleId,
+                mode: matchMode,
+                matches: newMatches,
+                restMsg: restMsgArr.join('<br>')
+            });
+
+            renderAll(); 
+            saveToLocalStorage();
+        }
+
+        function renderAll() {
+            renderStandings(); 
+            renderSchedules();
+            updateRematchUI();
+        }
+
+        function updateRematchUI() {
+            const container = document.getElementById('rematchContainer');
+            if (schedules.length > 0 && currentTeams.length > 0) {
+                container.style.display = 'block';
+                document.getElementById('nextScheduleNum').innerText = schedules.length + 1;
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        function renderSchedules() {
+            const wrapper = document.getElementById('schedulesWrapper');
+            if (schedules.length === 0) {
+                wrapper.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px;">尚未產生賽程。請確認至少有 4 位球員在名單中，並選擇上方模式。</div>`;
                 return;
             }
 
             let html = '';
-            for (let i = rounds.length - 1; i >= 0; i--) {
-                const r = rounds[i];
-                let restStr = r.restPlayers.length > 0 
-                    ? `<span class="rest-players">☕ 輪空休息: ${r.restPlayers.map(p => p.name).join(', ')}</span>` 
-                    : '';
+            schedules.forEach((sch, index) => {
+                const isOpen = (index === schedules.length - 1) ? 'open' : '';
+                html += `
+                <details class="schedule-details" ${isOpen}>
+                    <summary class="schedule-summary">
+                        🏸 賽程 ${sch.id} ${sch.mode === 'single' ? '(單輪配對賽)' : '(循環賽)'}
+                    </summary>
+                    <div class="schedule-content">
+                `;
 
-                html += `<div class="round-container">
-                            <div class="round-header"><span>第 ${r.roundNum} 輪</span>${restStr}</div>
-                            <div class="matches-grid">`;
+                if (sch.restMsg) html += `<div class="info-box">${sch.restMsg}</div>`;
 
-                r.matches.forEach((m) => {
+                html += `<div class="matches-grid">`;
+                let currentRoundRendered = 0;
+                
+                sch.matches.forEach((m, mIndex) => {
+                    if (sch.mode === 'round-robin' && m.round !== currentRoundRendered) { 
+                        html += `<div class="round-header">🏆 第 ${m.round} 輪</div>`; 
+                        currentRoundRendered = m.round; 
+                    }
                     html += `
                         <div class="match-card">
+                            <div class="match-header">${sch.mode === 'single' ? '場次 ' + (mIndex+1) : '第 ' + m.round + ' 輪'}</div>
                             <div class="match-body">
-                                <div class="team">
-                                    <div class="team-name">${m.team1.p1.name}<br>& ${m.team1.p2.name}</div>
-                                    <div class="team-level">戰力 ${m.team1.totalLevel}</div>
-                                    ${m.isFinished ? `<div class="score-display ${m.score1 > m.score2 ? 'winner' : ''}">${m.score1}</div>` : `<input type="number" id="s1-${m.id}" class="score-input" min="0" value="${m.score1 !== null ? m.score1 : ''}">`}
+                                <div class="team"><div class="team-name">${m.team1.name1}<br>& ${m.team1.name2}</div>
+                                    ${m.isFinished ? `<div class="score-display ${m.score1 > m.score2 ? 'winner' : ''}">${m.score1}</div>` : `<input type="number" id="s1-${m.id}" class="score-input">`}
                                 </div>
                                 <div class="vs-badge">VS</div>
-                                <div class="team">
-                                    <div class="team-name">${m.team2.p1.name}<br>& ${m.team2.p2.name}</div>
-                                    <div class="team-level">戰力 ${m.team2.totalLevel}</div>
-                                    ${m.isFinished ? `<div class="score-display ${m.score2 > m.score1 ? 'winner' : ''}">${m.score2}</div>` : `<input type="number" id="s2-${m.id}" class="score-input" min="0" value="${m.score2 !== null ? m.score2 : ''}">`}
+                                <div class="team"><div class="team-name">${m.team2.name1}<br>& ${m.team2.name2}</div>
+                                    ${m.isFinished ? `<div class="score-display ${m.score2 > m.score1 ? 'winner' : ''}">${m.score2}</div>` : `<input type="number" id="s2-${m.id}" class="score-input">`}
                                 </div>
                             </div>
                             <div class="match-footer">
-                                ${m.isFinished ? `<button class="btn-outline" style="padding: 4px 12px; font-size: 14px;" onclick="editScore(${i}, '${m.id}')">修改比分</button>` : `<button style="width: 100%;" onclick="saveScore(${i}, '${m.id}')">確認儲存賽果</button>`}
+                                ${m.isFinished ? `<button style="background: white; color: var(--primary); border: 1px solid var(--primary);" onclick="editMatch(${sch.id}, '${m.id}')">修改分數</button>` : `<button style="width: 100%;" onclick="saveScore(${sch.id}, '${m.id}')">確認分數</button>`}
                             </div>
                         </div>`;
                 });
-                html += `</div></div>`;
-            }
-            area.innerHTML = html;
+                html += `</div></div></details>`;
+            });
+            wrapper.innerHTML = html;
         }
 
-        async function saveScore(roundIndex, matchId) {
+        function saveScore(schId, matchId) {
             const s1 = document.getElementById(`s1-${matchId}`).value;
             const s2 = document.getElementById(`s2-${matchId}`).value;
-
-            if (s1 === '' || s2 === '') return alert("請完整輸入雙方比分！");
-
-            const match = rounds[roundIndex].matches.find(m => m.id === matchId);
-            match.score1 = parseInt(s1);
-            match.score2 = parseInt(s2);
-            match.isFinished = true;
-
-            renderAllRounds();
-            updateStandings();
-            await saveGameData(); 
-        }
-
-        function editScore(roundIndex, matchId) {
-            const match = rounds[roundIndex].matches.find(m => m.id === matchId);
-            match.isFinished = false;
-            renderAllRounds();
-        }
-
-        // ==========================================
-        // 🏆 戰績表統計邏輯
-        // ==========================================
-        function updateStandings() {
-            const standingsCard = document.getElementById('standingsCard');
-            let hasFinishedMatch = rounds.some(r => r.matches.some(m => m.isFinished));
-            if (!hasFinishedMatch) { standingsCard.style.display = 'none'; return; }
+            if (s1 === '' || s2 === '') return;
             
-            standingsCard.style.display = 'block';
-            let stats = {};
+            const sch = schedules.find(s => s.id === schId);
+            const m = sch.matches.find(x => x.id === matchId);
+            m.score1 = parseInt(s1); 
+            m.score2 = parseInt(s2); 
+            m.isFinished = true;
+            
+            renderAll(); saveToLocalStorage();
+        }
 
-            players.forEach(p => { stats[p.id] = { name: p.name, win: 0, loss: 0, ptsDiff: 0, matchesPlayed: 0 }; });
+        function editMatch(schId, matchId) {
+            const sch = schedules.find(s => s.id === schId);
+            const m = sch.matches.find(x => x.id === matchId);
+            m.isFinished = false; 
+            
+            renderAll(); saveToLocalStorage();
+        }
 
-            rounds.forEach(r => {
-                r.matches.forEach(m => {
-                    if (m.isFinished) {
-                        const t1Players = [m.team1.p1, m.team1.p2];
-                        const t2Players = [m.team2.p1, m.team2.p2];
-                        
-                        t1Players.forEach(p => {
-                            if(stats[p.id]) {
-                                stats[p.id].matchesPlayed++;
-                                stats[p.id].ptsDiff += (m.score1 - m.score2);
-                                if(m.score1 > m.score2) stats[p.id].win++;
-                                else if(m.score1 < m.score2) stats[p.id].loss++;
-                            }
-                        });
-                        
-                        t2Players.forEach(p => {
-                            if(stats[p.id]) {
-                                stats[p.id].matchesPlayed++;
-                                stats[p.id].ptsDiff += (m.score2 - m.score1);
-                                if(m.score2 > m.score1) stats[p.id].win++;
-                                else if(m.score2 < m.score1) stats[p.id].loss++;
-                            }
-                        });
+        function renderStandings() {
+            if (schedules.length === 0) {
+                document.getElementById('standingsArea').innerHTML = ''; 
+                return;
+            }
+
+            let stats = {}; 
+            currentTeams.forEach(t => stats[t.id] = { name: `${t.name1} & ${t.name2}`, win: 0, loss: 0, ptsDiff: 0 });
+            
+            schedules.forEach(sch => {
+                sch.matches.forEach(m => {
+                    if (m.isFinished && stats[m.team1.id] && stats[m.team2.id]) {
+                        stats[m.team1.id].ptsDiff += (m.score1 - m.score2); 
+                        stats[m.team2.id].ptsDiff += (m.score2 - m.score1);
+                        if (m.score1 > m.score2) { stats[m.team1.id].win++; stats[m.team2.id].loss++; }
+                        else if (m.score2 > m.score1) { stats[m.team2.id].win++; stats[m.team1.id].loss++; }
                     }
                 });
             });
 
-            let sortedStats = Object.values(stats)
-                .filter(s => s.matchesPlayed > 0)
-                .sort((a, b) => b.win !== a.win ? b.win - a.win : b.ptsDiff - a.ptsDiff);
-
-            let html = `
-                <h3 style="color: var(--secondary); margin-bottom: 15px;">📊 個人總戰績表 <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">(結算至目前)</span></h3>
-                <div style="overflow-x: auto;">
-                    <table class="standings-table">
-                        <thead><tr><th>排名</th><th>球員</th><th>已賽</th><th>總勝</th><th>總負</th><th>淨勝分</th></tr></thead>
-                        <tbody>`;
-                        
-            sortedStats.forEach((s, idx) => {
-                html += `<tr>
-                            <td>${idx + 1}</td>
-                            <td style="font-weight: bold;">${s.name}</td>
-                            <td>${s.matchesPlayed}</td>
-                            <td style="color: var(--primary); font-weight: bold;">${s.win}</td>
-                            <td style="color: var(--danger); font-weight: bold;">${s.loss}</td>
-                            <td style="color: ${s.ptsDiff > 0 ? 'var(--primary)' : (s.ptsDiff < 0 ? 'var(--danger)' : 'inherit')}">
-                                ${s.ptsDiff > 0 ? '+'+s.ptsDiff : s.ptsDiff}
-                            </td>
-                        </tr>`;
+            let sorted = Object.values(stats).sort((a, b) => b.win !== a.win ? b.win - a.win : b.ptsDiff - a.ptsDiff);
+            let html = `<h3 style="color: var(--secondary); margin-bottom: 10px;">📊 總戰績表 <span style="font-size: 14px; font-weight: normal;">(結算至目前所有賽程)</span></h3><div style="overflow-x: auto; margin-bottom: 25px;"><table class="standings-table">
+                <thead><tr><th>名次</th><th>隊伍</th><th>總勝</th><th>總負</th><th>淨勝分</th></tr></thead><tbody>`;
+            sorted.forEach((s, idx) => {
+                html += `<tr><td>${idx + 1}</td><td>${s.name}</td><td style="color: var(--primary); font-weight: bold;">${s.win}</td><td style="color: var(--danger); font-weight: bold;">${s.loss}</td><td style="color: ${s.ptsDiff >= 0 ? 'var(--primary)' : 'var(--danger)'}">${s.ptsDiff > 0 ? '+'+s.ptsDiff : s.ptsDiff}</td></tr>`;
             });
-            
-            html += `</tbody></table></div>`;
-            document.getElementById('standingsArea').innerHTML = html;
+            document.getElementById('standingsArea').innerHTML = html + `</tbody></table></div>`;
         }
 
-        // 測試假資料
         function generateMockPlayers() {
-            const names = ["大谷", "林書豪", "戴資穎", "周天成", "李洋", "王齊麟", "安洗瑩", "陳雨菲", "山口茜", "安賽龍"];
-            const maxToAdd = Math.min(20, names.length);
-            for(let i=0; i < maxToAdd; i++) {
-                let name = names[i];
-                if (!players.some(p => p.name === name)) {
-                    addPlayer(name, Math.random() > 0.5 ? "男" : "女", Math.floor(Math.random() * 10) + 1);
-                }
-            }
+            const names = ["大谷", "林書豪", "戴資穎", "周天成", "李洋", "王齊麟", "安洗瑩", "陳雨菲"];
+            for(let i=0; i < Math.min(20 - players.length, names.length); i++) addPlayer(names[i] + (players.some(p => p.name===names[i]) ? "2" : ""), "男", Math.floor(Math.random() * 18) + 1);
         }
     </script>
 </body>
