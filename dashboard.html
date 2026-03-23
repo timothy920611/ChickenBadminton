@@ -319,7 +319,7 @@
         // =============================================
         // 常用選手管理
         // =============================================
-        const FP_PATH = 'json/frequent_players.json';
+        const FP_PATH = `json/${currentUser}/frequent_players.json`;
 
         async function loadFrequentPlayers(force = false) {
             const token = getRealToken();
@@ -327,7 +327,7 @@
             const statusEl = document.getElementById('fpSyncStatus');
 
             // 先從 localStorage 快速渲染
-            const cached = localStorage.getItem('frequentPlayersData');
+            const cached = localStorage.getItem(`frequentPlayersData_${currentUser}`);
             if (cached && !force) {
                 try { frequentPlayers = JSON.parse(cached); renderFpList(); } catch(e) {}
             } else {
@@ -342,7 +342,7 @@
                     const data = await res.json();
                     frequentPlayers = JSON.parse(decodeURIComponent(escape(atob(data.content))));
                     fpFileSha = data.sha;
-                    localStorage.setItem('frequentPlayersData', JSON.stringify(frequentPlayers));
+                    localStorage.setItem(`frequentPlayersData_${currentUser}`, JSON.stringify(frequentPlayers));
                     statusEl.innerText = '✅ 已同步雲端';
                 } else if (res.status === 404) {
                     frequentPlayers = [];
@@ -379,7 +379,7 @@
                 });
                 if (res.ok) {
                     fpFileSha = (await res.json()).content.sha;
-                    localStorage.setItem('frequentPlayersData', JSON.stringify(frequentPlayers));
+                    localStorage.setItem(`frequentPlayersData_${currentUser}`, JSON.stringify(frequentPlayers));
                     statusEl.innerText = `✅ 已${actionLabel}`;
                     return true;
                 } else {
@@ -440,7 +440,7 @@
             const p = frequentPlayers.find(p => p.id === id);
             if (!p) return;
             p.level = parseInt(val);
-            localStorage.setItem('frequentPlayersData', JSON.stringify(frequentPlayers));
+            localStorage.setItem(`frequentPlayersData_${currentUser}`, JSON.stringify(frequentPlayers));
             await saveFpToGitHub('級數更新');
         }
 
