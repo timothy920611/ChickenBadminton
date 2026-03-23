@@ -11,9 +11,198 @@
       "name": "大谷2",
       "gender": "男",
       "level": 18
+    },
+    {
+      "id": 1774273138966.609,
+      "name": "林書豪",
+      "gender": "男",
+      "level": 15
+    },
+    {
+      "id": 1774273138967.6282,
+      "name": "戴資穎",
+      "gender": "男",
+      "level": 10
+    },
+    {
+      "id": 1774273138968.0596,
+      "name": "周天成",
+      "gender": "男",
+      "level": 3
+    },
+    {
+      "id": 1774273138968.0093,
+      "name": "李洋",
+      "gender": "男",
+      "level": 6
+    },
+    {
+      "id": 1774273138969.68,
+      "name": "王齊麟",
+      "gender": "男",
+      "level": 7
+    },
+    {
+      "id": 1774273138970.755,
+      "name": "安洗瑩",
+      "gender": "男",
+      "level": 11
+    },
+    {
+      "id": 1774273138970.1956,
+      "name": "陳雨菲",
+      "gender": "男",
+      "level": 16
     }
   ],
-  "currentTeams": [],
-  "schedules": [],
-  "matchMode": "single"
+  "currentTeams": [
+    {
+      "id": "Team_1774273148909_0",
+      "name1": "大谷2",
+      "name2": "周天成",
+      "totalLevel": 21
+    },
+    {
+      "id": "Team_1774273148909_1",
+      "name1": "陳雨菲",
+      "name2": "李洋",
+      "totalLevel": 22
+    },
+    {
+      "id": "Team_1774273148909_2",
+      "name1": "林書豪",
+      "name2": "王齊麟",
+      "totalLevel": 22
+    },
+    {
+      "id": "Team_1774273148909_3",
+      "name1": "安洗瑩",
+      "name2": "大谷",
+      "totalLevel": 20
+    }
+  ],
+  "schedules": [
+    {
+      "id": 1,
+      "mode": "round-robin",
+      "matches": [
+        {
+          "id": "M_1_0",
+          "round": 1,
+          "team1": {
+            "id": "Team_1774273148909_0",
+            "name1": "大谷2",
+            "name2": "周天成",
+            "totalLevel": 21
+          },
+          "team2": {
+            "id": "Team_1774273148909_3",
+            "name1": "安洗瑩",
+            "name2": "大谷",
+            "totalLevel": 20
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_1",
+          "round": 1,
+          "team1": {
+            "id": "Team_1774273148909_1",
+            "name1": "陳雨菲",
+            "name2": "李洋",
+            "totalLevel": 22
+          },
+          "team2": {
+            "id": "Team_1774273148909_2",
+            "name1": "林書豪",
+            "name2": "王齊麟",
+            "totalLevel": 22
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_2",
+          "round": 2,
+          "team1": {
+            "id": "Team_1774273148909_0",
+            "name1": "大谷2",
+            "name2": "周天成",
+            "totalLevel": 21
+          },
+          "team2": {
+            "id": "Team_1774273148909_2",
+            "name1": "林書豪",
+            "name2": "王齊麟",
+            "totalLevel": 22
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_3",
+          "round": 2,
+          "team1": {
+            "id": "Team_1774273148909_3",
+            "name1": "安洗瑩",
+            "name2": "大谷",
+            "totalLevel": 20
+          },
+          "team2": {
+            "id": "Team_1774273148909_1",
+            "name1": "陳雨菲",
+            "name2": "李洋",
+            "totalLevel": 22
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_4",
+          "round": 3,
+          "team1": {
+            "id": "Team_1774273148909_0",
+            "name1": "大谷2",
+            "name2": "周天成",
+            "totalLevel": 21
+          },
+          "team2": {
+            "id": "Team_1774273148909_1",
+            "name1": "陳雨菲",
+            "name2": "李洋",
+            "totalLevel": 22
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_5",
+          "round": 3,
+          "team1": {
+            "id": "Team_1774273148909_2",
+            "name1": "林書豪",
+            "name2": "王齊麟",
+            "totalLevel": 22
+          },
+          "team2": {
+            "id": "Team_1774273148909_3",
+            "name1": "安洗瑩",
+            "name2": "大谷",
+            "totalLevel": 20
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        }
+      ],
+      "restMsg": "單數球員：<strong>戴資穎</strong> (本輪休息)"
+    }
+  ],
+  "matchMode": "round-robin"
 }
