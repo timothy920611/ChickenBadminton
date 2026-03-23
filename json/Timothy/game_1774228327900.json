@@ -181,9 +181,9 @@
             "name2": "則宇",
             "totalLevel": 9
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 2,
+          "score2": 11,
+          "isFinished": true
         },
         {
           "id": "M_1_5",
@@ -428,9 +428,9 @@
             "name2": "佳世",
             "totalLevel": 8
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 11,
+          "score2": 10,
+          "isFinished": true
         },
         {
           "id": "M_1_18",
