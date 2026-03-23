@@ -89,11 +89,19 @@
 <div class="card">
     <h2>📋 賽程與計分</h2>
 
-    <!-- 同樣組合重打 -->
+    <!-- 產生下一輪 -->
     <div id="rematchContainer" style="display:none;margin-bottom:25px;">
-        <button class="btn-rematch" onclick="generateRematch()">
-            🔄 保留目前戰績：原班人馬「同樣組合重打」 (新增賽程 <span id="nextScheduleNum"></span>)
-        </button>
+        <div style="display:grid;gap:12px;">
+            <button class="btn-rematch" onclick="generateRematch()">
+                🔄 沿用目前分組再打一輪 (新增賽程 <span id="nextScheduleNum"></span>)
+            </button>
+            <button class="btn-rematch" onclick="generateRankedSingleElimination()" style="background:#7c3aed;box-shadow:0 4px 6px rgba(124,58,237,0.25);">
+                🪜 依目前排名產生單敗淘汰賽
+            </button>
+            <div style="font-size:13px;color:var(--text-muted);line-height:1.6;padding:0 4px;">
+                排名規則依目前總戰績排序：先比勝場，再比淨勝分。
+            </div>
+        </div>
         <div style="border-top:2px dashed #e5e7eb;margin:15px 0;"></div>
     </div>
 
@@ -115,13 +123,13 @@
     const currentUser = localStorage.getItem('badminton_currentUser') || 'guest';
     const LS_KEY = `badmintonData_${GAME_ID}`;
 
-    let players = [], currentTeams = [], schedules = [], matchMode = 'single';
+    let players = [], currentTeams = [], schedules = [], matchMode = 'single', pendingRestMsg = '', needsInitialSchedule = false;
     let fileSha = null;
     let isSyncing = false; // 防止推送與拉取同時進行
     let pollInterval = null;
 
     function getStorage() { try { return JSON.parse(localStorage.getItem(LS_KEY)||'{}'); } catch(e) { return {}; } }
-    function saveStorage() { localStorage.setItem(LS_KEY, JSON.stringify({ players, currentTeams, schedules, matchMode })); }
+    function saveStorage() { localStorage.setItem(LS_KEY, JSON.stringify({ players, currentTeams, schedules, matchMode, pendingRestMsg, needsInitialSchedule })); }
 
     window.addEventListener('DOMContentLoaded', () => {
         initGameTitle();
@@ -148,8 +156,184 @@
             currentTeams: teamsData,
             schedules: schedulesData,
             matchMode: data?.matchMode || 'single',
+            pendingRestMsg: data?.pendingRestMsg || '',
+            needsInitialSchedule: !!data?.needsInitialSchedule,
             hasLegacyData: legacyMatches.length > 0 && schedulesData.length === 0 && teamsData.length === 0
         };
+    }
+
+    function getModeLabel(mode) {
+        if (mode === 'round-robin') return '循環賽';
+        if (mode === 'single-elimination') return '單敗淘汰賽';
+        return '單輪配對賽';
+    }
+
+    function getTeamLabel(team) {
+        if (!team) return '待定';
+        return `${team.name1}<br>& ${team.name2}`;
+    }
+
+    function getTeamLevel(team) {
+        return team?.totalLevel || '?';
+    }
+
+    function teamSignature(team) {
+        return team?.id || '';
+    }
+
+    function getScheduleRoundMatches(schedule, round) {
+        return schedule.matches.filter(match => match.round === round);
+    }
+
+    function getSingleEliminationWinner(match) {
+        if (!match) return null;
+        if (match.isFinished && match.team1 && match.team2) {
+            if (match.score1 === match.score2) return null;
+            return match.score1 > match.score2 ? match.team1 : match.team2;
+        }
+        if (match.team1 && !match.team2) return match.team1;
+        if (match.team2 && !match.team1) return match.team2;
+        return null;
+    }
+
+    function updateSingleEliminationProgress(schedule, match) {
+        if (!schedule || schedule.mode !== 'single-elimination' || !match?.nextMatchId) return;
+        const nextMatch = schedule.matches.find(item => item.id === match.nextMatchId);
+        if (!nextMatch) return;
+
+        const winner = getSingleEliminationWinner(match);
+        const slot = match.slotInNext === 'team2' ? 'team2' : 'team1';
+        const previousTeam = nextMatch[slot];
+        const changed = teamSignature(previousTeam) !== teamSignature(winner);
+        nextMatch[slot] = winner ? { ...winner } : null;
+
+        if (changed) {
+            nextMatch.score1 = null;
+            nextMatch.score2 = null;
+            nextMatch.isFinished = false;
+        }
+
+        updateSingleEliminationProgress(schedule, nextMatch);
+    }
+
+    function initializeSingleEliminationSchedule(schedule) {
+        if (!schedule || schedule.mode !== 'single-elimination') return;
+        schedule.matches.filter(match => match.round === 1).forEach(match => updateSingleEliminationProgress(schedule, match));
+    }
+
+    function buildStandingsTableRows() {
+        const stats = {};
+        currentTeams.forEach(team => {
+            stats[team.id] = {
+                id: team.id,
+                name: `${team.name1} & ${team.name2}`,
+                team,
+                win: 0,
+                loss: 0,
+                ptsFor: 0,
+                ptsAgainst: 0
+            };
+        });
+
+        schedules.forEach(schedule => schedule.matches.forEach(match => {
+            if (!match.isFinished || !match.team1 || !match.team2) return;
+            if (!stats[match.team1.id] || !stats[match.team2.id]) return;
+            stats[match.team1.id].ptsFor += match.score1;
+            stats[match.team1.id].ptsAgainst += match.score2;
+            stats[match.team2.id].ptsFor += match.score2;
+            stats[match.team2.id].ptsAgainst += match.score1;
+            if (match.score1 > match.score2) {
+                stats[match.team1.id].win++;
+                stats[match.team2.id].loss++;
+            } else if (match.score2 > match.score1) {
+                stats[match.team2.id].win++;
+                stats[match.team1.id].loss++;
+            }
+        }));
+
+        return Object.values(stats).sort((a, b) => {
+            if (b.win !== a.win) return b.win - a.win;
+            const diffA = a.ptsFor - a.ptsAgainst;
+            const diffB = b.ptsFor - b.ptsAgainst;
+            if (diffB !== diffA) return diffB - diffA;
+            return b.ptsFor - a.ptsFor;
+        });
+    }
+
+    function getRankedTeamsByStandings() {
+        const ranked = buildStandingsTableRows().map(row => row.team).filter(Boolean);
+        return ranked.length > 0 ? ranked : [...currentTeams];
+    }
+
+    function buildSingleEliminationSchedule() {
+        const rankedTeams = getRankedTeamsByStandings();
+        if (rankedTeams.length < 2) return null;
+
+        const bracketSize = 2 ** Math.ceil(Math.log2(rankedTeams.length));
+        const firstRoundMatchCount = bracketSize / 2;
+        const byeCount = bracketSize - rankedTeams.length;
+        const scheduleId = schedules.length + 1;
+        const matches = [];
+        let counter = 0;
+
+        for (let index = 0; index < firstRoundMatchCount; index++) {
+            let team1 = null;
+            let team2 = null;
+            if (index < byeCount) {
+                team1 = rankedTeams[index] || null;
+            } else {
+                const offset = index - byeCount;
+                team1 = rankedTeams[byeCount + offset] || null;
+                team2 = rankedTeams[rankedTeams.length - 1 - offset] || null;
+            }
+
+            matches.push({
+                id: `M_${scheduleId}_${counter++}`,
+                round: 1,
+                matchNumber: index + 1,
+                team1: team1 ? { ...team1 } : null,
+                team2: team2 ? { ...team2 } : null,
+                score1: null,
+                score2: null,
+                isFinished: false
+            });
+        }
+
+        let previousRound = matches.slice();
+        let round = 2;
+        while (previousRound.length > 1) {
+            const nextRound = [];
+            for (let index = 0; index < previousRound.length; index += 2) {
+                const nextMatch = {
+                    id: `M_${scheduleId}_${counter++}`,
+                    round,
+                    matchNumber: (index / 2) + 1,
+                    team1: null,
+                    team2: null,
+                    score1: null,
+                    score2: null,
+                    isFinished: false
+                };
+                previousRound[index].nextMatchId = nextMatch.id;
+                previousRound[index].slotInNext = 'team1';
+                previousRound[index + 1].nextMatchId = nextMatch.id;
+                previousRound[index + 1].slotInNext = 'team2';
+                nextRound.push(nextMatch);
+            }
+            matches.push(...nextRound);
+            previousRound = nextRound;
+            round += 1;
+        }
+
+        const seededNames = rankedTeams.map((team, index) => `${index + 1}. ${team.name1} & ${team.name2}`);
+        const schedule = {
+            id: scheduleId,
+            mode: 'single-elimination',
+            matches,
+            restMsg: `依目前總戰績建立種子：${seededNames.join('、')}`
+        };
+        initializeSingleEliminationSchedule(schedule);
+        return schedule;
     }
 
     async function fetchGameFileFromGitHub() {
@@ -183,15 +367,21 @@
     }
 
     async function loadData() {
-        const d = getStorage();
-        players = d.players || [];
-        currentTeams = d.currentTeams || [];
-        schedules = d.schedules || [];
-        matchMode = d.matchMode || 'single';
+        const d = normalizeGameData(getStorage());
+        players = d.players;
+        currentTeams = d.currentTeams;
+        schedules = d.schedules;
+        matchMode = d.matchMode;
+        pendingRestMsg = d.pendingRestMsg;
+        needsInitialSchedule = d.needsInitialSchedule;
 
-        if (IS_INIT && schedules.length === 0) {
-            // 從 play.html 跳過來，產生第一個賽程
-            generateMatchesForCurrentTeams(d.pendingRestMsg || "");
+        if (schedules.some(schedule => schedule.mode === 'single-elimination')) {
+            schedules.filter(schedule => schedule.mode === 'single-elimination').forEach(initializeSingleEliminationSchedule);
+            saveStorage();
+        }
+
+        if (schedules.length === 0 && currentTeams.length > 0 && (IS_INIT || needsInitialSchedule)) {
+            generateMatchesForCurrentTeams(pendingRestMsg);
             return;
         }
 
@@ -227,6 +417,9 @@
             currentTeams = data.currentTeams;
             schedules = data.schedules;
             matchMode = data.matchMode;
+            pendingRestMsg = data.pendingRestMsg;
+            needsInitialSchedule = data.needsInitialSchedule;
+            schedules.filter(schedule => schedule.mode === 'single-elimination').forEach(initializeSingleEliminationSchedule);
             saveStorage();
             renderAll();
             const statusEl = document.getElementById('syncStatus');
@@ -256,11 +449,21 @@
                 currentTeams = data.currentTeams;
                 schedules = data.schedules;
                 matchMode = data.matchMode;
+                pendingRestMsg = data.pendingRestMsg;
+                needsInitialSchedule = data.needsInitialSchedule;
+                schedules.filter(schedule => schedule.mode === 'single-elimination').forEach(initializeSingleEliminationSchedule);
                 saveStorage();
 
                 // 雲端完全沒有分組也沒有賽程 → 跳回 play 繼續設定
                 if (currentTeams.length === 0 && schedules.length === 0 && players.length > 0) {
                     window.location.href = `play.html?gameId=${GAME_ID}`;
+                    return;
+                }
+
+                if (schedules.length === 0 && currentTeams.length > 0 && needsInitialSchedule) {
+                    generateMatchesForCurrentTeams(pendingRestMsg);
+                    statusEl.innerText = '✅ 已載入雲端資料並建立首輪賽程';
+                    startPolling();
                     return;
                 }
 
@@ -277,135 +480,220 @@
     }
 
     function generateMatchesForCurrentTeams(restPlayersMsg="") {
-        let newScheduleId = schedules.length + 1;
-        let newMatches = [], restMsgArr = [];
+        const newScheduleId = schedules.length + 1;
+        const newMatches = [];
+        const restMsgArr = [];
         if (restPlayersMsg) restMsgArr.push(restPlayersMsg);
 
         if (matchMode === 'single') {
-            let tempTeams = [...currentTeams];
-            if (tempTeams.length%2!==0) { let rt=tempTeams.splice(Math.floor(Math.random()*tempTeams.length),1)[0]; restMsgArr.push(`單數隊伍：<strong>${rt.name1} & ${rt.name2}</strong> (本輪輪空)`); }
-            tempTeams.sort(()=>Math.random()-0.5);
-            for (let i=0; i<tempTeams.length; i+=2) newMatches.push({id:`M_${newScheduleId}_${i}`,round:1,team1:tempTeams[i],team2:tempTeams[i+1],score1:null,score2:null,isFinished:false});
+            const tempTeams = [...currentTeams];
+            if (tempTeams.length % 2 !== 0) {
+                const restingTeam = tempTeams.splice(Math.floor(Math.random() * tempTeams.length), 1)[0];
+                restMsgArr.push(`單數隊伍：<strong>${restingTeam.name1} & ${restingTeam.name2}</strong> (本輪輪空)`);
+            }
+            tempTeams.sort(() => Math.random() - 0.5);
+            for (let index = 0; index < tempTeams.length; index += 2) {
+                newMatches.push({
+                    id: `M_${newScheduleId}_${index}`,
+                    round: 1,
+                    matchNumber: (index / 2) + 1,
+                    team1: tempTeams[index],
+                    team2: tempTeams[index + 1],
+                    score1: null,
+                    score2: null,
+                    isFinished: false
+                });
+            }
         } else {
-            let rrTeams = [...currentTeams];
-            if (rrTeams.length%2!==0) rrTeams.push({id:'BYE',name1:'輪空',name2:'休息',totalLevel:0});
-            let numTeams=rrTeams.length, mc=0;
-            for (let r=0; r<numTeams-1; r++) {
-                for (let i=0; i<numTeams/2; i++) {
-                    let t1=rrTeams[i], t2=rrTeams[numTeams-1-i];
-                    if(t1.id!=='BYE'&&t2.id!=='BYE') newMatches.push({id:`M_${newScheduleId}_${mc++}`,round:r+1,team1:t1,team2:t2,score1:null,score2:null,isFinished:false});
+            const rrTeams = [...currentTeams];
+            if (rrTeams.length % 2 !== 0) rrTeams.push({ id: 'BYE', name1: '輪空', name2: '休息', totalLevel: 0 });
+            const numTeams = rrTeams.length;
+            let matchCounter = 0;
+            for (let round = 0; round < numTeams - 1; round++) {
+                for (let index = 0; index < numTeams / 2; index++) {
+                    const team1 = rrTeams[index];
+                    const team2 = rrTeams[numTeams - 1 - index];
+                    if (team1.id !== 'BYE' && team2.id !== 'BYE') {
+                        newMatches.push({
+                            id: `M_${newScheduleId}_${matchCounter++}`,
+                            round: round + 1,
+                            matchNumber: matchCounter,
+                            team1,
+                            team2,
+                            score1: null,
+                            score2: null,
+                            isFinished: false
+                        });
+                    }
                 }
-                rrTeams.splice(1,0,rrTeams.pop());
+                rrTeams.splice(1, 0, rrTeams.pop());
             }
         }
 
         schedules.push({ id: newScheduleId, mode: matchMode, matches: newMatches, restMsg: restMsgArr.join('<br>') });
+        pendingRestMsg = '';
+        needsInitialSchedule = false;
         renderAll();
         saveStorage();
         autoSync();
     }
 
-    function generateRematch() { generateMatchesForCurrentTeams(""); }
+    function generateRematch() { generateMatchesForCurrentTeams(''); }
+
+    function generateRankedSingleElimination() {
+        const schedule = buildSingleEliminationSchedule();
+        if (!schedule) {
+            alert('至少需要 2 隊才能產生單敗淘汰賽。');
+            return;
+        }
+        schedules.push(schedule);
+        renderAll();
+        saveStorage();
+        autoSync();
+    }
 
     function renderAll() { renderStandings(); renderSchedules(); updateRematchUI(); }
 
     function updateRematchUI() {
-        const c = document.getElementById('rematchContainer');
-        if (schedules.length>0 && currentTeams.length>0) { c.style.display='block'; document.getElementById('nextScheduleNum').innerText=schedules.length+1; }
-        else c.style.display='none';
+        const container = document.getElementById('rematchContainer');
+        if (schedules.length > 0 && currentTeams.length > 0) {
+            container.style.display = 'block';
+            document.getElementById('nextScheduleNum').innerText = schedules.length + 1;
+        } else {
+            container.style.display = 'none';
+        }
     }
 
     function renderSchedules() {
         const wrapper = document.getElementById('schedulesWrapper');
-        if (schedules.length===0) { wrapper.innerHTML=`<div style="text-align:center;color:var(--text-muted);padding:40px;">尚未產生賽程。</div>`; return; }
+        if (schedules.length === 0) {
+            wrapper.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:40px;">尚未產生賽程。</div>`;
+            return;
+        }
+
         let html = '';
-        schedules.forEach((sch, index) => {
-            const isOpen = index===schedules.length-1 ? 'open' : '';
-            html += `<details class="schedule-details" ${isOpen}><summary class="schedule-summary">🏸 賽程 ${sch.id} ${sch.mode==='single'?'(單輪配對賽)':'(循環賽)'}</summary><div class="schedule-content">`;
-            if (sch.restMsg) html += `<div class="info-box">${sch.restMsg}</div>`;
+        schedules.forEach((schedule, index) => {
+            const isOpen = index === schedules.length - 1 ? 'open' : '';
+            html += `<details class="schedule-details" ${isOpen}><summary class="schedule-summary">🏸 賽程 ${schedule.id} (${getModeLabel(schedule.mode)})</summary><div class="schedule-content">`;
+            if (schedule.restMsg) html += `<div class="info-box">${schedule.restMsg}</div>`;
             html += `<div class="matches-grid">`;
+
             let currentRound = 0;
             let matchNumInRound = 0;
-            sch.matches.forEach((m, mIndex) => {
-                if (sch.mode==='round-robin' && m.round!==currentRound) {
-                    html+=`<div class="round-header">🏆 第 ${m.round} 輪</div>`;
-                    currentRound=m.round;
-                    matchNumInRound=0;
+            schedule.matches.forEach((match, matchIndex) => {
+                if (schedule.mode !== 'single' && match.round !== currentRound) {
+                    const roundLabel = schedule.mode === 'single-elimination'
+                        ? (getScheduleRoundMatches(schedule, match.round).length === 1 ? '🏆 冠軍戰' : `🪜 第 ${match.round} 輪`)
+                        : `🏆 第 ${match.round} 輪`;
+                    html += `<div class="round-header">${roundLabel}</div>`;
+                    currentRound = match.round;
+                    matchNumInRound = 0;
                 }
+
                 matchNumInRound++;
-                const headerLabel = sch.mode==='single' ? `場次 ${mIndex+1}` : `場次 ${matchNumInRound}`;
+                const headerLabel = schedule.mode === 'single' ? `場次 ${matchIndex + 1}` : `第 ${match.round} 輪・第 ${matchNumInRound} 場`;
+                const matchReady = !!(match.team1 && match.team2);
+                const autoAdvance = schedule.mode === 'single-elimination' && ((match.team1 && !match.team2) || (match.team2 && !match.team1));
+                const pendingLabel = !matchReady && !autoAdvance ? '等待上一輪結果' : '';
+
                 html += `<div class="match-card">
                     <div class="match-header">${headerLabel}</div>
                     <div class="match-body">
                         <div class="team">
-                            <div class="team-name">${m.team1.name1}<br>& ${m.team1.name2}</div>
-                            <div style="font-size:12px;color:#0369a1;background:#e0f2fe;border-radius:4px;padding:1px 8px;display:inline-block;margin-top:4px;">Lv.${m.team1.totalLevel||'?'}</div>
-                            ${m.isFinished?`<div class="score-display ${m.score1>m.score2?'winner':''}">${m.score1}</div>`:`<input type="number" id="s1-${m.id}" class="score-input">`}
+                            <div class="team-name">${getTeamLabel(match.team1)}</div>
+                            <div style="font-size:12px;color:#0369a1;background:#e0f2fe;border-radius:4px;padding:1px 8px;display:inline-block;margin-top:4px;">Lv.${getTeamLevel(match.team1)}</div>
+                            ${match.isFinished ? `<div class="score-display ${match.score1 > match.score2 ? 'winner' : ''}">${match.score1}</div>` : (matchReady ? `<input type="number" id="s1-${match.id}" class="score-input" min="0">` : `<div style="font-size:13px;color:var(--text-muted);margin-top:10px;">${autoAdvance && match.team1 ? '輪空晉級' : pendingLabel || '待定'}</div>`)}
                         </div>
-                        <div class="vs-badge">VS</div>
+                        <div class="vs-badge">${autoAdvance ? '輪空' : 'VS'}</div>
                         <div class="team">
-                            <div class="team-name">${m.team2.name1}<br>& ${m.team2.name2}</div>
-                            <div style="font-size:12px;color:#0369a1;background:#e0f2fe;border-radius:4px;padding:1px 8px;display:inline-block;margin-top:4px;">Lv.${m.team2.totalLevel||'?'}</div>
-                            ${m.isFinished?`<div class="score-display ${m.score2>m.score1?'winner':''}">${m.score2}</div>`:`<input type="number" id="s2-${m.id}" class="score-input">`}
+                            <div class="team-name">${getTeamLabel(match.team2)}</div>
+                            <div style="font-size:12px;color:#0369a1;background:#e0f2fe;border-radius:4px;padding:1px 8px;display:inline-block;margin-top:4px;">Lv.${getTeamLevel(match.team2)}</div>
+                            ${match.isFinished ? `<div class="score-display ${match.score2 > match.score1 ? 'winner' : ''}">${match.score2}</div>` : (matchReady ? `<input type="number" id="s2-${match.id}" class="score-input" min="0">` : `<div style="font-size:13px;color:var(--text-muted);margin-top:10px;">${autoAdvance && match.team2 ? '輪空晉級' : pendingLabel || '待定'}</div>`)}
                         </div>
                     </div>
-                    <div class="match-footer">
-                        ${m.isFinished
-                            ? `<button style="background:white;color:var(--primary);border:1px solid var(--primary);" onclick="editMatch(${sch.id},'${m.id}')">修改分數</button>`
-                            : `<button style="width:100%;" onclick="saveScore(${sch.id},'${m.id}')">確認分數</button>`}
-                    </div>
+                    <div class="match-footer">${renderMatchFooter(schedule, match)}</div>
                 </div>`;
             });
+
             html += `</div></div></details>`;
         });
         wrapper.innerHTML = html;
     }
 
-    function saveScore(schId, matchId) {
-        const s1=document.getElementById(`s1-${matchId}`).value, s2=document.getElementById(`s2-${matchId}`).value;
-        if(s1===''||s2==='') return;
-        const m=schedules.find(s=>s.id===schId).matches.find(x=>x.id===matchId);
-        m.score1=parseInt(s1); m.score2=parseInt(s2); m.isFinished=true;
-        renderAll(); saveStorage(); autoSync();
+    function renderMatchFooter(schedule, match) {
+        const ready = !!(match.team1 && match.team2);
+        if (match.isFinished) {
+            return `<button style="background:white;color:var(--primary);border:1px solid var(--primary);" onclick="editMatch(${schedule.id},'${match.id}')">修改分數</button>`;
+        }
+        if (schedule.mode === 'single-elimination' && ((match.team1 && !match.team2) || (match.team2 && !match.team1))) {
+            return `<span style="font-size:13px;color:var(--text-muted);">此場因輪空自動晉級，下一輪已更新。</span>`;
+        }
+        if (!ready) {
+            return `<span style="font-size:13px;color:var(--text-muted);">等待上一輪完成後才可輸入分數。</span>`;
+        }
+        return `<button style="width:100%;" onclick="saveScore(${schedule.id},'${match.id}')">確認分數</button>`;
     }
 
-    function editMatch(schId, matchId) {
-        schedules.find(s=>s.id===schId).matches.find(x=>x.id===matchId).isFinished=false;
-        renderAll(); saveStorage(); autoSync();
+    function saveScore(scheduleId, matchId) {
+        const schedule = schedules.find(item => item.id === scheduleId);
+        const match = schedule?.matches.find(item => item.id === matchId);
+        if (!schedule || !match || !match.team1 || !match.team2) return;
+
+        const score1Value = document.getElementById(`s1-${matchId}`)?.value;
+        const score2Value = document.getElementById(`s2-${matchId}`)?.value;
+        if (score1Value === '' || score2Value === '' || score1Value == null || score2Value == null) return;
+
+        const score1 = parseInt(score1Value, 10);
+        const score2 = parseInt(score2Value, 10);
+        if (schedule.mode === 'single-elimination' && score1 === score2) {
+            alert('單敗淘汰賽不能平手，請輸入能分出勝負的比分。');
+            return;
+        }
+
+        match.score1 = score1;
+        match.score2 = score2;
+        match.isFinished = true;
+        if (schedule.mode === 'single-elimination') updateSingleEliminationProgress(schedule, match);
+        renderAll();
+        saveStorage();
+        autoSync();
+    }
+
+    function editMatch(scheduleId, matchId) {
+        const schedule = schedules.find(item => item.id === scheduleId);
+        const match = schedule?.matches.find(item => item.id === matchId);
+        if (!schedule || !match) return;
+        match.isFinished = false;
+        match.score1 = null;
+        match.score2 = null;
+        if (schedule.mode === 'single-elimination') updateSingleEliminationProgress(schedule, match);
+        renderAll();
+        saveStorage();
+        autoSync();
     }
 
     function renderStandings() {
-        if (schedules.length===0) { document.getElementById('standingsArea').innerHTML=''; return; }
-        let stats={};
-        currentTeams.forEach(t => stats[t.id]={name:`${t.name1} & ${t.name2}`,win:0,loss:0,ptsFor:0,ptsAgainst:0});
-        schedules.forEach(sch => sch.matches.forEach(m => {
-            if(m.isFinished&&stats[m.team1.id]&&stats[m.team2.id]) {
-                stats[m.team1.id].ptsFor+=m.score1; stats[m.team1.id].ptsAgainst+=m.score2;
-                stats[m.team2.id].ptsFor+=m.score2; stats[m.team2.id].ptsAgainst+=m.score1;
-                if(m.score1>m.score2){stats[m.team1.id].win++;stats[m.team2.id].loss++;}
-                else if(m.score2>m.score1){stats[m.team2.id].win++;stats[m.team1.id].loss++;}
-            }
-        }));
-        const sorted=Object.values(stats).sort((a,b)=>{
-            if(b.win!==a.win) return b.win-a.win;
-            const da=a.ptsFor-a.ptsAgainst, db=b.ptsFor-b.ptsAgainst;
-            return db-da;
-        });
-        document.getElementById('standingsArea').innerHTML=`
+        if (schedules.length === 0) {
+            document.getElementById('standingsArea').innerHTML = '';
+            return;
+        }
+
+        const sorted = buildStandingsTableRows();
+        document.getElementById('standingsArea').innerHTML = `
             <h3 style="color:var(--secondary);margin-bottom:10px;">📊 總戰績表 <span style="font-size:14px;font-weight:normal;">(結算至目前所有賽程)</span></h3>
             <div style="overflow-x:auto;margin-bottom:25px;">
             <table class="standings-table">
                 <thead><tr><th>名次</th><th>隊伍</th><th>勝</th><th>負</th><th>得分</th><th>失分</th><th>淨勝分</th></tr></thead>
-                <tbody>${sorted.map((s,i)=>{
-                    const diff=s.ptsFor-s.ptsAgainst;
+                <tbody>${sorted.map((item, index) => {
+                    const diff = item.ptsFor - item.ptsAgainst;
                     return `<tr>
-                        <td>${i+1}</td>
-                        <td style="text-align:left;">${s.name}</td>
-                        <td style="color:var(--primary);font-weight:bold;">${s.win}</td>
-                        <td style="color:var(--danger);font-weight:bold;">${s.loss}</td>
-                        <td style="color:var(--primary);">${s.ptsFor}</td>
-                        <td style="color:var(--danger);">${s.ptsAgainst}</td>
-                        <td style="color:${diff>=0?'var(--primary)':'var(--danger)'};font-weight:bold;">${diff>0?'+'+diff:diff}</td>
+                        <td>${index + 1}</td>
+                        <td style="text-align:left;">${item.name}</td>
+                        <td style="color:var(--primary);font-weight:bold;">${item.win}</td>
+                        <td style="color:var(--danger);font-weight:bold;">${item.loss}</td>
+                        <td style="color:var(--primary);">${item.ptsFor}</td>
+                        <td style="color:var(--danger);">${item.ptsAgainst}</td>
+                        <td style="color:${diff >= 0 ? 'var(--primary)' : 'var(--danger)'};font-weight:bold;">${diff > 0 ? '+' + diff : diff}</td>
                     </tr>`;
                 }).join('')}</tbody>
             </table></div>`;
@@ -417,7 +705,7 @@
         isSyncing = true;
         const statusEl=document.getElementById('syncStatus');
         const path=`${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
-        const base64=btoa(unescape(encodeURIComponent(JSON.stringify({players,currentTeams,schedules,matchMode,lastUpdated:new Date().toISOString()},null,2))));
+        const base64=btoa(unescape(encodeURIComponent(JSON.stringify({players,currentTeams,schedules,matchMode,pendingRestMsg,needsInitialSchedule,lastUpdated:new Date().toISOString()},null,2))));
         statusEl.innerText='☁️ 同步中...';
         try {
             const fetched = await fetchGameFileFromGitHub();
@@ -437,7 +725,7 @@
         const btn=document.getElementById('btnSync'); btn.innerText="⏳ 儲存中..."; btn.disabled=true;
         const statusEl=document.getElementById('syncStatus');
         const path=`${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
-        const base64=btoa(unescape(encodeURIComponent(JSON.stringify({players,currentTeams,schedules,matchMode,lastUpdated:new Date().toISOString()},null,2))));
+        const base64=btoa(unescape(encodeURIComponent(JSON.stringify({players,currentTeams,schedules,matchMode,pendingRestMsg,needsInitialSchedule,lastUpdated:new Date().toISOString()},null,2))));
         try {
             const fetched = await fetchGameFileFromGitHub();
             if (fetched) fileSha = fetched.raw.sha;
