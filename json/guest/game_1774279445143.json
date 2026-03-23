@@ -202,10 +202,71 @@
         }
       ],
       "restMsg": ""
+    },
+    {
+      "id": 2,
+      "mode": "single-elimination",
+      "matches": [
+        {
+          "id": "M_2_0",
+          "round": 1,
+          "matchNumber": 1,
+          "team1": {
+            "id": "Team_1774279465959_0",
+            "name1": "王齊麟",
+            "name2": "李洋",
+            "totalLevel": 19
+          },
+          "team2": {
+            "id": "Team_1774279465959_3",
+            "name1": "陳雨菲",
+            "name2": "大谷",
+            "totalLevel": 18
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false,
+          "nextMatchId": "M_2_2",
+          "slotInNext": "team1"
+        },
+        {
+          "id": "M_2_1",
+          "round": 1,
+          "matchNumber": 2,
+          "team1": {
+            "id": "Team_1774279465959_1",
+            "name1": "戴資穎",
+            "name2": "林書豪",
+            "totalLevel": 15
+          },
+          "team2": {
+            "id": "Team_1774279465959_2",
+            "name1": "安洗瑩",
+            "name2": "周天成",
+            "totalLevel": 18
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false,
+          "nextMatchId": "M_2_2",
+          "slotInNext": "team2"
+        },
+        {
+          "id": "M_2_2",
+          "round": 2,
+          "matchNumber": 1,
+          "team1": null,
+          "team2": null,
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        }
+      ],
+      "restMsg": "依目前總戰績建立種子：1. 王齊麟 & 李洋、2. 戴資穎 & 林書豪、3. 安洗瑩 & 周天成、4. 陳雨菲 & 大谷"
     }
   ],
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-03-23T15:49:15.225Z"
+  "lastUpdated": "2026-03-23T15:50:12.487Z"
 }
