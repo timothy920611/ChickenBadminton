@@ -300,10 +300,144 @@
         }
       ],
       "restMsg": ""
+    },
+    {
+      "id": 2,
+      "mode": "single-elimination",
+      "matches": [
+        {
+          "id": "M_2_0",
+          "round": 1,
+          "matchNumber": 1,
+          "team1": {
+            "id": "Team_1774281562638_0",
+            "name1": "陳雨菲",
+            "name2": "周天成",
+            "totalLevel": 21
+          },
+          "team2": null,
+          "score1": null,
+          "score2": null,
+          "isFinished": false,
+          "nextMatchId": "M_2_4",
+          "slotInNext": "team1"
+        },
+        {
+          "id": "M_2_1",
+          "round": 1,
+          "matchNumber": 2,
+          "team1": {
+            "id": "Team_1774281562638_1",
+            "name1": "李洋",
+            "name2": "小菜雞B",
+            "totalLevel": 17
+          },
+          "team2": null,
+          "score1": null,
+          "score2": null,
+          "isFinished": false,
+          "nextMatchId": "M_2_4",
+          "slotInNext": "team2"
+        },
+        {
+          "id": "M_2_2",
+          "round": 1,
+          "matchNumber": 3,
+          "team1": {
+            "id": "Team_1774281562638_2",
+            "name1": "安洗瑩",
+            "name2": "林書豪",
+            "totalLevel": 15
+          },
+          "team2": null,
+          "score1": null,
+          "score2": null,
+          "isFinished": false,
+          "nextMatchId": "M_2_5",
+          "slotInNext": "team1"
+        },
+        {
+          "id": "M_2_3",
+          "round": 1,
+          "matchNumber": 4,
+          "team1": {
+            "id": "Team_1774281562638_3",
+            "name1": "王齊麟",
+            "name2": "戴資穎",
+            "totalLevel": 15
+          },
+          "team2": {
+            "id": "Team_1774281562638_4",
+            "name1": "小菜雞A",
+            "name2": "大谷",
+            "totalLevel": 15
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false,
+          "nextMatchId": "M_2_5",
+          "slotInNext": "team2"
+        },
+        {
+          "id": "M_2_4",
+          "round": 2,
+          "matchNumber": 1,
+          "team1": {
+            "id": "Team_1774281562638_0",
+            "name1": "陳雨菲",
+            "name2": "周天成",
+            "totalLevel": 21
+          },
+          "team2": {
+            "id": "Team_1774281562638_1",
+            "name1": "李洋",
+            "name2": "小菜雞B",
+            "totalLevel": 17
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false,
+          "nextMatchId": "M_2_6",
+          "slotInNext": "team1"
+        },
+        {
+          "id": "M_2_5",
+          "round": 2,
+          "matchNumber": 2,
+          "team1": {
+            "id": "Team_1774281562638_2",
+            "name1": "安洗瑩",
+            "name2": "林書豪",
+            "totalLevel": 15
+          },
+          "team2": null,
+          "score1": null,
+          "score2": null,
+          "isFinished": false,
+          "nextMatchId": "M_2_6",
+          "slotInNext": "team2"
+        },
+        {
+          "id": "M_2_6",
+          "round": 3,
+          "matchNumber": 1,
+          "team1": null,
+          "team2": {
+            "id": "Team_1774281562638_2",
+            "name1": "安洗瑩",
+            "name2": "林書豪",
+            "totalLevel": 15
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        }
+      ],
+      "restMsg": "依目前總戰績建立種子：1. 陳雨菲 & 周天成、2. 李洋 & 小菜雞B、3. 安洗瑩 & 林書豪、4. 王齊麟 & 戴資穎、5. 小菜雞A & 大谷"
     }
   ],
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-03-23T15:59:31.468Z"
+  "lastUpdated": "2026-03-23T15:59:37.126Z"
 }
