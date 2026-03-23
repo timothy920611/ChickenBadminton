@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -130,22 +131,26 @@
         </button>
     </div>
 
-    <div id="teamEditorContainer" style="display:none;">
-        <div style="border-top:2px dashed #e5e7eb;margin:5px 0 18px 0;"></div>
-        <div class="team-editor-header">
-            <h3 style="font-size:16px;color:var(--secondary);">✏️ 手動調整分組</h3>
-            <span class="team-editor-hint">💡 拖曳球員卡片到其他人身上來互換</span>
-        </div>
-        <div class="teams-drag-grid" id="teamsDragGrid"></div>
-        <div class="team-editor-actions">
-            <button class="btn-confirm-teams" onclick="confirmTeamsAndStart('single')">✅ 確認 → 開始單輪賽事</button>
-            <button class="btn-confirm-rr" onclick="confirmTeamsAndStart('round-robin')">🏆 確認 → 開始循環賽</button>
-            <button class="btn-cancel-edit" onclick="cancelTeamEdit()">✕ 取消</button>
-        </div>
+```
+<div id="teamEditorContainer" style="display:none;">
+    <div style="border-top:2px dashed #e5e7eb;margin:5px 0 18px 0;"></div>
+    <div class="team-editor-header">
+        <h3 style="font-size:16px;color:var(--secondary);">✏️ 手動調整分組</h3>
+        <span class="team-editor-hint">💡 拖曳球員卡片到其他人身上來互換</span>
     </div>
+    <div class="teams-drag-grid" id="teamsDragGrid"></div>
+    <div class="team-editor-actions">
+        <button class="btn-confirm-teams" onclick="confirmTeamsAndStart('single')">✅ 確認 → 開始單輪賽事</button>
+        <button class="btn-confirm-rr" onclick="confirmTeamsAndStart('round-robin')">🏆 確認 → 開始循環賽</button>
+        <button class="btn-cancel-edit" onclick="cancelTeamEdit()">✕ 取消</button>
+    </div>
+</div>
+```
+
 </div>
 
 <!-- 常用選手 Modal -->
+
 <div id="frequentPlayersModal" class="modal">
     <div class="modal-content" style="max-width:550px;">
         <div class="modal-header">
@@ -185,6 +190,7 @@
 </div>
 
 <!-- 分級說明 Modal -->
+
 <div id="levelModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -227,6 +233,7 @@
     const MAX_PLAYERS = 20;
     let players = [], frequentPlayers = [], fpFileSha = null, hasFetchedFp = false, csvImportTarget = 'current';
     let pendingTeams = [], pendingRestPlayer = null, dragSrcInfo = null;
+    let playerFileSha = null; // 快取 SHA 供靜默同步用
 
     window.addEventListener('DOMContentLoaded', () => { initGameTitle(); loadPlayersFromStorage(); });
 
@@ -237,8 +244,60 @@
     function getStorage() { try { return JSON.parse(localStorage.getItem(LS_KEY)||'{}'); } catch(e) { return {}; } }
     function setStorage(patch) { const d = getStorage(); localStorage.setItem(LS_KEY, JSON.stringify({...d, ...patch})); }
 
-    function loadPlayersFromStorage() { players = getStorage().players || []; updatePlayerUI(); }
-    function savePlayersToStorage() { setStorage({ players }); }
+    async function loadPlayersFromStorage() {
+        const d = getStorage();
+        players = d.players || [];
+        // 換裝置時 localStorage 沒有資料，從 GitHub 拉取
+        if (players.length === 0) await fetchPlayersFromGitHub();
+        else updatePlayerUI();
+    }
+
+    async function fetchPlayersFromGitHub() {
+        const token = getRealToken(); if (!token) { updatePlayerUI(); return; }
+        const path = `${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
+        try {
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
+            });
+            if (res.ok) {
+                const raw = await res.json();
+                playerFileSha = raw.sha;
+                const data = JSON.parse(decodeURIComponent(escape(atob(raw.content))));
+                players = data.players || [];
+                if (players.length > 0) setStorage({ players });
+            }
+        } catch(e) {}
+        updatePlayerUI();
+    }
+
+    function savePlayersToStorage() {
+        setStorage({ players });
+        syncPlayersToGitHub(); // 靜默背景推送，不等待
+    }
+
+    async function syncPlayersToGitHub() {
+        const token = getRealToken(); if (!token) return;
+        const path = `${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
+        // 合併現有雲端資料（保留 currentTeams、schedules 等欄位）
+        const existing = getStorage();
+        const payload = { ...existing, players };
+        const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+        try {
+            if (!playerFileSha) {
+                const gr = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
+                });
+                if (gr.ok) playerFileSha = (await gr.json()).sha;
+            }
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: `更新球員名單: game_${GAME_ID}`, content: base64, ...(playerFileSha && { sha: playerFileSha }) })
+            });
+            if (res.ok) playerFileSha = (await res.json()).content.sha;
+            else playerFileSha = null; // SHA 過期，下次重取
+        } catch(e) {}
+    }
 
     function addPlayer(name=null, gender=null, level=null) {
         if (players.length >= MAX_PLAYERS) return;
@@ -416,5 +475,6 @@
         closeFrequentPlayersModal();
     }
 </script>
+
 </body>
 </html>
