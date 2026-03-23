@@ -302,17 +302,20 @@
         //           只有 players → 還在設定階段，跳 play 繼續
         //           都沒有 → 新比賽，跳 play
         function enterGame(gameId) {
-            let dest = 'play';
             const raw = localStorage.getItem(`badmintonData_${gameId}`);
             if (raw) {
                 try {
                     const d = JSON.parse(raw);
-                    if ((d.schedules||[]).length > 0 || (d.currentTeams||[]).length > 0) {
-                        dest = 'gamestart';
+                    const hasProgress = (d.schedules||[]).length > 0 || (d.currentTeams||[]).length > 0;
+                    const onlyPlayers = (d.players||[]).length > 0 && !hasProgress;
+                    if (onlyPlayers) {
+                        window.location.href = `play.html?gameId=${gameId}`;
+                        return;
                     }
                 } catch(e) {}
             }
-            window.location.href = `${dest}.html?gameId=${gameId}`;
+            // localStorage 空（換裝置）或有賽程資料 → 一律跳 gamestart 讓它從 GitHub 拉
+            window.location.href = `gamestart.html?gameId=${gameId}`;
         }
 
         // =============================================
