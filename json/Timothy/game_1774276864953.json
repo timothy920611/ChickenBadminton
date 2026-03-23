@@ -59,10 +59,80 @@
   "schedules": [],
   "matchMode": "single",
   "pendingRestMsg": "",
-  "savedTeamDraft": [],
-  "savedDraftMode": "",
-  "savedDraftRestMsg": "",
-  "savedDraftRestPlayer": null,
-  "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-03-23T15:07:52.698Z"
+  "savedTeamDraft": [
+    {
+      "id": "Team_1774278503310_0",
+      "mode": "round-robin",
+      "p1": {
+        "id": 1774276896539.1187,
+        "name": "慕華",
+        "gender": "男",
+        "level": 7
+      },
+      "p2": {
+        "id": 1774276896539.2407,
+        "name": "Yuna",
+        "gender": "女",
+        "level": 4
+      }
+    },
+    {
+      "id": "Team_1774278503310_1",
+      "mode": "round-robin",
+      "p1": {
+        "id": 1774276896539.1038,
+        "name": "承軒",
+        "gender": "男",
+        "level": 6
+      },
+      "p2": {
+        "id": 1774277648643.4956,
+        "name": "沛恩",
+        "gender": "男",
+        "level": 4
+      }
+    },
+    {
+      "id": "Team_1774278503310_2",
+      "mode": "round-robin",
+      "p1": {
+        "id": 1774276896540.5986,
+        "name": "まや",
+        "gender": "女",
+        "level": 5
+      },
+      "p2": {
+        "id": 1774276896538.2979,
+        "name": "則宇",
+        "gender": "女",
+        "level": 4
+      }
+    },
+    {
+      "id": "Team_1774278503310_3",
+      "mode": "round-robin",
+      "p1": {
+        "id": 1774276896539.1829,
+        "name": "怡瑱",
+        "gender": "女",
+        "level": 5
+      },
+      "p2": {
+        "id": 1774276896538.0168,
+        "name": "重運",
+        "gender": "男",
+        "level": 4
+      }
+    }
+  ],
+  "savedDraftMode": "round-robin",
+  "savedDraftRestMsg": "單數球員：<strong>佳世</strong> (本輪休息)",
+  "savedDraftRestPlayer": {
+    "id": 1774276896535.7703,
+    "name": "佳世",
+    "gender": "女",
+    "level": 4
+  },
+  "savedDraftUpdatedAt": "2026-03-23T15:08:25.777Z",
+  "lastUpdated": "2026-03-23T15:08:26.387Z"
 }
