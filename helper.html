@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏸 協助計分</title>
+    <style>
+        :root {
+            --primary: #059669; --primary-hover: #047857; --secondary: #0f766e;
+            --bg: #f3f4f6; --card-bg: #ffffff; --text-main: #1f2937;
+            --text-muted: #6b7280; --danger: #ef4444; --warning: #f59e0b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg); color: var(--text-main); padding: 12px; max-width: 900px; margin: 0 auto; }
+        @media (min-width: 600px) { body { padding: 20px; } }
+        .card { background-color: var(--card-bg); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        @media (min-width: 600px) { .card { padding: 24px; margin-bottom: 24px; } }
+        input, button { padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; outline: none; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(5,150,105,0.2); }
+        button { background-color: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+        button:hover { background-color: var(--primary-hover); }
+        button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+
+        /* Header */
+        .helper-header { background: linear-gradient(135deg, var(--secondary), #1d4ed8); color: white; border-radius: 14px; padding: 18px 20px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .helper-header h1 { font-size: 18px; display: flex; align-items: center; gap: 8px; }
+        .helper-badge { background: rgba(255,255,255,0.2); border-radius: 20px; padding: 5px 14px; font-size: 13px; }
+        .sync-bar { background: var(--card-bg); border-radius: 10px; padding: 10px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.06); flex-wrap: wrap; }
+        .sync-status { font-size: 13px; color: var(--text-muted); }
+
+        /* Schedules */
+        .schedule-details { background: #fff; border: 2px solid #e5e7eb; border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+        .schedule-details[open] { border-color: var(--secondary); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .schedule-summary { background: #f1f5f9; color: var(--secondary); padding: 14px 18px; font-size: 17px; font-weight: bold; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+        .schedule-details[open] .schedule-summary { background: var(--secondary); color: white; }
+        .schedule-summary::-webkit-details-marker { display: none; }
+        .schedule-summary::after { content: '▼'; font-size: 13px; transition: transform 0.3s; }
+        .schedule-details[open] .schedule-summary::after { transform: rotate(180deg); }
+        .schedule-content { padding: 16px; background: #fafafa; }
+        .round-header { background: #cbd5e1; color: #334155; padding: 7px 14px; border-radius: 8px; font-size: 15px; font-weight: bold; margin: 10px 0 6px; text-align: center; }
+        .matches-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+
+        /* Match card */
+        .match-card { border: 2px solid #e5e7eb; border-radius: 12px; background: #fff; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.04); transition: border-color 0.2s; }
+        .match-card.done { border-color: #bbf7d0; }
+        .match-header { background: #f1f5f9; padding: 8px; text-align: center; font-weight: bold; color: var(--text-muted); border-bottom: 1px solid #e5e7eb; font-size: 14px; }
+        .match-body { padding: 12px 8px; display: flex; justify-content: space-between; align-items: center; flex: 1; }
+        .team { flex: 1; text-align: center; min-width: 0; }
+        .team-name { font-weight: bold; font-size: 15px; line-height: 1.4; word-break: break-word; margin-bottom: 4px; }
+        .vs-badge { background: var(--text-muted); color: white; font-weight: bold; padding: 4px 6px; border-radius: 8px; margin: 0 6px; font-size: 13px; flex-shrink: 0; }
+        .score-input { width: 56px; text-align: center; font-size: 22px; font-weight: bold; margin-top: 10px; padding: 4px; border: 2px solid #d1d5db; border-radius: 8px; }
+        .score-input:focus { border-color: var(--primary); }
+        .score-display { font-size: 28px; font-weight: bold; margin-top: 8px; }
+        .winner { color: var(--danger); }
+        .lv-badge { font-size: 12px; color: #0369a1; background: #e0f2fe; border-radius: 4px; padding: 1px 8px; display: inline-block; margin-top: 4px; }
+        .match-footer { padding: 10px 12px; background: #fff; border-top: 1px solid #e5e7eb; text-align: center; }
+        .btn-confirm { width: 100%; background: var(--primary); color: white; padding: 10px; font-size: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-confirm:hover { background: var(--primary-hover); }
+        .btn-edit { background: white; color: var(--primary); border: 1px solid var(--primary); padding: 8px 16px; font-size: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-edit:hover { background: #f0fdf4; }
+        .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 10px 14px; margin-bottom: 14px; border-radius: 4px; font-size: 14px; color: #1e3a8a; }
+
+        /* Loading / error */
+        .state-box { text-align: center; padding: 50px 20px; color: var(--text-muted); }
+        .state-box .icon { font-size: 48px; margin-bottom: 16px; }
+        .state-box p { font-size: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="helper-header">
+    <h1>🏸 協助計分模式</h1>
+    <span class="helper-badge" id="gameTitleBadge">載入中...</span>
+</div>
+
+<div class="sync-bar">
+    <span class="sync-status" id="syncStatus">⏳ 讀取比賽資料...</span>
+    <button onclick="reloadFromGitHub()" style="background:var(--secondary);padding:7px 14px;font-size:13px;border-radius:7px;">🔄 重新整理</button>
+</div>
+
+<div id="mainContent">
+    <div class="state-box"><div class="icon">⏳</div><p>載入中，請稍候...</p></div>
+</div>
+
+<script>
+    const GITHUB_OWNER = 'timothy920611', GITHUB_REPO = 'ChickenBadminton', GITHUB_FOLDER = 'json';
+    const NOISE = "5d5502d0e27ded4a977810d55f13e615c201fe6f7e1c0ff57641e034d75e2b2f";
+    const OBFUSCATED_TOKEN = "Z2l0aHViX3BhdF8xMUI0TlFKR0EwUWJlSVdIcDRLeVdUX3RMbHJFSXVLMFdzWVF3Y2" + NOISE + "9LbEd5SFN1cXl6Z3dUQ04xTHdNSHJ0cndIWkdIQ1MzRUVOVG9XR1p5RTFC";
+    function getRealToken() { try { return atob(OBFUSCATED_TOKEN.replace(NOISE,"")); } catch(e) { return null; } }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const GAME_ID = urlParams.get('gameId');
+    const OWNER_USER = urlParams.get('user') || 'guest';
+
+    let players = [], currentTeams = [], schedules = [], matchMode = 'single';
+    let fileSha = null;
+
+    // 驗證參數
+    if (!GAME_ID) {
+        document.getElementById('mainContent').innerHTML = `<div class="state-box"><div class="icon">❌</div><p>無效的連結，缺少比賽 ID。<br>請重新掃描 QR Code 或請主辦人重新分享連結。</p></div>`;
+        document.getElementById('syncStatus').innerText = '❌ 連結無效';
+    } else {
+        window.addEventListener('DOMContentLoaded', init);
+    }
+
+    async function init() {
+        await reloadFromGitHub();
+    }
+
+    async function reloadFromGitHub() {
+        const token = getRealToken();
+        const statusEl = document.getElementById('syncStatus');
+        statusEl.innerText = '⏳ 讀取雲端資料...';
+
+        const path = `${GITHUB_FOLDER}/${OWNER_USER}/game_${GAME_ID}.json`;
+        try {
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
+            });
+            if (res.ok) {
+                const raw = await res.json();
+                fileSha = raw.sha;
+                const data = JSON.parse(decodeURIComponent(escape(atob(raw.content))));
+                players = data.players || [];
+                currentTeams = data.currentTeams || [];
+                schedules = data.schedules || [];
+                matchMode = data.matchMode || 'single';
+
+                // 顯示比賽名稱
+                document.getElementById('gameTitleBadge').innerText = `gameId: ${GAME_ID}`;
+
+                statusEl.innerText = `✅ 資料已載入（${new Date().toLocaleTimeString('zh-TW', {hour12:false})}）`;
+                renderSchedules();
+            } else if (res.status === 404) {
+                statusEl.innerText = '⚠️ 找不到此比賽資料，主辦人可能尚未儲存至雲端';
+                document.getElementById('mainContent').innerHTML = `<div class="state-box"><div class="icon">🔍</div><p>找不到比賽資料。<br>請請主辦人先在賽程頁面點「☁️ 儲存至雲端」後再分享連結。</p></div>`;
+            } else {
+                statusEl.innerText = '❌ 載入失敗，請點重新整理';
+            }
+        } catch(e) {
+            statusEl.innerText = '❌ 網路錯誤，請檢查網路後重新整理';
+        }
+    }
+
+    function renderSchedules() {
+        const main = document.getElementById('mainContent');
+        if (schedules.length === 0) {
+            main.innerHTML = `<div class="state-box"><div class="icon">🏸</div><p>尚未產生賽程，請等主辦人安排。</p></div>`;
+            return;
+        }
+
+        let html = '';
+        schedules.forEach((sch, index) => {
+            const isOpen = index === schedules.length - 1 ? 'open' : '';
+            html += `<details class="schedule-details" ${isOpen}>
+                <summary class="schedule-summary">🏸 賽程 ${sch.id} ${sch.mode==='single'?'(單輪配對賽)':'(循環賽)'}</summary>
+                <div class="schedule-content">`;
+            if (sch.restMsg) html += `<div class="info-box">${sch.restMsg}</div>`;
+            html += `<div class="matches-grid">`;
+
+            let currentRound = 0, matchNumInRound = 0;
+            sch.matches.forEach((m, mIndex) => {
+                if (sch.mode === 'round-robin' && m.round !== currentRound) {
+                    html += `<div class="round-header">🏆 第 ${m.round} 輪</div>`;
+                    currentRound = m.round; matchNumInRound = 0;
+                }
+                matchNumInRound++;
+                const headerLabel = sch.mode === 'single' ? `場次 ${mIndex+1}` : `場次 ${matchNumInRound}`;
+
+                html += `<div class="match-card ${m.isFinished?'done':''}">
+                    <div class="match-header">${headerLabel}</div>
+                    <div class="match-body">
+                        <div class="team">
+                            <div class="team-name">${m.team1.name1}<br>& ${m.team1.name2}</div>
+                            <div class="lv-badge">Lv.${m.team1.totalLevel||'?'}</div>
+                            ${m.isFinished
+                                ? `<div class="score-display ${m.score1>m.score2?'winner':''}">${m.score1}</div>`
+                                : `<input type="number" id="s1-${m.id}" class="score-input" min="0" placeholder="0">`}
+                        </div>
+                        <div class="vs-badge">VS</div>
+                        <div class="team">
+                            <div class="team-name">${m.team2.name1}<br>& ${m.team2.name2}</div>
+                            <div class="lv-badge">Lv.${m.team2.totalLevel||'?'}</div>
+                            ${m.isFinished
+                                ? `<div class="score-display ${m.score2>m.score1?'winner':''}">${m.score2}</div>`
+                                : `<input type="number" id="s2-${m.id}" class="score-input" min="0" placeholder="0">`}
+                        </div>
+                    </div>
+                    <div class="match-footer">
+                        ${m.isFinished
+                            ? `<button class="btn-edit" onclick="editMatch(${sch.id},'${m.id}')">✏️ 修改分數</button>`
+                            : `<button class="btn-confirm" onclick="saveScore(${sch.id},'${m.id}')">✅ 確認分數</button>`}
+                    </div>
+                </div>`;
+            });
+            html += `</div></div></details>`;
+        });
+        main.innerHTML = html;
+    }
+
+    function saveScore(schId, matchId) {
+        const s1 = document.getElementById(`s1-${matchId}`)?.value;
+        const s2 = document.getElementById(`s2-${matchId}`)?.value;
+        if (s1 === '' || s2 === '' || s1 == null || s2 == null) return alert('請填入兩隊分數！');
+        const m = schedules.find(s => s.id === schId)?.matches.find(x => x.id === matchId);
+        if (!m) return;
+        m.score1 = parseInt(s1); m.score2 = parseInt(s2); m.isFinished = true;
+        renderSchedules();
+        pushToGitHub();
+    }
+
+    function editMatch(schId, matchId) {
+        const m = schedules.find(s => s.id === schId)?.matches.find(x => x.id === matchId);
+        if (!m) return;
+        m.isFinished = false;
+        renderSchedules();
+        pushToGitHub();
+    }
+
+    async function pushToGitHub() {
+        const token = getRealToken();
+        const statusEl = document.getElementById('syncStatus');
+        statusEl.innerText = '☁️ 同步中...';
+
+        const path = `${GITHUB_FOLDER}/${OWNER_USER}/game_${GAME_ID}.json`;
+        const base64 = btoa(unescape(encodeURIComponent(JSON.stringify({ players, currentTeams, schedules, matchMode }, null, 2))));
+
+        try {
+            // 先取最新 SHA 避免 409
+            if (!fileSha) {
+                const gr = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
+                });
+                if (gr.ok) fileSha = (await gr.json()).sha;
+            }
+
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: `協助計分更新: game_${GAME_ID}`,
+                    content: base64,
+                    ...(fileSha && { sha: fileSha })
+                })
+            });
+
+            if (res.ok) {
+                fileSha = (await res.json()).content.sha;
+                statusEl.innerText = `✅ 已同步（${new Date().toLocaleTimeString('zh-TW', {hour12:false})}）`;
+            } else {
+                // SHA 過期（主辦人同時也在改），重新拉取再重試一次
+                if ((await res.clone().json()).message?.includes('sha')) {
+                    fileSha = null;
+                    await pushToGitHub();
+                } else {
+                    statusEl.innerText = '❌ 同步失敗，請重新整理後再試';
+                }
+            }
+        } catch(e) {
+            statusEl.innerText = '❌ 網路錯誤';
+        }
+    }
+</script>
+</body>
+</html>
