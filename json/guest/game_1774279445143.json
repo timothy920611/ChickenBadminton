@@ -29,6 +29,12 @@
       "name": "李洋",
       "gender": "男",
       "level": 1
+    },
+    {
+      "id": 1774279456959.4038,
+      "name": "王齊麟",
+      "gender": "男",
+      "level": 18
     }
   ],
   "currentTeams": [],
@@ -40,5 +46,5 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-03-23T15:24:15.991Z"
+  "lastUpdated": "2026-03-23T15:24:17.529Z"
 }
