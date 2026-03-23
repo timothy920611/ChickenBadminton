@@ -94,6 +94,42 @@
 
     let players = [], currentTeams = [], schedules = [], matchMode = 'single';
     let fileSha = null;
+    let isSyncing = false;
+    let pollInterval = null;
+
+    function startPolling() {
+        if (pollInterval) return;
+        pollInterval = setInterval(() => pollFromGitHub(), 10000);
+    }
+    function stopPolling() { clearInterval(pollInterval); pollInterval = null; }
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopPolling(); else startPolling();
+    });
+
+    async function pollFromGitHub() {
+        if (isSyncing) return;
+        const token = getRealToken(); if (!token) return;
+        const path = `${GITHUB_FOLDER}/${OWNER_USER}/game_${GAME_ID}.json`;
+        try {
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
+            });
+            if (!res.ok) return;
+            const raw = await res.json();
+            if (raw.sha === fileSha) return; // 沒變動
+            fileSha = raw.sha;
+            const data = JSON.parse(decodeURIComponent(escape(atob(raw.content))));
+            players = data.players || [];
+            currentTeams = data.currentTeams || [];
+            schedules = data.schedules || [];
+            matchMode = data.matchMode || 'single';
+            renderSchedules();
+            const statusEl = document.getElementById('syncStatus');
+            statusEl.innerText = `🔄 已接收更新（${new Date().toLocaleTimeString('zh-TW',{hour12:false})}）`;
+            setTimeout(() => { if (statusEl.innerText.startsWith('🔄')) statusEl.innerText = ''; }, 3000);
+        } catch(e) {}
+    }
 
     // 驗證參數
     if (!GAME_ID) {
@@ -131,6 +167,7 @@
 
                 statusEl.innerText = `✅ 資料已載入（${new Date().toLocaleTimeString('zh-TW', {hour12:false})}）`;
                 renderSchedules();
+                startPolling();
             } else if (res.status === 404) {
                 statusEl.innerText = '⚠️ 找不到此比賽資料，主辦人可能尚未儲存至雲端';
                 document.getElementById('mainContent').innerHTML = `<div class="state-box"><div class="icon">🔍</div><p>找不到比賽資料。<br>請請主辦人先在賽程頁面點「☁️ 儲存至雲端」後再分享連結。</p></div>`;
@@ -220,6 +257,7 @@
     async function pushToGitHub() {
         const token = getRealToken();
         const statusEl = document.getElementById('syncStatus');
+        isSyncing = true;
         statusEl.innerText = '☁️ 同步中...';
 
         const path = `${GITHUB_FOLDER}/${OWNER_USER}/game_${GAME_ID}.json`;
@@ -258,6 +296,8 @@
             }
         } catch(e) {
             statusEl.innerText = '❌ 網路錯誤';
+        } finally {
+            isSyncing = false;
         }
     }
 </script>
