@@ -116,7 +116,9 @@
     const LS_KEY = `badmintonData_${GAME_ID}`;
 
     let players = [], currentTeams = [], schedules = [], matchMode = 'single';
-    let fileSha = null; // 快取 SHA，避免自動同步每次都多一次 GET
+    let fileSha = null;
+    let isSyncing = false; // 防止推送與拉取同時進行
+    let pollInterval = null;
 
     function getStorage() { try { return JSON.parse(localStorage.getItem(LS_KEY)||'{}'); } catch(e) { return {}; } }
     function saveStorage() { localStorage.setItem(LS_KEY, JSON.stringify({ players, currentTeams, schedules, matchMode })); }
@@ -124,6 +126,11 @@
     window.addEventListener('DOMContentLoaded', () => {
         initGameTitle();
         loadData();
+    });
+
+    // 頁面可見時啟動輪詢，背景時暫停（省 API 額度）
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopPolling(); else startPolling();
     });
 
     function initGameTitle() {
@@ -150,6 +157,41 @@
         }
 
         renderAll();
+        startPolling();
+    }
+
+    function startPolling() {
+        if (pollInterval) return;
+        pollInterval = setInterval(() => pollFromGitHub(), 10000);
+    }
+    function stopPolling() {
+        clearInterval(pollInterval); pollInterval = null;
+    }
+
+    // 靜默輪詢：只比對 SHA，有變動才更新畫面
+    async function pollFromGitHub() {
+        if (isSyncing) return;
+        const token = getRealToken(); if (!token) return;
+        const path = `${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
+        try {
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
+            });
+            if (!res.ok) return;
+            const raw = await res.json();
+            if (raw.sha === fileSha) return; // 沒變動，不重繪
+            fileSha = raw.sha;
+            const data = JSON.parse(decodeURIComponent(escape(atob(raw.content))));
+            players = data.players || [];
+            currentTeams = data.currentTeams || [];
+            schedules = data.schedules || [];
+            matchMode = data.matchMode || 'single';
+            saveStorage();
+            renderAll();
+            const statusEl = document.getElementById('syncStatus');
+            statusEl.innerText = `🔄 已接收更新（${new Date().toLocaleTimeString('zh-TW',{hour12:false})}）`;
+            setTimeout(() => { if (statusEl.innerText.startsWith('🔄')) statusEl.innerText = ''; }, 3000);
+        } catch(e) {}
     }
 
     async function fetchFromGitHub() {
@@ -170,9 +212,10 @@
                 currentTeams = data.currentTeams || [];
                 schedules = data.schedules || [];
                 matchMode = data.matchMode || 'single';
-                saveStorage(); // 寫入 localStorage 供後續使用
+                saveStorage();
                 statusEl.innerText = '✅ 已載入雲端資料';
                 setTimeout(() => { if (statusEl.innerText === '✅ 已載入雲端資料') statusEl.innerText = ''; }, 3000);
+                startPolling();
             } else if (res.status === 404) {
                 statusEl.innerText = '⚠️ 雲端尚無此比賽資料';
             } else {
@@ -320,6 +363,7 @@
     // ── 靜默背景自動同步 ──
     async function autoSync() {
         const token=getRealToken(); if(!token) return;
+        isSyncing = true;
         const statusEl=document.getElementById('syncStatus');
         const path=`${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
         const base64=btoa(unescape(encodeURIComponent(JSON.stringify({players,currentTeams,schedules,matchMode},null,2))));
@@ -333,6 +377,7 @@
             if(pr.ok) { fileSha=(await pr.json()).content.sha; statusEl.innerText='✅ 已自動同步'; setTimeout(()=>{ if(statusEl.innerText==='✅ 已自動同步') statusEl.innerText=''; },3000); }
             else statusEl.innerText='⚠️ 自動同步失敗';
         } catch(e) { statusEl.innerText='⚠️ 網路錯誤'; }
+        finally { isSyncing = false; }
     }
 
     // ── 手動雲端儲存（帶 alert） ──
