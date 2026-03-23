@@ -150,8 +150,8 @@
             return;
         }
 
-        // 換裝置時 localStorage 為空 → 從 GitHub 拉取
-        if (schedules.length === 0 && currentTeams.length === 0 && !IS_INIT) {
+        // 沒有賽程資料時，嘗試從 GitHub 拉取（換裝置、或從未載入過）
+        if (schedules.length === 0 && !IS_INIT) {
             await fetchFromGitHub();
             return;
         }
@@ -214,8 +214,8 @@
                 matchMode = data.matchMode || 'single';
                 saveStorage();
 
-                // 雲端也只有球員名單，還沒安排賽程 → 跳回 play 繼續設定
-                if (currentTeams.length === 0 && schedules.length === 0 && players.length > 0) {
+                // 雲端也沒有賽程資料 → 跳回 play 繼續設定
+                if (schedules.length === 0 && players.length > 0) {
                     window.location.href = `play.html?gameId=${GAME_ID}`;
                     return;
                 }
