@@ -264,7 +264,8 @@
             savedDraftRestMsg: data?.savedDraftRestMsg || '',
             savedDraftRestPlayer: data?.savedDraftRestPlayer || null,
             savedDraftUpdatedAt: data?.savedDraftUpdatedAt || null,
-            lastUpdated: data?.lastUpdated || null
+            lastUpdated: data?.lastUpdated || null,
+            needsInitialSchedule: !!data?.needsInitialSchedule
         };
     }
 
@@ -379,7 +380,8 @@
             savedDraftRestMsg: local.savedDraftRestMsg || baseData.savedDraftRestMsg || '',
             savedDraftRestPlayer: local.savedDraftRestPlayer || baseData.savedDraftRestPlayer || null,
             savedDraftUpdatedAt: local.savedDraftUpdatedAt || baseData.savedDraftUpdatedAt || null,
-            lastUpdated: new Date().toISOString()
+            lastUpdated: new Date().toISOString(),
+            needsInitialSchedule: !!(local.needsInitialSchedule ?? baseData.needsInitialSchedule)
         };
     }
 
@@ -690,9 +692,13 @@
     async function confirmTeamsAndStart(mode) {
         const currentTeams = pendingTeams.filter(t=>t.p1&&t.p2).map(t=>({id:t.id, name1:t.p1.name, name2:t.p2.name, totalLevel:t.p1.level+t.p2.level}));
         const restMsg = pendingRestPlayer ? `單數球員：<strong>${pendingRestPlayer.name}</strong> (本輪休息)` : "";
-        setStorage({ players, currentTeams, matchMode: mode, schedules: [], pendingRestMsg: restMsg, savedTeamDraft: [], savedDraftMode: '', savedDraftRestMsg: '', savedDraftRestPlayer: null, savedDraftUpdatedAt: null, lastUpdated: new Date().toISOString() });
+        setStorage({ players, currentTeams, matchMode: mode, schedules: [], pendingRestMsg: restMsg, savedTeamDraft: [], savedDraftMode: '', savedDraftRestMsg: '', savedDraftRestPlayer: null, savedDraftUpdatedAt: null, needsInitialSchedule: true, lastUpdated: new Date().toISOString() });
         updateDraftUI();
-        await requestPlayerSync();
+        const synced = await requestPlayerSync();
+        if (!synced) {
+            const shouldContinue = confirm('⚠️ 目前尚未成功同步到 GitHub。仍要進入賽程頁嗎？');
+            if (!shouldContinue) return;
+        }
         window.location.href = `gamestart.html?gameId=${GAME_ID}&init=1`;
     }
 

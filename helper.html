@@ -97,6 +97,59 @@
     let isSyncing = false;
     let pollInterval = null;
 
+    function getModeLabel(mode) {
+        if (mode === 'round-robin') return '循環賽';
+        if (mode === 'single-elimination') return '單敗淘汰賽';
+        return '單輪配對賽';
+    }
+
+    function getTeamLabel(team) {
+        return team ? `${team.name1}<br>& ${team.name2}` : '待定';
+    }
+
+    function getTeamLevel(team) {
+        return team?.totalLevel || '?';
+    }
+
+    function teamSignature(team) {
+        return team?.id || '';
+    }
+
+    function getSingleEliminationWinner(match) {
+        if (!match) return null;
+        if (match.isFinished && match.team1 && match.team2) {
+            if (match.score1 === match.score2) return null;
+            return match.score1 > match.score2 ? match.team1 : match.team2;
+        }
+        if (match.team1 && !match.team2) return match.team1;
+        if (match.team2 && !match.team1) return match.team2;
+        return null;
+    }
+
+    function updateSingleEliminationProgress(schedule, match) {
+        if (!schedule || schedule.mode !== 'single-elimination' || !match?.nextMatchId) return;
+        const nextMatch = schedule.matches.find(item => item.id === match.nextMatchId);
+        if (!nextMatch) return;
+
+        const winner = getSingleEliminationWinner(match);
+        const slot = match.slotInNext === 'team2' ? 'team2' : 'team1';
+        const changed = teamSignature(nextMatch[slot]) !== teamSignature(winner);
+        nextMatch[slot] = winner ? { ...winner } : null;
+
+        if (changed) {
+            nextMatch.score1 = null;
+            nextMatch.score2 = null;
+            nextMatch.isFinished = false;
+        }
+
+        updateSingleEliminationProgress(schedule, nextMatch);
+    }
+
+    function initializeSingleEliminationSchedule(schedule) {
+        if (!schedule || schedule.mode !== 'single-elimination') return;
+        schedule.matches.filter(match => match.round === 1).forEach(match => updateSingleEliminationProgress(schedule, match));
+    }
+
     function startPolling() {
         if (pollInterval) return;
         pollInterval = setInterval(() => pollFromGitHub(), 10000);
@@ -117,13 +170,14 @@
             });
             if (!res.ok) return;
             const raw = await res.json();
-            if (raw.sha === fileSha) return; // 沒變動
+            if (raw.sha === fileSha) return;
             fileSha = raw.sha;
             const data = JSON.parse(decodeURIComponent(escape(atob(raw.content))));
             players = data.players || [];
             currentTeams = data.currentTeams || [];
             schedules = data.schedules || [];
             matchMode = data.matchMode || 'single';
+            schedules.filter(schedule => schedule.mode === 'single-elimination').forEach(initializeSingleEliminationSchedule);
             renderSchedules();
             const statusEl = document.getElementById('syncStatus');
             statusEl.innerText = `🔄 已接收更新（${new Date().toLocaleTimeString('zh-TW',{hour12:false})}）`;
@@ -161,8 +215,8 @@
                 currentTeams = data.currentTeams || [];
                 schedules = data.schedules || [];
                 matchMode = data.matchMode || 'single';
+                schedules.filter(schedule => schedule.mode === 'single-elimination').forEach(initializeSingleEliminationSchedule);
 
-                // 顯示比賽名稱
                 document.getElementById('gameTitleBadge').innerText = `gameId: ${GAME_ID}`;
 
                 statusEl.innerText = `✅ 資料已載入（${new Date().toLocaleTimeString('zh-TW', {hour12:false})}）`;
@@ -187,47 +241,54 @@
         }
 
         let html = '';
-        schedules.forEach((sch, index) => {
+        schedules.forEach((schedule, index) => {
             const isOpen = index === schedules.length - 1 ? 'open' : '';
             html += `<details class="schedule-details" ${isOpen}>
-                <summary class="schedule-summary">🏸 賽程 ${sch.id} ${sch.mode==='single'?'(單輪配對賽)':'(循環賽)'}</summary>
+                <summary class="schedule-summary">🏸 賽程 ${schedule.id} (${getModeLabel(schedule.mode)})</summary>
                 <div class="schedule-content">`;
-            if (sch.restMsg) html += `<div class="info-box">${sch.restMsg}</div>`;
+            if (schedule.restMsg) html += `<div class="info-box">${schedule.restMsg}</div>`;
             html += `<div class="matches-grid">`;
 
             let currentRound = 0, matchNumInRound = 0;
-            sch.matches.forEach((m, mIndex) => {
-                if (sch.mode === 'round-robin' && m.round !== currentRound) {
-                    html += `<div class="round-header">🏆 第 ${m.round} 輪</div>`;
-                    currentRound = m.round; matchNumInRound = 0;
+            schedule.matches.forEach((match, matchIndex) => {
+                if (schedule.mode !== 'single' && match.round !== currentRound) {
+                    const roundLabel = schedule.mode === 'single-elimination'
+                        ? (schedule.matches.filter(item => item.round === match.round).length === 1 ? '🏆 冠軍戰' : `🪜 第 ${match.round} 輪`)
+                        : `🏆 第 ${match.round} 輪`;
+                    html += `<div class="round-header">${roundLabel}</div>`;
+                    currentRound = match.round;
+                    matchNumInRound = 0;
                 }
                 matchNumInRound++;
-                const headerLabel = sch.mode === 'single' ? `場次 ${mIndex+1}` : `場次 ${matchNumInRound}`;
+                const headerLabel = schedule.mode === 'single' ? `場次 ${matchIndex + 1}` : `第 ${match.round} 輪・第 ${matchNumInRound} 場`;
+                const ready = !!(match.team1 && match.team2);
+                const autoAdvance = schedule.mode === 'single-elimination' && ((match.team1 && !match.team2) || (match.team2 && !match.team1));
+                const pendingText = !ready && !autoAdvance ? '等待上一輪結果' : '';
 
-                html += `<div class="match-card ${m.isFinished?'done':''}">
+                html += `<div class="match-card ${match.isFinished?'done':''}">
                     <div class="match-header">${headerLabel}</div>
                     <div class="match-body">
                         <div class="team">
-                            <div class="team-name">${m.team1.name1}<br>& ${m.team1.name2}</div>
-                            <div class="lv-badge">Lv.${m.team1.totalLevel||'?'}</div>
-                            ${m.isFinished
-                                ? `<div class="score-display ${m.score1>m.score2?'winner':''}">${m.score1}</div>`
-                                : `<input type="number" id="s1-${m.id}" class="score-input" min="0" placeholder="0">`}
+                            <div class="team-name">${getTeamLabel(match.team1)}</div>
+                            <div class="lv-badge">Lv.${getTeamLevel(match.team1)}</div>
+                            ${match.isFinished
+                                ? `<div class="score-display ${match.score1>match.score2?'winner':''}">${match.score1}</div>`
+                                : (ready
+                                    ? `<input type="number" id="s1-${match.id}" class="score-input" min="0" placeholder="0">`
+                                    : `<div style="font-size:13px;color:var(--text-muted);margin-top:10px;">${autoAdvance && match.team1 ? '輪空晉級' : pendingText || '待定'}</div>`)}
                         </div>
-                        <div class="vs-badge">VS</div>
+                        <div class="vs-badge">${autoAdvance ? '輪空' : 'VS'}</div>
                         <div class="team">
-                            <div class="team-name">${m.team2.name1}<br>& ${m.team2.name2}</div>
-                            <div class="lv-badge">Lv.${m.team2.totalLevel||'?'}</div>
-                            ${m.isFinished
-                                ? `<div class="score-display ${m.score2>m.score1?'winner':''}">${m.score2}</div>`
-                                : `<input type="number" id="s2-${m.id}" class="score-input" min="0" placeholder="0">`}
+                            <div class="team-name">${getTeamLabel(match.team2)}</div>
+                            <div class="lv-badge">Lv.${getTeamLevel(match.team2)}</div>
+                            ${match.isFinished
+                                ? `<div class="score-display ${match.score2>match.score1?'winner':''}">${match.score2}</div>`
+                                : (ready
+                                    ? `<input type="number" id="s2-${match.id}" class="score-input" min="0" placeholder="0">`
+                                    : `<div style="font-size:13px;color:var(--text-muted);margin-top:10px;">${autoAdvance && match.team2 ? '輪空晉級' : pendingText || '待定'}</div>`)}
                         </div>
                     </div>
-                    <div class="match-footer">
-                        ${m.isFinished
-                            ? `<button class="btn-edit" onclick="editMatch(${sch.id},'${m.id}')">✏️ 修改分數</button>`
-                            : `<button class="btn-confirm" onclick="saveScore(${sch.id},'${m.id}')">✅ 確認分數</button>`}
-                    </div>
+                    <div class="match-footer">${renderMatchFooter(schedule, match)}</div>
                 </div>`;
             });
             html += `</div></div></details>`;
@@ -235,21 +296,51 @@
         main.innerHTML = html;
     }
 
-    function saveScore(schId, matchId) {
-        const s1 = document.getElementById(`s1-${matchId}`)?.value;
-        const s2 = document.getElementById(`s2-${matchId}`)?.value;
-        if (s1 === '' || s2 === '' || s1 == null || s2 == null) return alert('請填入兩隊分數！');
-        const m = schedules.find(s => s.id === schId)?.matches.find(x => x.id === matchId);
-        if (!m) return;
-        m.score1 = parseInt(s1); m.score2 = parseInt(s2); m.isFinished = true;
+    function renderMatchFooter(schedule, match) {
+        const ready = !!(match.team1 && match.team2);
+        if (match.isFinished) {
+            return `<button class="btn-edit" onclick="editMatch(${schedule.id},'${match.id}')">✏️ 修改分數</button>`;
+        }
+        if (schedule.mode === 'single-elimination' && ((match.team1 && !match.team2) || (match.team2 && !match.team1))) {
+            return `<span style="font-size:13px;color:var(--text-muted);">此場因輪空自動晉級，下一輪已更新。</span>`;
+        }
+        if (!ready) {
+            return `<span style="font-size:13px;color:var(--text-muted);">等待上一輪完成後才可輸入分數。</span>`;
+        }
+        return `<button class="btn-confirm" onclick="saveScore(${schedule.id},'${match.id}')">✅ 確認分數</button>`;
+    }
+
+    function saveScore(scheduleId, matchId) {
+        const schedule = schedules.find(item => item.id === scheduleId);
+        const match = schedule?.matches.find(item => item.id === matchId);
+        if (!schedule || !match || !match.team1 || !match.team2) return;
+
+        const score1Value = document.getElementById(`s1-${matchId}`)?.value;
+        const score2Value = document.getElementById(`s2-${matchId}`)?.value;
+        if (score1Value === '' || score2Value === '' || score1Value == null || score2Value == null) return alert('請填入兩隊分數！');
+
+        const score1 = parseInt(score1Value, 10);
+        const score2 = parseInt(score2Value, 10);
+        if (schedule.mode === 'single-elimination' && score1 === score2) {
+            return alert('單敗淘汰賽不能平手，請輸入能分出勝負的比分！');
+        }
+
+        match.score1 = score1;
+        match.score2 = score2;
+        match.isFinished = true;
+        if (schedule.mode === 'single-elimination') updateSingleEliminationProgress(schedule, match);
         renderSchedules();
         pushToGitHub();
     }
 
-    function editMatch(schId, matchId) {
-        const m = schedules.find(s => s.id === schId)?.matches.find(x => x.id === matchId);
-        if (!m) return;
-        m.isFinished = false;
+    function editMatch(scheduleId, matchId) {
+        const schedule = schedules.find(item => item.id === scheduleId);
+        const match = schedule?.matches.find(item => item.id === matchId);
+        if (!schedule || !match) return;
+        match.isFinished = false;
+        match.score1 = null;
+        match.score2 = null;
+        if (schedule.mode === 'single-elimination') updateSingleEliminationProgress(schedule, match);
         renderSchedules();
         pushToGitHub();
     }
