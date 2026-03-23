@@ -113,9 +113,9 @@
             "name2": "沛恩",
             "totalLevel": 8
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 11,
+          "score2": 7,
+          "isFinished": true
         },
         {
           "id": "M_1_1",
@@ -293,5 +293,5 @@
     }
   ],
   "matchMode": "round-robin",
-  "lastUpdated": "2026-03-23T15:22:07.731Z"
+  "lastUpdated": "2026-03-23T15:22:28.007Z"
 }
