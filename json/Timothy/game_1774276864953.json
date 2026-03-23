@@ -57,5 +57,12 @@
   ],
   "currentTeams": [],
   "schedules": [],
-  "matchMode": "single"
+  "matchMode": "single",
+  "pendingRestMsg": "",
+  "savedTeamDraft": [],
+  "savedDraftMode": "",
+  "savedDraftRestMsg": "",
+  "savedDraftRestPlayer": null,
+  "savedDraftUpdatedAt": null,
+  "lastUpdated": "2026-03-23T15:07:32.746Z"
 }
