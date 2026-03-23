@@ -41,6 +41,12 @@
       "name": "安洗瑩",
       "gender": "男",
       "level": 8
+    },
+    {
+      "id": 1774281103253.1177,
+      "name": "陳雨菲",
+      "gender": "男",
+      "level": 8
     }
   ],
   "currentTeams": [],
@@ -52,6 +58,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-03-23T15:51:42.451Z",
+  "lastUpdated": "2026-03-23T15:51:43.549Z",
   "needsInitialSchedule": false
 }
