@@ -254,9 +254,9 @@
             "name2": "小菜雞B",
             "totalLevel": 17
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 21,
+          "score2": 10,
+          "isFinished": true
         },
         {
           "id": "M_1_8",
@@ -449,5 +449,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-03-23T16:05:03.856Z"
+  "lastUpdated": "2026-03-23T16:05:16.422Z"
 }
