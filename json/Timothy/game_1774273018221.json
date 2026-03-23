@@ -5,6 +5,15 @@
       "name": "大谷",
       "gender": "男",
       "level": 9
+    },
+    {
+      "id": 1774273138963.7437,
+      "name": "大谷2",
+      "gender": "男",
+      "level": 18
     }
-  ]
+  ],
+  "currentTeams": [],
+  "schedules": [],
+  "matchMode": "single"
 }
