@@ -307,8 +307,7 @@
             if (raw) {
                 try {
                     const d = JSON.parse(raw);
-                    // 只有真的有賽程資料才跳 gamestart
-                    if ((d.schedules||[]).length > 0) {
+                    if ((d.schedules||[]).length > 0 || (d.currentTeams||[]).length > 0) {
                         dest = 'gamestart';
                     }
                 } catch(e) {}
