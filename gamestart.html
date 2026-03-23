@@ -214,8 +214,8 @@
                 matchMode = data.matchMode || 'single';
                 saveStorage();
 
-                // 雲端也沒有賽程資料 → 跳回 play 繼續設定
-                if (schedules.length === 0 && players.length > 0) {
+                // 雲端完全沒有分組也沒有賽程 → 跳回 play 繼續設定
+                if (currentTeams.length === 0 && schedules.length === 0 && players.length > 0) {
                     window.location.href = `play.html?gameId=${GAME_ID}`;
                     return;
                 }
