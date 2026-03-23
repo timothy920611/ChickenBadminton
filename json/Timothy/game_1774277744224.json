@@ -6,5 +6,15 @@
       "gender": "男",
       "level": 4
     }
-  ]
+  ],
+  "currentTeams": [],
+  "schedules": [],
+  "matchMode": "single",
+  "pendingRestMsg": "",
+  "savedTeamDraft": [],
+  "savedDraftMode": "",
+  "savedDraftRestMsg": "",
+  "savedDraftRestPlayer": null,
+  "savedDraftUpdatedAt": null,
+  "lastUpdated": "2026-03-23T15:07:01.513Z"
 }
