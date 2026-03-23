@@ -23,6 +23,12 @@
       "name": "周天成",
       "gender": "男",
       "level": 5
+    },
+    {
+      "id": 1774279455397.8079,
+      "name": "李洋",
+      "gender": "男",
+      "level": 1
     }
   ],
   "currentTeams": [],
@@ -34,5 +40,5 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-03-23T15:24:14.648Z"
+  "lastUpdated": "2026-03-23T15:24:15.991Z"
 }
