@@ -152,9 +152,9 @@
             "name2": "周天成",
             "totalLevel": 19
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 3,
+          "score2": 15,
+          "isFinished": true
         },
         {
           "id": "M_1_4",
