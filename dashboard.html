@@ -297,9 +297,22 @@
             }
         }
 
-        // 6. 進入比賽頁面：舊比賽 → gamestart，新比賽由 createGame 直接導向 play
+        // 6. 進入比賽頁面
+        // 判斷順序：有 currentTeams → 賽程已安排，跳 gamestart
+        //           只有 players → 還在設定階段，跳 play 繼續
+        //           都沒有 → 新比賽，跳 play
         function enterGame(gameId) {
-            window.location.href = `gamestart.html?gameId=${gameId}`;
+            let dest = 'play';
+            const raw = localStorage.getItem(`badmintonData_${gameId}`);
+            if (raw) {
+                try {
+                    const d = JSON.parse(raw);
+                    if ((d.currentTeams||[]).length > 0 || (d.schedules||[]).length > 0) {
+                        dest = 'gamestart';
+                    }
+                } catch(e) {}
+            }
+            window.location.href = `${dest}.html?gameId=${gameId}`;
         }
 
         // =============================================
