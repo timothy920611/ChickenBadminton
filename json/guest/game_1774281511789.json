@@ -174,9 +174,9 @@
             "name2": "林書豪",
             "totalLevel": 15
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 17,
+          "score2": 21,
+          "isFinished": true
         },
         {
           "id": "M_1_4",
@@ -439,5 +439,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-03-23T16:01:57.089Z"
+  "lastUpdated": "2026-03-23T16:02:46.789Z"
 }
