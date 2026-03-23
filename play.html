@@ -49,7 +49,8 @@
         .team-slot-players { display: flex; flex-direction: column; gap: 6px; min-height: 50px; }
         .drag-player { background: white; border: 1px solid #e5e7eb; border-radius: 7px; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; user-select: none; transition: all 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
         .drag-player.dragging { opacity: 0.35; border-style: dashed; }
-        .drag-handle { font-size: 20px; color: #9ca3af; cursor: grab; padding: 4px 2px 4px 8px; touch-action: none; flex-shrink: 0; }
+        .drag-handle { font-size: 20px; color: #9ca3af; cursor: grab; padding: 4px 2px 4px 8px; touch-action: none; flex-shrink: 0; -webkit-user-select: none; user-select: none; }
+        .drag-player, .drag-handle { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
         .drag-handle:active { cursor: grabbing; }
         .drag-player.drag-over-card { border: 2px dashed var(--primary); background: #ecfdf5; box-shadow: 0 0 0 3px rgba(5,150,105,0.15); transform: scale(1.03); }
         .drag-player-name { font-weight: bold; font-size: 15px; color: var(--text-main); }
@@ -525,24 +526,31 @@
 
     // ── 統一拖曳系統（滑鼠 + 觸控） ──
     let dragGhost = null; // 跟手移動的浮動卡片
+    let dragGridTouchBound = false;
+
+    function handleGridTouchStart(e) {
+        const handle = e.target.closest('.drag-handle');
+        if (!handle) return; // 不是從 handle 開始 → 允許捲動，直接忽略
+        const el = handle.closest('.drag-player');
+        if (!el) return;
+        e.preventDefault(); // 阻止捲動
+        onPointerDown(e, el);
+    }
 
     function bindDragEvents() {
         const grid = document.getElementById('teamsDragGrid');
+        if (!grid) return;
 
-        // 在 grid 層攔截所有 touchstart，只有從 drag-handle 開始的才啟動拖曳並阻止捲動
-        grid.addEventListener('touchstart', e => {
-            const handle = e.target.closest('.drag-handle');
-            if (!handle) return; // 不是從 handle 開始 → 允許捲動，直接忽略
-            const el = handle.closest('.drag-player');
-            if (!el) return;
-            e.preventDefault(); // 阻止捲動
-            onPointerDown(e, el);
-        }, { passive: false });
+        // 觸控委派只綁一次，避免 render 後重複綁定造成多個 ghost 殘留
+        if (!dragGridTouchBound) {
+            grid.addEventListener('touchstart', handleGridTouchStart, { passive: false });
+            dragGridTouchBound = true;
+        }
 
         // 桌機滑鼠：只綁在 handle 上
         grid.querySelectorAll('.drag-handle').forEach(handle => {
             const el = handle.closest('.drag-player');
-            handle.addEventListener('mousedown', e => onPointerDown(e, el));
+            handle.onmousedown = e => onPointerDown(e, el);
         });
     }
 
@@ -568,6 +576,7 @@
         document.addEventListener('mouseup', onPointerUp);
         document.addEventListener('touchmove', onPointerMove, { passive: false });
         document.addEventListener('touchend', onPointerUp);
+        document.addEventListener('touchcancel', onPointerCancel);
     }
 
     function getXY(e) {
@@ -607,6 +616,7 @@
         document.removeEventListener('mouseup', onPointerUp);
         document.removeEventListener('touchmove', onPointerMove);
         document.removeEventListener('touchend', onPointerUp);
+        document.removeEventListener('touchcancel', onPointerCancel);
 
         // 清理 ghost
         if (dragGhost) { dragGhost.remove(); dragGhost = null; }
@@ -621,6 +631,11 @@
         const dstSlot   = target.dataset?.slot   || 'bench';
         swapPlayers(dragSrcInfo.teamId, dragSrcInfo.slot, dstTeamId, dstSlot);
         dragSrcInfo = null;
+    }
+
+    function onPointerCancel() {
+        dragSrcInfo = null;
+        onPointerUp({ type: 'touchcancel' });
     }
 
     function swapPlayers(srcTeamId, srcSlot, dstTeamId, dstSlot) {
