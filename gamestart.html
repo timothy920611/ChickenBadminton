@@ -110,7 +110,7 @@
         try { const idx=JSON.parse(localStorage.getItem(`gamesIndex_${currentUser}`)||'[]'); const f=idx.find(g=>g.id===GAME_ID); document.getElementById('gameTitle').innerText = f?`🏸 ${f.name}`:'🏸 賽程計分'; } catch(e){}
     }
 
-    function loadData() {
+    async function loadData() {
         const d = getStorage();
         players = d.players || [];
         currentTeams = d.currentTeams || [];
@@ -119,11 +119,49 @@
 
         if (IS_INIT && schedules.length === 0) {
             // 從 play.html 跳過來，產生第一個賽程
-            const restMsg = d.pendingRestMsg || "";
-            generateMatchesForCurrentTeams(restMsg);
-        } else {
-            renderAll();
+            generateMatchesForCurrentTeams(d.pendingRestMsg || "");
+            return;
         }
+
+        // 換裝置時 localStorage 為空 → 從 GitHub 拉取
+        if (schedules.length === 0 && currentTeams.length === 0 && !IS_INIT) {
+            await fetchFromGitHub();
+            return;
+        }
+
+        renderAll();
+    }
+
+    async function fetchFromGitHub() {
+        const token = getRealToken();
+        const statusEl = document.getElementById('syncStatus');
+        statusEl.innerText = '⏳ 載入雲端資料...';
+
+        const path = `${GITHUB_FOLDER}/${currentUser}/game_${GAME_ID}.json`;
+        try {
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store'
+            });
+            if (res.ok) {
+                const raw = await res.json();
+                fileSha = raw.sha;
+                const data = JSON.parse(decodeURIComponent(escape(atob(raw.content))));
+                players = data.players || [];
+                currentTeams = data.currentTeams || [];
+                schedules = data.schedules || [];
+                matchMode = data.matchMode || 'single';
+                saveStorage(); // 寫入 localStorage 供後續使用
+                statusEl.innerText = '✅ 已載入雲端資料';
+                setTimeout(() => { if (statusEl.innerText === '✅ 已載入雲端資料') statusEl.innerText = ''; }, 3000);
+            } else if (res.status === 404) {
+                statusEl.innerText = '⚠️ 雲端尚無此比賽資料';
+            } else {
+                statusEl.innerText = '❌ 雲端載入失敗';
+            }
+        } catch(e) {
+            statusEl.innerText = '❌ 網路錯誤，無法載入雲端資料';
+        }
+        renderAll();
     }
 
     function generateMatchesForCurrentTeams(restPlayersMsg="") {
