@@ -504,13 +504,13 @@
     }
 
     // ── 常用選手 GitHub ──
-    function saveFrequentPlayersLocally() { localStorage.setItem('frequentPlayersData', JSON.stringify(frequentPlayers)); }
-    function loadFrequentPlayersLocally() { try { const d=localStorage.getItem('frequentPlayersData'); if(d){frequentPlayers=JSON.parse(d);hasFetchedFp=true;} } catch(e){} }
+    function saveFrequentPlayersLocally() { localStorage.setItem(`frequentPlayersData_${currentUser}`, JSON.stringify(frequentPlayers)); }
+    function loadFrequentPlayersLocally() { try { const d=localStorage.getItem(`frequentPlayersData_${currentUser}`); if(d){frequentPlayers=JSON.parse(d);hasFetchedFp=true;} } catch(e){} }
     async function fetchFrequentPlayers() {
         const token=getRealToken(); if(!token) return;
         const statusEl=document.getElementById('fpSyncStatus'); statusEl.innerText="⏳ 同步中...";
         try {
-            const res=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FOLDER}/frequent_players.json`,{headers:{'Authorization':`Bearer ${token}`},cache:'no-store'});
+            const res=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FOLDER}/${currentUser}/frequent_players.json`,{headers:{'Authorization':`Bearer ${token}`},cache:'no-store'});
             if(res.ok){const d=await res.json();frequentPlayers=JSON.parse(decodeURIComponent(escape(atob(d.content))));fpFileSha=d.sha;hasFetchedFp=true;saveFrequentPlayersLocally();statusEl.innerText="✅ 已同步";}
             else if(res.status===404){hasFetchedFp=true;statusEl.innerText="✅ 尚未建立名冊";}
             else statusEl.innerText="❌ 讀取失敗";
@@ -519,7 +519,7 @@
     }
     async function saveFrequentPlayersToGitHub() {
         const token=getRealToken(); if(!token) return false;
-        const statusEl=document.getElementById('fpSyncStatus'), path=`${GITHUB_FOLDER}/frequent_players.json`;
+        const statusEl=document.getElementById('fpSyncStatus'), path=`${GITHUB_FOLDER}/${currentUser}/frequent_players.json`;
         try { const gr=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,{headers:{'Authorization':`Bearer ${token}`},cache:'no-store'}); if(gr.ok) fpFileSha=(await gr.json()).sha; } catch(e){}
         try {
             const res=await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`,{method:'PUT',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({message:'更新常用選手名單',content:btoa(unescape(encodeURIComponent(JSON.stringify(frequentPlayers,null,2)))),...(fpFileSha&&{sha:fpFileSha})})});
