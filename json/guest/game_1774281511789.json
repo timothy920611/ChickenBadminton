@@ -134,9 +134,9 @@
             "name2": "戴資穎",
             "totalLevel": 15
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 21,
+          "score2": 17,
+          "isFinished": true
         },
         {
           "id": "M_1_2",
@@ -439,5 +439,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-03-23T16:00:17.942Z"
+  "lastUpdated": "2026-03-23T16:00:33.224Z"
 }
