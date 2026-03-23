@@ -466,8 +466,9 @@
         await savePlayersToStorage();
         return true;
     }
+    const idsEqual = (a, b) => String(a) === String(b);
     async function removePlayer(id) {
-        players=players.filter(p=>p.id!==id);
+        players=players.filter(p=>!idsEqual(p.id, id));
         updatePlayerUI();
         await savePlayersToStorage();
     }
@@ -743,7 +744,7 @@
             return `<div class="fp-item"><label class="fp-label"${inGame?' style="opacity:0.5;"':''}><input type="checkbox" class="fp-checkbox" value="${p.id}"${inGame?' disabled checked':''}><div><span style="font-weight:bold;font-size:16px;">${p.name}</span> <span style="color:#64748b;font-size:14px;">(${p.gender})</span>${inGame?'<span style="color:var(--danger);font-size:12px;"> 已在名單</span>':''}</div></label><div style="display:flex;align-items:center;gap:8px;">${sel}<button class="btn-danger" style="padding:6px 10px;" onclick="removeFrequentPlayer('${p.id}')">刪除</button></div></div>`;
         }).join('');
     }
-    async function updateFpLevel(id,val) { const p=frequentPlayers.find(p=>p.id===id); if(!p) return; p.level=parseInt(val); saveFrequentPlayersLocally(); document.getElementById('fpSyncStatus').innerText="⏳ 同步中..."; await saveFrequentPlayersToGitHub(); }
+    async function updateFpLevel(id,val) { const p=frequentPlayers.find(p=>idsEqual(p.id, id)); if(!p) return; p.level=parseInt(val); saveFrequentPlayersLocally(); document.getElementById('fpSyncStatus').innerText="⏳ 同步中..."; await saveFrequentPlayersToGitHub(); }
     async function addFrequentPlayer() {
         const name=document.getElementById('fpName').value.trim(), gender=document.getElementById('fpGender').value, levelVal=document.getElementById('fpLevel').value;
         if(!name||!levelVal) return alert('請填寫完整姓名與級數！');
@@ -755,13 +756,13 @@
     }
     async function removeFrequentPlayer(id) {
         if(!confirm('確定要移除此選手嗎？')) return;
-        frequentPlayers=frequentPlayers.filter(p=>p.id!==id); saveFrequentPlayersLocally(); renderFrequentPlayersList();
+        frequentPlayers=frequentPlayers.filter(p=>!idsEqual(p.id, id)); saveFrequentPlayersLocally(); renderFrequentPlayersList();
         document.getElementById('fpSyncStatus').innerText="⏳ 刪除同步中..."; await saveFrequentPlayersToGitHub();
     }
     async function addSelectedFrequentPlayers() {
         let addedCount = 0;
         document.querySelectorAll('.fp-checkbox:checked:not(:disabled)').forEach(cb=>{
-            const fp=frequentPlayers.find(p=>p.id===cb.value);
+            const fp=frequentPlayers.find(p=>idsEqual(p.id, cb.value));
             if(fp&&!players.some(p=>p.name===fp.name)&&players.length<MAX_PLAYERS){
                 players.push({id: Date.now()+Math.random(), name: fp.name, gender: fp.gender, level: fp.level});
                 addedCount++;

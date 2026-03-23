@@ -564,15 +564,17 @@
             document.getElementById('btnAddFp').disabled = false;
         }
 
+        const idsEqual = (a, b) => String(a) === String(b);
+
         async function removeFrequentPlayer(id) {
             if (!confirm('確定要移除此選手嗎？')) return;
-            frequentPlayers = frequentPlayers.filter(p => p.id !== id);
+            frequentPlayers = frequentPlayers.filter(p => !idsEqual(p.id, id));
             renderFpList();
             await saveFpToGitHub('刪除');
         }
 
         async function updateFpLevel(id, val) {
-            const p = frequentPlayers.find(p => p.id === id);
+            const p = frequentPlayers.find(p => idsEqual(p.id, id));
             if (!p) return;
             p.level = parseInt(val);
             localStorage.setItem(`frequentPlayersData_${currentUser}`, JSON.stringify(frequentPlayers));
