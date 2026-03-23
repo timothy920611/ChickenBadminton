@@ -61,95 +61,45 @@
       "level": 5
     }
   ],
-  "currentTeams": [],
-  "schedules": [],
-  "matchMode": "single",
-  "pendingRestMsg": "",
-  "savedTeamDraft": [
+  "currentTeams": [
     {
       "id": "Team_1774279202995_0",
-      "mode": "round-robin",
-      "p1": {
-        "id": 1774279182770.2656,
-        "name": "慕華",
-        "gender": "男",
-        "level": 7
-      },
-      "p2": {
-        "id": 1774279182770.652,
-        "name": "まや",
-        "gender": "女",
-        "level": 5
-      }
+      "name1": "慕華",
+      "name2": "まや",
+      "totalLevel": 12
     },
     {
       "id": "Team_1774279202995_1",
-      "mode": "round-robin",
-      "p1": {
-        "id": 1774279182770.5698,
-        "name": "Dani",
-        "gender": "男",
-        "level": 6
-      },
-      "p2": {
-        "id": 1774279182770.1882,
-        "name": "Yuna",
-        "gender": "女",
-        "level": 4
-      }
+      "name1": "Dani",
+      "name2": "Yuna",
+      "totalLevel": 10
     },
     {
       "id": "Team_1774279202995_2",
-      "mode": "round-robin",
-      "p1": {
-        "id": 1774279182770.7156,
-        "name": "植敏",
-        "gender": "女",
-        "level": 5
-      },
-      "p2": {
-        "id": 1774279182770.2686,
-        "name": "則宇",
-        "gender": "女",
-        "level": 4
-      }
+      "name1": "植敏",
+      "name2": "則宇",
+      "totalLevel": 9
     },
     {
       "id": "Team_1774279202995_3",
-      "mode": "round-robin",
-      "p1": {
-        "id": 1774279182770.5168,
-        "name": "怡瑱",
-        "gender": "女",
-        "level": 5
-      },
-      "p2": {
-        "id": 1774279182770.0862,
-        "name": "海薇",
-        "gender": "女",
-        "level": 4
-      }
+      "name1": "怡瑱",
+      "name2": "海薇",
+      "totalLevel": 9
     },
     {
       "id": "Team_1774279202995_4",
-      "mode": "round-robin",
-      "p1": {
-        "id": 1774279182770.0244,
-        "name": "重運",
-        "gender": "男",
-        "level": 4
-      },
-      "p2": {
-        "id": 1774279182770.4626,
-        "name": "沛恩",
-        "gender": "男",
-        "level": 4
-      }
+      "name1": "重運",
+      "name2": "沛恩",
+      "totalLevel": 8
     }
   ],
+  "schedules": [],
+  "matchMode": "round-robin",
+  "pendingRestMsg": "",
+  "savedTeamDraft": [],
   "savedDraftMode": "round-robin",
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": "2026-03-23T15:21:25.827Z",
-  "lastUpdated": "2026-03-23T15:21:26.396Z"
+  "lastUpdated": "2026-03-23T15:22:06.336Z"
 }
