@@ -213,6 +213,13 @@
                 schedules = data.schedules || [];
                 matchMode = data.matchMode || 'single';
                 saveStorage();
+
+                // 雲端也只有球員名單，還沒安排賽程 → 跳回 play 繼續設定
+                if (currentTeams.length === 0 && schedules.length === 0 && players.length > 0) {
+                    window.location.href = `play.html?gameId=${GAME_ID}`;
+                    return;
+                }
+
                 statusEl.innerText = '✅ 已載入雲端資料';
                 setTimeout(() => { if (statusEl.innerText === '✅ 已載入雲端資料') statusEl.innerText = ''; }, 3000);
                 startPolling();
