@@ -17,6 +17,12 @@
       "name": "戴資穎",
       "gender": "男",
       "level": 9
+    },
+    {
+      "id": 1774281098679.1292,
+      "name": "周天成",
+      "gender": "男",
+      "level": 2
     }
   ],
   "currentTeams": [],
@@ -28,6 +34,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-03-23T15:51:37.523Z",
+  "lastUpdated": "2026-03-23T15:51:39.038Z",
   "needsInitialSchedule": false
 }
