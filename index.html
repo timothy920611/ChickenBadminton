@@ -53,6 +53,13 @@
         .step-tag { display: inline-block; font-size: 11px; background: #f0fdf4; color: var(--primary); border: 1px solid #bbf7d0; border-radius: 4px; padding: 1px 6px; margin-top: 5px; margin-right: 4px; }
         .step-tag.purple { background: #faf5ff; color: #7c3aed; border-color: #ddd6fe; }
         .step-tag.blue { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+        .step-note { margin-top: 10px; padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; }
+        .step-note-title { font-size: 12px; font-weight: bold; color: var(--text-main); margin-bottom: 6px; }
+        .step-note ul { margin: 0; padding-left: 18px; color: var(--text-muted); font-size: 12px; line-height: 1.6; }
+        .csv-example { margin-top: 10px; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; background: #fff; }
+        .csv-example img { display: block; width: 100%; height: auto; }
+        .csv-example a { display: block; padding: 8px 12px; font-size: 12px; color: #2563eb; text-decoration: none; border-top: 1px solid #e5e7eb; background: #f8fafc; }
+        .csv-example a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -108,10 +115,22 @@
                 <div class="step-num">3</div>
                 <div class="step-body">
                     <div class="step-title">加入球員與分組</div>
-                    <div class="step-desc">新增球員（姓名、性別、實力級數 1–18），或從常用選手名冊勾選、CSV 批次匯入。完成名單後點「自動分組」，系統依實力均衡配對，再用拖曳手動微調隊伍。</div>
+                    <div class="step-desc">新增球員（姓名、性別、實力級數 1–18），或從常用選手名冊勾選、CSV 批次匯入。CSV 每列需依序填入 <strong>姓名,性別,級數</strong>，例如 <strong>小明,男,10</strong>；系統會略過欄位不足或級數不是數字的資料。完成名單後點「自動分組」，系統依實力均衡配對，再用拖曳手動微調隊伍。</div>
                     <span class="step-tag">自動依實力均衡</span>
                     <span class="step-tag">拖曳調整隊伍</span>
                     <span class="step-tag">支援休息區</span>
+                    <div class="step-note">
+                        <div class="step-note-title">CSV 匯入小提醒</div>
+                        <ul>
+                            <li>賽程頁與常用選手名冊都支援同一種 CSV 格式。</li>
+                            <li>欄位順序固定為：姓名、性別、級數（1–18）。</li>
+                            <li>若名單內已有同名選手，匯入時會自動略過避免重複。</li>
+                        </ul>
+                    </div>
+                    <div class="csv-example">
+                        <img src="https://github.com/timothy920611/ChickenBadminton/blob/3a467398981b1c3a94467ae5921880d90729366e/csv_example.png?raw=1" alt="CSV 匯入範例圖片">
+                        <a href="https://github.com/timothy920611/ChickenBadminton/blob/3a467398981b1c3a94467ae5921880d90729366e/csv_example.png" target="_blank" rel="noopener noreferrer">查看 CSV 範例圖片</a>
+                    </div>
                 </div>
             </div>
 
