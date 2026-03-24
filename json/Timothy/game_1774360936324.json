@@ -35,6 +35,18 @@
       "name": "蕭榮",
       "gender": "男",
       "level": 4
+    },
+    {
+      "id": 1774361070905.5374,
+      "name": "重運",
+      "gender": "男",
+      "level": 4
+    },
+    {
+      "id": 1774361070905.7349,
+      "name": "海薇",
+      "gender": "女",
+      "level": 4
     }
   ],
   "currentTeams": [],
@@ -46,6 +58,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-03-24T14:03:14.967Z",
+  "lastUpdated": "2026-03-24T14:04:31.697Z",
   "needsInitialSchedule": false
 }
