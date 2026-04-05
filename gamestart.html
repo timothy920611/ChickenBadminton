@@ -95,6 +95,9 @@
             <button class="btn-rematch" onclick="generateRematch()">
                 🔄 沿用目前分組再打一輪 (新增賽程 <span id="nextScheduleNum"></span>)
             </button>
+            <button class="btn-rematch" onclick="openRegroupModal()" style="background:#0284c7;box-shadow:0 4px 6px rgba(2,132,199,0.25);">
+                🎲 重新分組同樣的人 → 產生新賽程
+            </button>
             <button class="btn-rematch" onclick="generateRankedSingleElimination()" style="background:#7c3aed;box-shadow:0 4px 6px rgba(124,58,237,0.25);">
                 🪜 依目前排名產生單敗淘汰賽
             </button>
@@ -103,6 +106,26 @@
             </div>
         </div>
         <div style="border-top:2px dashed #e5e7eb;margin:15px 0;"></div>
+    </div>
+
+    <!-- 重新分組 Modal -->
+    <div id="regroupModal" style="display:none;position:fixed;z-index:2000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.55);overflow-y:auto;">
+        <div style="background:#fff;margin:4% auto 40px;padding:24px;border-radius:16px;width:95%;max-width:720px;box-shadow:0 8px 30px rgba(0,0,0,0.2);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <h3 style="font-size:18px;color:#0284c7;">🎲 重新分組同樣的人</h3>
+                <button onclick="closeRegroupModal()" style="background:none;border:none;font-size:26px;color:#aaa;cursor:pointer;padding:0;line-height:1;">&times;</button>
+            </div>
+            <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+                <button onclick="autoRegroup()" style="flex:1;min-width:140px;background:#0284c7;color:white;padding:12px;border-radius:8px;border:none;font-weight:bold;font-size:14px;cursor:pointer;">🎲 自動重新分組</button>
+                <button onclick="confirmRegroupAndStart('single')" style="flex:1;min-width:140px;background:#059669;color:white;padding:12px;border-radius:8px;border:none;font-weight:bold;font-size:14px;cursor:pointer;">✅ 確認 → 單輪賽</button>
+                <button onclick="confirmRegroupAndStart('round-robin')" style="flex:1;min-width:140px;background:#f59e0b;color:white;padding:12px;border-radius:8px;border:none;font-weight:bold;font-size:14px;cursor:pointer;">🏆 確認 → 循環賽</button>
+            </div>
+            <div style="font-size:13px;color:#6b7280;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:14px;">
+                💡 點「自動重新分組」可依實力重新均衡配對；也可直接點擊兩張球員卡片來互換位置。
+            </div>
+            <div id="regroupRestMsg" style="display:none;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:14px;color:#92400e;"></div>
+            <div id="regroupGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:12px;"></div>
+        </div>
     </div>
 
     <div id="standingsArea"></div>
@@ -539,6 +562,172 @@
     }
 
     function generateRematch() { generateMatchesForCurrentTeams(''); }
+
+    // ── 重新分組功能 ──
+    let regroupTeams = [];      // 目前 modal 中的分組 (陣列of組, 每組是陣列of player)
+    let regroupSelected = null; // 點選中等待互換的 {teamIdx, playerIdx}
+
+    function openRegroupModal() {
+        // 從 players 重新自動分組一次
+        autoRegroup();
+        document.getElementById('regroupModal').style.display = 'block';
+    }
+
+    function closeRegroupModal() {
+        document.getElementById('regroupModal').style.display = 'none';
+        regroupSelected = null;
+    }
+
+    window.addEventListener('click', e => {
+        if (e.target === document.getElementById('regroupModal')) closeRegroupModal();
+    });
+
+    function autoRegroup() {
+        // 依實力均衡分組，每組2人，同 play.html 的邏輯
+        const activePlayers = [...players].sort((a, b) => b.level - a.level);
+        const restMsg = [];
+        const teams = [];
+
+        // 若單數，隨機一人輪空
+        if (activePlayers.length % 2 !== 0) {
+            const restIdx = Math.floor(Math.random() * activePlayers.length);
+            const restPlayer = activePlayers.splice(restIdx, 1)[0];
+            restMsg.push(`單數球員：<strong>${restPlayer.name}</strong> 本輪輪空`);
+        }
+
+        // Snake draft：高低搭配
+        const sorted = [...activePlayers].sort((a, b) => b.level - a.level);
+        const paired = [];
+        let left = 0, right = sorted.length - 1;
+        while (left < right) {
+            paired.push([sorted[left], sorted[right]]);
+            left++; right--;
+        }
+        // 若有中間單人（偶數情況不會有），可忽略
+
+        regroupTeams = paired;
+        regroupRestMsg_text = restMsg.join('<br>');
+
+        const restEl = document.getElementById('regroupRestMsg');
+        if (restMsg.length > 0) {
+            restEl.innerHTML = restMsg.join('<br>');
+            restEl.style.display = 'block';
+        } else {
+            restEl.style.display = 'none';
+        }
+
+        regroupSelected = null;
+        renderRegroupGrid();
+    }
+
+    let regroupRestMsg_text = '';
+
+    function renderRegroupGrid() {
+        const grid = document.getElementById('regroupGrid');
+        grid.innerHTML = regroupTeams.map((pair, ti) => {
+            return `<div style="border:2px solid #e5e7eb;border-radius:10px;background:#f9fafb;padding:10px;min-height:90px;">
+                <div style="font-size:12px;font-weight:bold;color:#6b7280;margin-bottom:8px;">組 ${ti + 1}　<span style="font-weight:normal;color:#0284c7;">Lv.${pair.reduce((s,p)=>s+p.level,0)}</span></div>
+                ${pair.map((player, pi) => {
+                    const isSelected = regroupSelected && regroupSelected.teamIdx === ti && regroupSelected.playerIdx === pi;
+                    return `<div onclick="regroupSelectPlayer(${ti},${pi})"
+                        style="background:${isSelected ? '#bfdbfe' : 'white'};border:${isSelected ? '2px solid #2563eb' : '1px solid #e5e7eb'};
+                        border-radius:8px;padding:8px 10px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;
+                        box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+                        <div style="font-weight:bold;font-size:14px;color:#1f2937;">${player.name}</div>
+                        <div style="font-size:12px;color:#6b7280;">${player.gender}・Lv.${player.level}</div>
+                    </div>`;
+                }).join('')}
+            </div>`;
+        }).join('');
+    }
+
+    function regroupSelectPlayer(teamIdx, playerIdx) {
+        if (!regroupSelected) {
+            regroupSelected = { teamIdx, playerIdx };
+            renderRegroupGrid();
+            return;
+        }
+        // 互換
+        const a = regroupSelected, b = { teamIdx, playerIdx };
+        if (a.teamIdx === b.teamIdx && a.playerIdx === b.playerIdx) {
+            regroupSelected = null;
+            renderRegroupGrid();
+            return;
+        }
+        const tmp = regroupTeams[a.teamIdx][a.playerIdx];
+        regroupTeams[a.teamIdx][a.playerIdx] = regroupTeams[b.teamIdx][b.playerIdx];
+        regroupTeams[b.teamIdx][b.playerIdx] = tmp;
+        regroupSelected = null;
+        renderRegroupGrid();
+    }
+
+    function confirmRegroupAndStart(mode) {
+        if (regroupTeams.length === 0) {
+            alert('請先點「自動重新分組」產生分組。');
+            return;
+        }
+
+        // 將 regroupTeams 轉成 currentTeams 格式
+        const newTeams = regroupTeams.map((pair, i) => ({
+            id: `T_${Date.now()}_${i}`,
+            name1: pair[0].name,
+            name2: pair[1].name,
+            totalLevel: pair[0].level + pair[1].level
+        }));
+
+        currentTeams = newTeams;
+        matchMode = mode;
+
+        const newScheduleId = schedules.length + 1;
+        const newMatches = [];
+        const restMsgArr = [];
+        if (regroupRestMsg_text) restMsgArr.push(regroupRestMsg_text);
+
+        if (mode === 'single') {
+            const tempTeams = [...currentTeams].sort(() => Math.random() - 0.5);
+            if (tempTeams.length % 2 !== 0) {
+                const restingTeam = tempTeams.splice(Math.floor(Math.random() * tempTeams.length), 1)[0];
+                restMsgArr.push(`單數隊伍：<strong>${restingTeam.name1} & ${restingTeam.name2}</strong> (本輪輪空)`);
+            }
+            for (let i = 0; i < tempTeams.length; i += 2) {
+                newMatches.push({
+                    id: `M_${newScheduleId}_${i}`,
+                    round: 1,
+                    matchNumber: (i / 2) + 1,
+                    team1: tempTeams[i],
+                    team2: tempTeams[i + 1],
+                    score1: null, score2: null, isFinished: false
+                });
+            }
+        } else {
+            const rrTeams = [...currentTeams];
+            if (rrTeams.length % 2 !== 0) rrTeams.push({ id: 'BYE', name1: '輪空', name2: '休息', totalLevel: 0 });
+            const numTeams = rrTeams.length;
+            let matchCounter = 0;
+            for (let round = 0; round < numTeams - 1; round++) {
+                for (let i = 0; i < numTeams / 2; i++) {
+                    const t1 = rrTeams[i], t2 = rrTeams[numTeams - 1 - i];
+                    if (t1.id !== 'BYE' && t2.id !== 'BYE') {
+                        newMatches.push({
+                            id: `M_${newScheduleId}_${matchCounter++}`,
+                            round: round + 1, matchNumber: matchCounter,
+                            team1: t1, team2: t2,
+                            score1: null, score2: null, isFinished: false
+                        });
+                    }
+                }
+                rrTeams.splice(1, 0, rrTeams.pop());
+            }
+        }
+
+        schedules.push({ id: newScheduleId, mode, matches: newMatches, restMsg: restMsgArr.join('<br>') });
+        pendingRestMsg = '';
+        needsInitialSchedule = false;
+        closeRegroupModal();
+        renderAll();
+        saveStorage();
+        autoSync();
+    }
 
     function generateRankedSingleElimination() {
         const schedule = buildSingleEliminationSchedule();
