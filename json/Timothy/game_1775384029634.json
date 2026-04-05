@@ -1,0 +1,45 @@
+{
+  "players": [
+    {
+      "id": 1775384050352.9263,
+      "name": "惠足",
+      "gender": "女",
+      "level": 3
+    },
+    {
+      "id": 1775384050352.0527,
+      "name": "慕華",
+      "gender": "男",
+      "level": 8
+    },
+    {
+      "id": 1775384050352.7568,
+      "name": "LaLa",
+      "gender": "女",
+      "level": 3
+    },
+    {
+      "id": 1775384050352.2305,
+      "name": "Dani",
+      "gender": "男",
+      "level": 6
+    },
+    {
+      "id": 1775384050352.9092,
+      "name": "茂樹",
+      "gender": "男",
+      "level": 5
+    }
+  ],
+  "lastUpdated": "2026-04-05T10:14:11.256Z",
+  "currentTeams": [],
+  "schedules": [],
+  "matchMode": "single",
+  "pendingRestMsg": "",
+  "savedTeamDraft": [],
+  "savedDraftMode": "",
+  "savedDraftRestMsg": "",
+  "savedDraftRestPlayer": null,
+  "savedDraftUpdatedAt": null,
+  "needsInitialSchedule": false
+}
