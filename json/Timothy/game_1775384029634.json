@@ -303,9 +303,9 @@
             "name2": "惠足",
             "totalLevel": 9
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 11,
+          "score2": 7,
+          "isFinished": true
         },
         {
           "id": "M_2_5",
@@ -334,5 +334,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-04-06T11:20:18.703Z"
+  "lastUpdated": "2026-04-06T11:26:41.054Z"
 }
