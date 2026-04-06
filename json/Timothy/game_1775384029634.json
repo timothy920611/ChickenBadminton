@@ -49,80 +49,40 @@
       "level": 5
     }
   ],
-  "currentTeams": [],
-  "schedules": [],
-  "matchMode": "single",
-  "pendingRestMsg": "",
-  "savedTeamDraft": [
+  "currentTeams": [
     {
       "id": "Team_1775468752953_0",
-      "mode": "round-robin",
-      "p1": {
-        "id": 1775384050352.0527,
-        "name": "慕華",
-        "gender": "男",
-        "level": 8
-      },
-      "p2": {
-        "id": 1775384050352.9263,
-        "name": "惠足",
-        "gender": "女",
-        "level": 3
-      }
+      "name1": "慕華",
+      "name2": "惠足",
+      "totalLevel": 11
     },
     {
       "id": "Team_1775468752953_1",
-      "mode": "round-robin",
-      "p1": {
-        "id": 1775384050352.2305,
-        "name": "Dani",
-        "gender": "男",
-        "level": 6
-      },
-      "p2": {
-        "id": 1775384050352.7568,
-        "name": "LaLa",
-        "gender": "女",
-        "level": 3
-      }
+      "name1": "Dani",
+      "name2": "LaLa",
+      "totalLevel": 9
     },
     {
       "id": "Team_1775468752953_2",
-      "mode": "round-robin",
-      "p1": {
-        "id": 1775384050352.9092,
-        "name": "茂樹",
-        "gender": "男",
-        "level": 5
-      },
-      "p2": {
-        "id": 1775468734039.3425,
-        "name": "佳世",
-        "gender": "女",
-        "level": 5
-      }
+      "name1": "茂樹",
+      "name2": "佳世",
+      "totalLevel": 10
     },
     {
       "id": "Team_1775468752953_3",
-      "mode": "round-robin",
-      "p1": {
-        "id": 1775468734040.9214,
-        "name": "植敏",
-        "gender": "女",
-        "level": 4
-      },
-      "p2": {
-        "id": 1775468750785.8853,
-        "name": "代",
-        "gender": "男",
-        "level": 5
-      }
+      "name1": "植敏",
+      "name2": "代",
+      "totalLevel": 9
     }
   ],
+  "schedules": [],
+  "matchMode": "round-robin",
+  "pendingRestMsg": "",
+  "savedTeamDraft": [],
   "savedDraftMode": "round-robin",
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": "2026-04-06T09:46:20.467Z",
-  "lastUpdated": "2026-04-06T09:46:20.833Z",
-  "needsInitialSchedule": false
+  "lastUpdated": "2026-04-06T10:15:52.384Z",
+  "needsInitialSchedule": true
 }
