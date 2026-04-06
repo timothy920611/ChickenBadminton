@@ -243,9 +243,9 @@
             "name2": "植敏",
             "totalLevel": 9
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 11,
+          "score2": 6,
+          "isFinished": true
         },
         {
           "id": "M_2_2",
@@ -334,5 +334,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-04-06T11:02:51.565Z"
+  "lastUpdated": "2026-04-06T11:08:56.089Z"
 }
