@@ -41,6 +41,12 @@
       "name": "植敏",
       "gender": "女",
       "level": 4
+    },
+    {
+      "id": 1775468750785.8853,
+      "name": "代",
+      "gender": "男",
+      "level": 5
     }
   ],
   "currentTeams": [],
@@ -52,6 +58,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-04-06T09:45:34.320Z",
+  "lastUpdated": "2026-04-06T09:45:51.091Z",
   "needsInitialSchedule": false
 }
