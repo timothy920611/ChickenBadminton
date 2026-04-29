@@ -19,6 +19,159 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg); color: var(--text-main); display: flex; flex-direction: column; justify-content: flex-start; align-items: center; min-height: 100vh; padding: 24px 20px 40px; }
+
+        /* ===================== */
+        /* 開場動畫 Intro Screen  */
+        /* ===================== */
+        #intro-screen {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #e8ddd0 0%, #d6c9b8 40%, #c9b99e 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        /* 背景羽毛球裝飾 */
+        .shuttle-bg {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .shuttle-particle {
+            position: absolute;
+            font-size: 28px;
+            opacity: 0;
+            animation: floatShuttle 3s ease-out forwards;
+        }
+        @keyframes floatShuttle {
+            0% { opacity: 0; transform: translateY(60px) rotate(0deg); }
+            30% { opacity: 0.15; }
+            100% { opacity: 0; transform: translateY(-120px) rotate(180deg); }
+        }
+
+        /* 光暈圈圈 */
+        .glow-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid rgba(160, 130, 100, 0.25);
+            animation: expandRing 2s ease-out forwards;
+        }
+        @keyframes expandRing {
+            0% { transform: scale(0); opacity: 0.6; }
+            100% { transform: scale(4); opacity: 0; }
+        }
+
+        /* Logo 大圖示 */
+        .intro-logo {
+            font-size: 90px;
+            animation: logoPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(0 0 30px rgba(220,210,195,0.4));
+        }
+        @keyframes logoPop {
+            0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        /* 主標題 */
+        .intro-title {
+            color: #3d2f22;
+            font-size: 28px;
+            font-weight: 900;
+            margin-top: 20px;
+            letter-spacing: 2px;
+            text-shadow: 0 1px 8px rgba(255,255,255,0.4);
+            animation: slideUp 0.5s ease-out 0.8s both;
+            position: relative;
+            z-index: 2;
+        }
+        .intro-subtitle {
+            color: rgba(80, 60, 40, 0.65);
+            font-size: 14px;
+            margin-top: 8px;
+            letter-spacing: 4px;
+            animation: slideUp 0.5s ease-out 1s both;
+            position: relative;
+            z-index: 2;
+        }
+        @keyframes slideUp {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        /* 底部進度條 */
+        .intro-bar-wrap {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            z-index: 2;
+            animation: fadeIn 0.4s ease 1.2s both;
+        }
+        .intro-bar-label {
+            color: rgba(220,210,195,0.6);
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .intro-bar-bg {
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .intro-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #c9bfb0, #a89f93);
+            border-radius: 99px;
+            animation: fillBar 1.2s ease 1.3s forwards;
+        }
+        @keyframes fillBar {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* 整個 intro 淡出離場 */
+        #intro-screen.fade-out {
+            animation: introOut 0.6s ease forwards;
+        }
+        @keyframes introOut {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.05); pointer-events: none; }
+        }
+
+        /* 主頁內容一開始隱藏，待 intro 結束後顯示 */
+        #main-content {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        #main-content.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ================== */
+        /* 原有樣式            */
+        /* ================== */
         .login-card { background-color: var(--card-bg); border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); text-align: center; }
         .logo { font-size: 48px; margin-bottom: 10px; }
         h1 { color: var(--secondary); font-size: 24px; margin-bottom: 5px; }
@@ -67,112 +220,170 @@
 </head>
 <body>
 
-    <div class="login-card">
-        <div class="logo">🏸</div>
-        <h1>小雞🐥羽球計分板</h1>
-        <p class="subtitle">賽程安排與戰績管理系統</p>
+    <!-- ======== 開場動畫 ======== -->
+    <div id="intro-screen">
+        <!-- 背景裝飾羽球 -->
+        <div class="shuttle-bg" id="shuttleBg"></div>
 
-        <div class="input-group">
-            <label for="username">帳號</label>
-            <input type="text" id="username" placeholder="請輸入英文或數字" autocomplete="off">
-        </div>
-        <div class="input-group">
-            <label for="password">密碼</label>
-            <input type="password" id="password" placeholder="請輸入密碼">
-        </div>
+        <!-- 光暈 -->
+        <div class="glow-ring" style="width:200px;height:200px;animation-delay:0.2s"></div>
+        <div class="glow-ring" style="width:200px;height:200px;animation-delay:0.5s"></div>
+        <div class="glow-ring" style="width:200px;height:200px;animation-delay:0.8s"></div>
 
-        <button class="btn-primary" onclick="handleLogin()">登入</button>
-        <button class="btn-secondary" onclick="handleSignup()">註冊新帳號</button>
-        <button class="btn-guest" onclick="continueAsGuest()">👤 直接以訪客身分進入 (共用區)</button>
+        <!-- Logo + 文字 -->
+        <div class="intro-logo">🏸</div>
+        <div class="intro-title">小雞羽球計分板</div>
+        <div class="intro-subtitle">BADMINTON SCOREBOARD</div>
 
-        <div id="statusMsg"></div>
-
-        <p class="warning-text">
-            * 註冊帳號可擁有獨立的賽程與常用選手紀錄。<br>
-            * 密碼已啟用 SHA-256 單向加密保護。
-        </p>
-    </div>
-
-    <!-- 使用說明 -->
-    <div class="guide">
-        <div class="guide-title">📖 使用說明</div>
-        <div class="guide-steps">
-
-            <div class="step">
-                <div class="step-num">1</div>
-                <div class="step-body">
-                    <div class="step-title">登入 / 註冊</div>
-                    <div class="step-desc">註冊帳號可擁有獨立的比賽紀錄與常用選手名冊；也可直接用訪客身分進入共用區體驗。</div>
-                </div>
+        <!-- 進度條 -->
+        <div class="intro-bar-wrap">
+            <div class="intro-bar-label">LOADING</div>
+            <div class="intro-bar-bg">
+                <div class="intro-bar-fill"></div>
             </div>
-
-            <div class="step">
-                <div class="step-num">2</div>
-                <div class="step-body">
-                    <div class="step-title">建立比賽</div>
-                    <div class="step-desc">在賽程管理頁輸入比賽名稱（如「3/23 週末球局」）建立新賽事，每場比賽資料完全獨立。也可在此統一管理常用選手名冊，供下次快速加入。</div>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-num">3</div>
-                <div class="step-body">
-                    <div class="step-title">加入球員與分組</div>
-                    <div class="step-desc">新增球員（姓名、性別、實力級數 1–18），或從常用選手名冊勾選、CSV 批次匯入。CSV 每列需依序填入 <strong>姓名,性別,級數</strong>，例如 <strong>小明,男,10</strong>；系統會略過欄位不足或級數不是數字的資料。完成名單後點「自動分組」，系統依實力均衡配對，再用拖曳手動微調隊伍。</div>
-                    <span class="step-tag">自動依實力均衡</span>
-                    <span class="step-tag">拖曳調整隊伍</span>
-                    <span class="step-tag">支援休息區</span>
-                    <div class="step-note">
-                        <div class="step-note-title">CSV 匯入小提醒</div>
-                        <ul>
-                            <li>賽程頁與常用選手名冊都支援同一種 CSV 格式。</li>
-                            <li>欄位順序固定為：姓名、性別、級數（1–18）。</li>
-                            <li>若名單內已有同名選手，匯入時會自動略過避免重複。</li>
-                        </ul>
-                    </div>
-                    <div class="csv-example">
-                        <img src="https://github.com/timothy920611/ChickenBadminton/blob/3a467398981b1c3a94467ae5921880d90729366e/csv_example.png?raw=1" alt="CSV 匯入範例圖片">
-                        <a href="https://github.com/timothy920611/ChickenBadminton/blob/3a467398981b1c3a94467ae5921880d90729366e/csv_example.png" target="_blank" rel="noopener noreferrer">查看 CSV 範例圖片</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-num">4</div>
-                <div class="step-body">
-                    <div class="step-title">計分與賽程</div>
-                    <div class="step-desc">確認分組後進入計分頁，輸入每場比數即可自動更新戰績表（勝、負、得分、失分、淨勝分）。打完一輪可「同樣組合重打」，或重新分組再打一輪。</div>
-                    <span class="step-tag">單輪配對賽</span>
-                    <span class="step-tag">循環賽</span>
-                    <span class="step-tag">戰績自動排名</span>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-num">5</div>
-                <div class="step-body">
-                    <div class="step-title">邀請朋友協助計分</div>
-                    <div class="step-desc">計分頁點「🔗 邀請協助計分」，分享連結或 QR Code 給朋友。朋友不需登入即可輸入比分，雙方畫面每 10 秒自動同步。</div>
-                    <span class="step-tag purple">朋友無需登入</span>
-                    <span class="step-tag blue">10 秒自動同步</span>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-num">6</div>
-                <div class="step-body">
-                    <div class="step-title">雲端儲存與跨裝置</div>
-                    <div class="step-desc">每次確認分數時自動同步至雲端。換手機或其他裝置登入後，進入同一場比賽會自動載入雲端資料，不怕遺失。</div>
-                    <span class="step-tag">確認分數自動存雲端</span>
-                    <span class="step-tag blue">跨裝置同步</span>
-                </div>
-            </div>
-
         </div>
     </div>
+
+    <!-- ======== 主頁內容 ======== -->
+    <div id="main-content">
+
+        <div class="login-card">
+            <div class="logo">🏸</div>
+            <h1>小雞🐥羽球計分板</h1>
+            <p class="subtitle">賽程安排與戰績管理系統</p>
+
+            <div class="input-group">
+                <label for="username">帳號</label>
+                <input type="text" id="username" placeholder="請輸入英文或數字" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="password">密碼</label>
+                <input type="password" id="password" placeholder="請輸入密碼">
+            </div>
+
+            <button class="btn-primary" onclick="handleLogin()">登入</button>
+            <button class="btn-secondary" onclick="handleSignup()">註冊新帳號</button>
+            <button class="btn-guest" onclick="continueAsGuest()">👤 直接以訪客身分進入 (共用區)</button>
+
+            <div id="statusMsg"></div>
+
+            <p class="warning-text">
+                * 註冊帳號可擁有獨立的賽程與常用選手紀錄。<br>
+                * 密碼已啟用 SHA-256 單向加密保護。
+            </p>
+        </div>
+
+        <!-- 使用說明 -->
+        <div class="guide">
+            <div class="guide-title">📖 使用說明</div>
+            <div class="guide-steps">
+
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-body">
+                        <div class="step-title">登入 / 註冊</div>
+                        <div class="step-desc">註冊帳號可擁有獨立的比賽紀錄與常用選手名冊；也可直接用訪客身分進入共用區體驗。</div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-body">
+                        <div class="step-title">建立比賽</div>
+                        <div class="step-desc">在賽程管理頁輸入比賽名稱（如「3/23 週末球局」）建立新賽事，每場比賽資料完全獨立。也可在此統一管理常用選手名冊，供下次快速加入。</div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-body">
+                        <div class="step-title">加入球員與分組</div>
+                        <div class="step-desc">新增球員（姓名、性別、實力級數 1–18），或從常用選手名冊勾選、CSV 批次匯入。CSV 每列需依序填入 <strong>姓名,性別,級數</strong>，例如 <strong>小明,男,10</strong>；系統會略過欄位不足或級數不是數字的資料。完成名單後點「自動分組」，系統依實力均衡配對，再用拖曳手動微調隊伍。</div>
+                        <span class="step-tag">自動依實力均衡</span>
+                        <span class="step-tag">拖曳調整隊伍</span>
+                        <span class="step-tag">支援休息區</span>
+                        <div class="step-note">
+                            <div class="step-note-title">CSV 匯入小提醒</div>
+                            <ul>
+                                <li>賽程頁與常用選手名冊都支援同一種 CSV 格式。</li>
+                                <li>欄位順序固定為：姓名、性別、級數（1–18）。</li>
+                                <li>若名單內已有同名選手，匯入時會自動略過避免重複。</li>
+                            </ul>
+                        </div>
+                        <div class="csv-example">
+                            <img src="https://github.com/timothy920611/ChickenBadminton/blob/3a467398981b1c3a94467ae5921880d90729366e/csv_example.png?raw=1" alt="CSV 匯入範例圖片">
+                            <a href="https://github.com/timothy920611/ChickenBadminton/blob/3a467398981b1c3a94467ae5921880d90729366e/csv_example.png" target="_blank" rel="noopener noreferrer">查看 CSV 範例圖片</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <div class="step-body">
+                        <div class="step-title">計分與賽程</div>
+                        <div class="step-desc">確認分組後進入計分頁，輸入每場比數即可自動更新戰績表（勝、負、得分、失分、淨勝分）。打完一輪可「同樣組合重打」，或重新分組再打一輪。</div>
+                        <span class="step-tag">單輪配對賽</span>
+                        <span class="step-tag">循環賽</span>
+                        <span class="step-tag">戰績自動排名</span>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">5</div>
+                    <div class="step-body">
+                        <div class="step-title">邀請朋友協助計分</div>
+                        <div class="step-desc">計分頁點「🔗 邀請協助計分」，分享連結或 QR Code 給朋友。朋友不需登入即可輸入比分，雙方畫面每 10 秒自動同步。</div>
+                        <span class="step-tag purple">朋友無需登入</span>
+                        <span class="step-tag blue">10 秒自動同步</span>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">6</div>
+                    <div class="step-body">
+                        <div class="step-title">雲端儲存與跨裝置</div>
+                        <div class="step-desc">每次確認分數時自動同步至雲端。換手機或其他裝置登入後，進入同一場比賽會自動載入雲端資料，不怕遺失。</div>
+                        <span class="step-tag">確認分數自動存雲端</span>
+                        <span class="step-tag blue">跨裝置同步</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div><!-- end #main-content -->
 
     <script>
-        // GitHub API 設定
+        // ======== 開場動畫控制 ========
+        (function() {
+            const intro = document.getElementById('intro-screen');
+            const main  = document.getElementById('main-content');
+            const bg    = document.getElementById('shuttleBg');
+
+            // 隨機散佈裝飾羽球
+            const emojis = ['🏸','🏸','⭐','✨','🌟'];
+            for (let i = 0; i < 18; i++) {
+                const el = document.createElement('span');
+                el.className = 'shuttle-particle';
+                el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                el.style.left = (Math.random() * 100) + '%';
+                el.style.top  = (40 + Math.random() * 50) + '%';
+                el.style.animationDelay = (Math.random() * 1.5 + 0.5) + 's';
+                el.style.fontSize = (18 + Math.random() * 22) + 'px';
+                bg.appendChild(el);
+            }
+
+            // 2.8 秒後開始離場動畫，再 0.6 秒後顯示主頁
+            setTimeout(() => {
+                intro.classList.add('fade-out');
+                setTimeout(() => {
+                    intro.style.display = 'none';
+                    main.classList.add('visible');
+                }, 600);
+            }, 2800);
+        })();
+
+        // ======== 原有功能 ========
         const GITHUB_OWNER = 'timothy920611';   
         const GITHUB_REPO = 'ChickenBadminton'; 
         const NOISE = "5d5502d0e27ded4a977810d55f13e615c201fe6f7e1c0ff57641e034d75e2b2f";
@@ -183,9 +394,6 @@
             catch (e) { return null; }
         }
 
-        // ==========================================
-        // 🔒 密碼加密功能 (SHA-256)
-        // ==========================================
         async function hashPassword(password) {
             const encoder = new TextEncoder();
             const data = encoder.encode(password);
@@ -230,14 +438,11 @@
                     return setStatus("❌ 找不到此帳號，請先註冊", "error");
                 }
 
-                // 解析雲端資料
                 const contentStr = decodeURIComponent(escape(atob(userData.content)));
                 const userObj = JSON.parse(contentStr);
                 
-                // 將輸入的密碼進行 SHA-256 加密
                 const hashedInput = await hashPassword(pass);
                 
-                // 驗證密碼：支援新的 SHA-256 或舊版的 Base64(向下相容)
                 if (userObj.password === hashedInput || userObj.password === btoa(pass)) { 
                     localStorage.setItem('badminton_currentUser', user);
                     setStatus("✅ 登入成功！跳轉中...", "success");
@@ -267,14 +472,12 @@
                     return setStatus("❌ 此帳號已經有人使用了", "error");
                 }
 
-                // 產生 SHA-256 加密密碼
                 const hashedPassword = await hashPassword(pass);
 
-                // 建立使用者設定檔 users/{username}.json
                 const path = `users/${user}.json`;
                 const newUserData = { 
                     username: user, 
-                    password: hashedPassword, // 存入加密後的密碼
+                    password: hashedPassword,
                     createdAt: new Date().toISOString() 
                 };
                 const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(newUserData, null, 2))));
@@ -286,7 +489,6 @@
                 });
 
                 if (res.ok) {
-                    // 同時初始化該用戶的常用選手名單 (以建立專屬資料夾)
                     const fpPath = `json/${user}/frequent_players.json`;
                     await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${fpPath}`, {
                         method: 'PUT',
@@ -306,7 +508,7 @@
         }
 
         function continueAsGuest() {
-            localStorage.removeItem('badminton_currentUser'); // 移除帳號標記即為訪客
+            localStorage.removeItem('badminton_currentUser');
             window.location.href = 'dashboard.html';
         }
     </script>
