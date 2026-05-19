@@ -1,0 +1,51 @@
+{
+  "players": [
+    {
+      "id": 1779184140930.863,
+      "name": "惠足",
+      "gender": "女",
+      "level": 3
+    },
+    {
+      "id": 1779184140930.987,
+      "name": "重運",
+      "gender": "男",
+      "level": 4
+    },
+    {
+      "id": 1779184140930.4707,
+      "name": "則宇",
+      "gender": "女",
+      "level": 4
+    },
+    {
+      "id": 1779184140930.9895,
+      "name": "怡瑱",
+      "gender": "女",
+      "level": 5
+    },
+    {
+      "id": 1779184140930.25,
+      "name": "慕華",
+      "gender": "男",
+      "level": 8
+    },
+    {
+      "id": 1779184140930.5874,
+      "name": "茂樹",
+      "gender": "男",
+      "level": 5
+    }
+  ],
+  "lastUpdated": "2026-05-19T09:49:01.599Z",
+  "currentTeams": [],
+  "schedules": [],
+  "matchMode": "single",
+  "pendingRestMsg": "",
+  "savedTeamDraft": [],
+  "savedDraftMode": "",
+  "savedDraftRestMsg": "",
+  "savedDraftRestPlayer": null,
+  "savedDraftUpdatedAt": null,
+  "needsInitialSchedule": false
+}
