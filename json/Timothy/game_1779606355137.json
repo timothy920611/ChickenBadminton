@@ -49,15 +49,40 @@
       "level": 4
     }
   ],
-  "currentTeams": [],
+  "currentTeams": [
+    {
+      "id": "Team_1779606391596_0",
+      "name1": "慕華",
+      "name2": "惠足",
+      "totalLevel": 11
+    },
+    {
+      "id": "Team_1779606391596_1",
+      "name1": "怡瑱",
+      "name2": "海薇",
+      "totalLevel": 9
+    },
+    {
+      "id": "Team_1779606391596_2",
+      "name1": "茂樹",
+      "name2": "則宇",
+      "totalLevel": 9
+    },
+    {
+      "id": "Team_1779606391596_3",
+      "name1": "重運",
+      "name2": "代",
+      "totalLevel": 8
+    }
+  ],
   "schedules": [],
-  "matchMode": "single",
+  "matchMode": "round-robin",
   "pendingRestMsg": "",
   "savedTeamDraft": [],
   "savedDraftMode": "",
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-05-24T07:06:19.147Z",
-  "needsInitialSchedule": false
+  "lastUpdated": "2026-05-24T07:06:39.225Z",
+  "needsInitialSchedule": true
 }
