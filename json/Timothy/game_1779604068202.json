@@ -75,14 +75,137 @@
       "totalLevel": 9
     }
   ],
-  "schedules": [],
+  "schedules": [
+    {
+      "id": 1,
+      "mode": "round-robin",
+      "matches": [
+        {
+          "id": "M_1_0",
+          "round": 1,
+          "matchNumber": 1,
+          "team1": {
+            "id": "Team_1779604096233_0",
+            "name1": "慕華",
+            "name2": "惠足",
+            "totalLevel": 11
+          },
+          "team2": {
+            "id": "Team_1779604096233_3",
+            "name1": "代",
+            "name2": "海薇",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_1",
+          "round": 1,
+          "matchNumber": 2,
+          "team1": {
+            "id": "Team_1779604096233_1",
+            "name1": "怡瑱",
+            "name2": "則宇",
+            "totalLevel": 9
+          },
+          "team2": {
+            "id": "Team_1779604096233_2",
+            "name1": "茂樹",
+            "name2": "重運",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_2",
+          "round": 2,
+          "matchNumber": 3,
+          "team1": {
+            "id": "Team_1779604096233_0",
+            "name1": "慕華",
+            "name2": "惠足",
+            "totalLevel": 11
+          },
+          "team2": {
+            "id": "Team_1779604096233_2",
+            "name1": "茂樹",
+            "name2": "重運",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_3",
+          "round": 2,
+          "matchNumber": 4,
+          "team1": {
+            "id": "Team_1779604096233_3",
+            "name1": "代",
+            "name2": "海薇",
+            "totalLevel": 9
+          },
+          "team2": {
+            "id": "Team_1779604096233_1",
+            "name1": "怡瑱",
+            "name2": "則宇",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_4",
+          "round": 3,
+          "matchNumber": 5,
+          "team1": {
+            "id": "Team_1779604096233_0",
+            "name1": "慕華",
+            "name2": "惠足",
+            "totalLevel": 11
+          },
+          "team2": {
+            "id": "Team_1779604096233_1",
+            "name1": "怡瑱",
+            "name2": "則宇",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_5",
+          "round": 3,
+          "matchNumber": 6,
+          "team1": {
+            "id": "Team_1779604096233_2",
+            "name1": "茂樹",
+            "name2": "重運",
+            "totalLevel": 9
+          },
+          "team2": {
+            "id": "Team_1779604096233_3",
+            "name1": "代",
+            "name2": "海薇",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        }
+      ],
+      "restMsg": ""
+    }
+  ],
   "matchMode": "round-robin",
   "pendingRestMsg": "",
-  "savedTeamDraft": [],
-  "savedDraftMode": "",
-  "savedDraftRestMsg": "",
-  "savedDraftRestPlayer": null,
-  "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-05-24T06:28:23.998Z",
-  "needsInitialSchedule": true
+  "needsInitialSchedule": false,
+  "lastUpdated": "2026-05-24T06:28:27.171Z"
 }
