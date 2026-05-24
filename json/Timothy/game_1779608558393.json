@@ -63,14 +63,37 @@
       "totalLevel": 9
     }
   ],
-  "schedules": [],
+  "schedules": [
+    {
+      "id": 1,
+      "mode": "single",
+      "matches": [
+        {
+          "id": "M_1_0",
+          "round": 1,
+          "matchNumber": 1,
+          "team1": {
+            "id": "Team_1779608593072_1",
+            "name1": "怡瑱",
+            "name2": "重運",
+            "totalLevel": 9
+          },
+          "team2": {
+            "id": "Team_1779608593072_0",
+            "name1": "慕華",
+            "name2": "則宇",
+            "totalLevel": 12
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        }
+      ],
+      "restMsg": "單數球員：<strong>惠足</strong> (本輪休息)<br>單數隊伍：<strong>茂樹 & 海薇</strong> (本輪輪空)"
+    }
+  ],
   "matchMode": "single",
-  "pendingRestMsg": "單數球員：<strong>惠足</strong> (本輪休息)",
-  "savedTeamDraft": [],
-  "savedDraftMode": "",
-  "savedDraftRestMsg": "",
-  "savedDraftRestPlayer": null,
-  "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-05-24T07:43:23.619Z",
-  "needsInitialSchedule": true
+  "pendingRestMsg": "",
+  "needsInitialSchedule": false,
+  "lastUpdated": "2026-05-24T07:43:25.051Z"
 }
