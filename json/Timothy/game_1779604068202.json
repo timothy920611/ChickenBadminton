@@ -116,9 +116,9 @@
             "name2": "重運",
             "totalLevel": 9
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 11,
+          "score2": 9,
+          "isFinished": true
         },
         {
           "id": "M_1_2",
@@ -207,5 +207,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-05-24T06:28:27.171Z"
+  "lastUpdated": "2026-05-24T06:33:28.263Z"
 }
