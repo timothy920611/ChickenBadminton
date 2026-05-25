@@ -153,7 +153,7 @@
           },
           "score1": 3,
           "score2": 2,
-          "isFinished": false
+          "isFinished": true
         }
       ],
       "restMsg": "單數球員：<strong>慕華</strong> 本輪輪空"
@@ -162,5 +162,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-05-25T09:35:24.764Z"
+  "lastUpdated": "2026-05-25T09:35:26.544Z"
 }
