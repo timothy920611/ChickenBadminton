@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>專業雙色計分板 Pro Scoreboard</title>
+  
+  <!-- 引入 Tailwind CSS 用於快速版面微調 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入 Lucide 圖示庫 -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google 字型 (用於精美、有張力的大數字) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow: hidden;
+      background-color: #000;
+    }
+    
+    /* 大數字特殊字型，使其看起來更有競技張力 */
+    .score-number {
+      font-family: 'Teko', sans-serif;
+      font-weight: 700;
+      line-height: 0.85;
+    }
+
+    /* 平滑過渡動畫，用於交換場地時 */
+    .team-panel {
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* 隱藏預設捲軸並確保滿版 */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      position: fixed;
+      width: 100%;
+    }
+
+    /* 防止 iOS 點擊高亮變色 */
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 對話框/設定面版 */
+    .modal {
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .modal.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.95);
+    }
+
+    /* 煙火慶祝特效 Canvas */
+    #celebration-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 40;
+    }
+  </style>
+</head>
+<body class="flex flex-col md:flex-row relative">
+
+  <!-- 煙火畫布 -->
+  <canvas id="celebration-canvas"></canvas>
+
+  <!-- 左邊/上邊：隊伍 A (預設主隊-藍色) -->
+  <div id="panel-a" class="team-panel flex-1 flex flex-col justify-between items-center py-8 relative cursor-pointer select-none bg-[#3b82f6] text-white h-1/2 md:h-full" onclick="changeScore('A', 1)">
+    <!-- 頂部資訊：隊名與贏家皇冠 -->
+    <div class="flex flex-col items-center z-10 mt-2 md:mt-8">
+      <div class="flex items-center gap-2">
+        <!-- 點擊隊名可直接原地修改 -->
+        <input type="text" id="name-a" value="主隊" 
+               class="bg-transparent text-center font-black text-3xl md:text-5xl focus:outline-none focus:border-b-2 border-white w-48 md:w-64 cursor-text"
+               onclick="event.stopPropagation();" onchange="saveSettings()">
+        <span id="crown-a" class="text-yellow-300 drop-shadow-lg transition-all duration-300 opacity-0 transform scale-50">
+          <i data-lucide="crown" class="w-8 h-8 fill-current"></i>
+        </span>
+      </div>
+    </div>
+
+    <!-- 中間大數字 -->
+    <div class="flex flex-col items-center justify-center flex-grow">
+      <div id="score-a" class="score-number text-[14rem] sm:text-[18rem] md:text-[22rem] lg:text-[26rem] select-none transition-transform duration-100 active:scale-95">0</div>
+    </div>
+
+    <!-- 底部輔助按鈕 (減分) -->
+    <div class="z-20 mb-2 md:mb-6">
+      <button class="bg-black/30 hover:bg-black/40 text-white rounded-full p-3 md:p-4 flex items-center justify-center transition-all active:scale-90" 
+              onclick="event.stopPropagation(); changeScore('A', -1)">
+        <i data-lucide="minus" class="w-6 h-6 md:w-8 md:h-8"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- 右邊/下邊：隊伍 B (預設客隊-紅色) -->
+  <div id="panel-b" class="team-panel flex-1 flex flex-col justify-between items-center py-8 relative cursor-pointer select-none bg-[#ef4444] text-white h-1/2 md:h-full" onclick="changeScore('B', 1)">
+    <!-- 頂部資訊：隊名與贏家皇冠 -->
+    <div class="flex flex-col items-center z-10 mt-2 md:mt-8">
+      <div class="flex items-center gap-2">
+        <input type="text" id="name-b" value="客隊" 
+               class="bg-transparent text-center font-black text-3xl md:text-5xl focus:outline-none focus:border-b-2 border-white w-48 md:w-64 cursor-text"
+               onclick="event.stopPropagation();" onchange="saveSettings()">
+        <span id="crown-b" class="text-yellow-300 drop-shadow-lg transition-all duration-300 opacity-0 transform scale-50">
+          <i data-lucide="crown" class="w-8 h-8 fill-current"></i>
+        </span>
+      </div>
+    </div>
+
+    <!-- 中間大數字 -->
+    <div class="flex flex-col items-center justify-center flex-grow">
+      <div id="score-b" class="score-number text-[14rem] sm:text-[18rem] md:text-[22rem] lg:text-[26rem] select-none transition-transform duration-100 active:scale-95">0</div>
+    </div>
+
+    <!-- 底部輔助按鈕 (減分) -->
+    <div class="z-20 mb-2 md:mb-6">
+      <button class="bg-black/30 hover:bg-black/40 text-white rounded-full p-3 md:p-4 flex items-center justify-center transition-all active:scale-90" 
+              onclick="event.stopPropagation(); changeScore('B', -1)">
+        <i data-lucide="minus" class="w-6 h-6 md:w-8 md:h-8"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- 懸浮控制板 (位於畫面中央) -->
+  <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 flex items-center justify-around bg-white text-gray-800 rounded-full shadow-2xl px-6 py-3 border border-gray-100 gap-6 md:gap-8">
+    <!-- 設定按鈕 -->
+    <button onclick="toggleSettingsModal(true)" class="hover:text-[#3b82f6] transition-colors active:scale-90" title="設定">
+      <i data-lucide="settings" class="w-6 h-6 md:w-7 md:h-7"></i>
+    </button>
+    
+    <!-- 交換按鈕 -->
+    <button onclick="swapTeams()" class="hover:text-[#3b82f6] transition-colors active:scale-90" title="交換場地">
+      <i data-lucide="arrow-left-right" class="w-6 h-6 md:w-7 md:h-7"></i>
+    </button>
+
+    <!-- 歸零按鈕 -->
+    <button onclick="confirmReset()" class="hover:text-red-500 transition-colors active:scale-90" title="歸零重置">
+      <i data-lucide="rotate-ccw" class="w-6 h-6 md:w-7 md:h-7"></i>
+    </button>
+  </div>
+
+  <!-- 設定對話盒 (Modal) -->
+  <div id="settings-modal" class="modal hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl overflow-hidden relative">
+      <h3 class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+        <i data-lucide="sliders" class="w-6 h-6 text-blue-500"></i>
+        計分板設定
+      </h3>
+      
+      <div class="space-y-4">
+        <!-- 勝利分數 -->
+        <div>
+          <label class="block text-sm font-bold text-gray-600 mb-1">勝利分數限制 (0 代表不設限)</label>
+          <div class="flex gap-2">
+            <button onclick="setTargetScorePreset(11)" class="flex-1 py-1.5 px-3 bg-gray-100 rounded-lg font-bold text-sm hover:bg-blue-500 hover:text-white transition">11分</button>
+            <button onclick="setTargetScorePreset(21)" class="flex-1 py-1.5 px-3 bg-gray-100 rounded-lg font-bold text-sm hover:bg-blue-500 hover:text-white transition">21分</button>
+            <button onclick="setTargetScorePreset(25)" class="flex-1 py-1.5 px-3 bg-gray-100 rounded-lg font-bold text-sm hover:bg-blue-500 hover:text-white transition">25分</button>
+          </div>
+          <input type="number" id="target-score" class="mt-2 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" min="0" value="11">
+        </div>
+
+        <!-- 聲音與震動 -->
+        <div class="flex items-center justify-between border-t pt-4">
+          <span class="text-sm font-bold text-gray-600">操作音效與提示</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="sound-toggle" class="sr-only peer" checked onchange="saveSettings()">
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between border-t pt-4">
+          <span class="text-sm font-bold text-gray-600">觸覺震動回饋 (限手機)</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="vibrate-toggle" class="sr-only peer" checked onchange="saveSettings()">
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+          </label>
+        </div>
+
+        <div class="text-xs text-gray-400 border-t pt-3">
+          提示：您可直接點擊畫面上的「主隊 / 客隊」來更改名稱。
+        </div>
+      </div>
+
+      <!-- 底部按鈕 -->
+      <div class="mt-6 flex gap-3">
+        <button onclick="toggleSettingsModal(false)" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition shadow-md">
+          確定並套用
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 歸零確認對話盒 (Modal) -->
+  <div id="reset-modal" class="modal hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl text-center">
+      <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 text-red-600 mb-4">
+        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+      </div>
+      <h3 class="text-lg font-bold text-gray-900 mb-2">確定要把分數歸零嗎？</h3>
+      <p class="text-sm text-gray-500 mb-6">目前的比分與勝負狀態將會被清除重置。</p>
+      <div class="flex gap-3">
+        <button onclick="toggleResetModal(false)" class="flex-1 py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-xl transition">
+          取消
+        </button>
+        <button onclick="resetScores()" class="flex-1 py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition shadow-md">
+          確定歸零
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 提示浮現訊息 (取代 alert) -->
+  <div id="toast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-900/90 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-lg transition-all duration-300 opacity-0 pointer-events-none z-50">
+    已歸零
+  </div>
+
+  <script>
+    // 狀態設定
+    let scoreA = 0;
+    let scoreB = 0;
+    let nameA = "主隊";
+    let nameB = "客隊";
+    let colorA = "#3b82f6"; // 藍色
+    let colorB = "#ef4444"; // 紅色
+    let isSwapped = false; // 是否已交換場地
+
+    let targetScore = 11;
+    let enableSound = true;
+    let enableVibrate = true;
+
+    // 音效
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // 初始化 Lucide 圖示
+    lucide.createIcons();
+
+    // 載入 localStorage 的設定與狀態 (若有的話)
+    function loadSavedState() {
+      const savedTarget = localStorage.getItem('score_target');
+      if (savedTarget !== null) {
+        targetScore = parseInt(savedTarget, 10);
+        document.getElementById('target-score').value = targetScore;
+      }
+      const savedSound = localStorage.getItem('score_sound');
+      if (savedSound !== null) {
+        enableSound = savedSound === 'true';
+        document.getElementById('sound-toggle').checked = enableSound;
+      }
+      const savedVibrate = localStorage.getItem('score_vibrate');
+      if (savedVibrate !== null) {
+        enableVibrate = savedVibrate === 'true';
+        document.getElementById('vibrate-toggle').checked = enableVibrate;
+      }
+      
+      const savedNameA = localStorage.getItem('score_name_a');
+      const savedNameB = localStorage.getItem('score_name_b');
+      if (savedNameA) document.getElementById('name-a').value = savedNameA;
+      if (savedNameB) document.getElementById('name-b').value = savedNameB;
+    }
+
+    // 儲存設定至 localStorage
+    function saveSettings() {
+      targetScore = parseInt(document.getElementById('target-score').value, 10) || 0;
+      enableSound = document.getElementById('sound-toggle').checked;
+      enableVibrate = document.getElementById('vibrate-toggle').checked;
+      
+      localStorage.setItem('score_target', targetScore);
+      localStorage.setItem('score_sound', enableSound);
+      localStorage.setItem('score_vibrate', enableVibrate);
+      
+      localStorage.setItem('score_name_a', document.getElementById('name-a').value);
+      localStorage.setItem('score_name_b', document.getElementById('name-b').value);
+
+      checkWinnerState();
+    }
+
+    // 快捷設定預設分數
+    function setTargetScorePreset(score) {
+      document.getElementById('target-score').value = score;
+      saveSettings();
+      showToast(`已設定勝利分數為 ${score} 分`);
+    }
+
+    // 播放提示聲 (使用 Web Audio API，無需外載音檔)
+    function playBeep(type) {
+      if (!enableSound) return;
+      try {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+
+        if (type === 'add') {
+          osc.frequency.setValueAtTime(587.33, audioContext.currentTime); // D5
+          gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+          osc.start();
+          osc.stop(audioContext.currentTime + 0.15);
+        } else if (type === 'minus') {
+          osc.frequency.setValueAtTime(293.66, audioContext.currentTime); // D4
+          gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+          osc.start();
+          osc.stop(audioContext.currentTime + 0.2);
+        } else if (type === 'win') {
+          // 贏球和弦
+          const freqs = [523.25, 659.25, 783.99, 1046.50]; // C 和弦
+          freqs.forEach((f, i) => {
+            const o = audioContext.createOscillator();
+            const g = audioContext.createGain();
+            o.connect(g);
+            g.connect(audioContext.destination);
+            o.frequency.setValueAtTime(f, audioContext.currentTime + i * 0.08);
+            g.gain.setValueAtTime(0.08, audioContext.currentTime + i * 0.08);
+            g.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + i * 0.08 + 0.4);
+            o.start(audioContext.currentTime + i * 0.08);
+            o.stop(audioContext.currentTime + i * 0.08 + 0.4);
+          });
+        }
+      } catch (e) {
+        console.log('Audio Autoplay policy block handled');
+      }
+    }
+
+    // 震動回饋
+    function triggerVibrate(pattern = 50) {
+      if (enableVibrate && navigator.vibrate) {
+        navigator.vibrate(pattern);
+      }
+    }
+
+    // 更新分數與介面
+    function updateDisplay() {
+      document.getElementById('score-a').innerText = scoreA;
+      document.getElementById('score-b').innerText = scoreB;
+      checkWinnerState();
+    }
+
+    // 變更分數 (A 或 B 隊，增量 delta)
+    function changeScore(panel, delta) {
+      if (panel === 'A') {
+        scoreA = Math.max(0, scoreA + delta);
+        if (delta > 0) {
+          playBeep('add');
+          triggerVibrate(60);
+        } else {
+          playBeep('minus');
+          triggerVibrate([40, 30]);
+        }
+      } else {
+        scoreB = Math.max(0, scoreB + delta);
+        if (delta > 0) {
+          playBeep('add');
+          triggerVibrate(60);
+        } else {
+          playBeep('minus');
+          triggerVibrate([40, 30]);
+        }
+      }
+      updateDisplay();
+    }
+
+    // 交換場地 (對調面板的順序、顏色、分數與名稱)
+    function swapTeams() {
+      triggerVibrate(100);
+      playBeep('minus');
+      
+      isSwapped = !isSwapped;
+      
+      const container = document.body;
+      const panelA = document.getElementById('panel-a');
+      const panelB = document.getElementById('panel-b');
+
+      if (isSwapped) {
+        // 水平與垂直皆反轉順序 (CSS flex-direction-reverse 效果)
+        panelA.classList.add('order-2');
+        panelB.classList.add('order-1');
+      } else {
+        panelA.classList.remove('order-2');
+        panelB.classList.remove('order-1');
+      }
+
+      showToast("場地已對調");
+    }
+
+    // 確認與開關歸零對話盒
+    function confirmReset() {
+      toggleResetModal(true);
+    }
+
+    function resetScores() {
+      scoreA = 0;
+      scoreB = 0;
+      updateDisplay();
+      toggleResetModal(false);
+      showToast("分數已全部歸零");
+      triggerVibrate([80, 50, 80]);
+    }
+
+    // 開關設定 Modal
+    function toggleSettingsModal(show) {
+      const modal = document.getElementById('settings-modal');
+      if (show) {
+        modal.classList.remove('hidden');
+      } else {
+        modal.classList.add('hidden');
+        saveSettings();
+      }
+    }
+
+    // 開關歸零 Modal
+    function toggleResetModal(show) {
+      const modal = document.getElementById('reset-modal');
+      if (show) {
+        modal.classList.remove('hidden');
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    // 秀出 Toast 短暫提示
+    function showToast(text) {
+      const toast = document.getElementById('toast');
+      toast.innerText = text;
+      toast.classList.remove('opacity-0');
+      toast.classList.add('opacity-100');
+      
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0');
+      }, 1500);
+    }
+
+    // 檢查是否有隊伍勝出並顯示特效
+    let winnerCelebrated = false;
+
+    function checkWinnerState() {
+      const crownA = document.getElementById('crown-a');
+      const crownB = document.getElementById('crown-b');
+
+      if (targetScore > 0) {
+        const winA = scoreA >= targetScore && (scoreA - scoreB >= 2);
+        const winB = scoreB >= targetScore && (scoreB - scoreA >= 2);
+
+        // 如果是剛好過關且還沒慶祝過
+        if ((winA || winB) && !winnerCelebrated) {
+          playBeep('win');
+          triggerVibrate([100, 50, 100, 50, 300]);
+          startFireworks();
+          winnerCelebrated = true;
+          showToast("比賽結束！恭喜獲勝！");
+        }
+
+        // 顯示或隱藏皇冠
+        if (winA) {
+          crownA.classList.remove('opacity-0', 'scale-50');
+          crownA.classList.add('opacity-100', 'scale-100');
+        } else {
+          crownA.classList.add('opacity-0', 'scale-50');
+          crownA.classList.remove('opacity-100', 'scale-100');
+        }
+
+        if (winB) {
+          crownB.classList.remove('opacity-0', 'scale-50');
+          crownB.classList.add('opacity-100', 'scale-100');
+        } else {
+          crownB.classList.add('opacity-0', 'scale-50');
+          crownB.classList.remove('opacity-100', 'scale-100');
+        }
+
+        if (!winA && !winB) {
+          winnerCelebrated = false;
+          stopFireworks();
+        }
+      } else {
+        // 不設限勝利分數
+        crownA.classList.add('opacity-0', 'scale-50');
+        crownB.classList.add('opacity-0', 'scale-50');
+        winnerCelebrated = false;
+        stopFireworks();
+      }
+    }
+
+    // --- 炫酷煙火粒子特效邏輯 ---
+    const canvas = document.getElementById('celebration-canvas');
+    const ctx = canvas.getContext('2d');
+    let animationFrameId = null;
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = Math.random() * 3 + 2;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 6 + 4;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        this.alpha = 1;
+        this.decay = Math.random() * 0.015 + 0.015;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.08; // 重力
+        this.alpha -= this.decay;
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function spawnFirework() {
+      const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#ef4444', '#ffffff'];
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * (canvas.height * 0.5) + (canvas.height * 0.1);
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      for (let i = 0; i < 40; i++) {
+        particles.push(new Particle(x, y, color));
+      }
+    }
+
+    function animateCelebration() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      if (Math.random() < 0.05) {
+        spawnFirework();
+      }
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.update();
+        if (p.alpha <= 0) {
+          particles.splice(i, 1);
+        } else {
+          p.draw();
+        }
+      }
+
+      animationFrameId = requestAnimationFrame(animateCelebration);
+    }
+
+    function startFireworks() {
+      if (!animationFrameId) {
+        animateCelebration();
+      }
+    }
+
+    function stopFireworks() {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles = [];
+    }
+
+    // 鍵盤操控支援 (防呆便攜性，供電腦操作或無線快門)
+    window.addEventListener('keydown', (e) => {
+      // 若正在輸入隊名，不執行快速鍵
+      if (document.activeElement.tagName === 'INPUT') return;
+
+      if (e.key === 'a' || e.key === 'A') changeScore('A', 1);
+      if (e.key === 'z' || e.key === 'Z') changeScore('A', -1);
+      if (e.key === 'l' || e.key === 'L') changeScore('B', 1);
+      if (e.key === 'm' || e.key === 'M') changeScore('B', -1);
+      if (e.key === ' ') swapTeams();
+      if (e.key === 'Escape') resetScores();
+    });
+
+    // 防止手機雙擊縮放
+    document.addEventListener('touchstart', (event) => {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    }, { passive: false });
+
+    // 初始化載入
+    window.onload = function() {
+      loadSavedState();
+      updateDisplay();
+    };
+  </script>
+</body>
+</html>
