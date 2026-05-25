@@ -151,8 +151,8 @@
             "name2": "海薇",
             "totalLevel": 9
           },
-          "score1": 1,
-          "score2": 0,
+          "score1": 2,
+          "score2": 1,
           "isFinished": false
         }
       ],
@@ -162,5 +162,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-05-25T09:43:03.864Z"
+  "lastUpdated": "2026-05-25T09:43:05.302Z"
 }
