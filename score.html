@@ -12,7 +12,7 @@
   <!-- Google 字型 (用於精美、有張力的大數字) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
 
   <style>
     body {
@@ -23,11 +23,13 @@
       background-color: #000;
     }
     
-    /* 大數字特殊字型，使其看起來更有競技張力 */
+    /* 大數字特殊字型 — Bebas Neue 的 1 有底線、7 有橫杠，辨識度高 */
     .score-number {
-      font-family: 'Teko', sans-serif;
+      font-family: 'Bebas Neue', sans-serif;
       font-weight: 700;
-      line-height: 0.85;
+      line-height: 0.82;
+      /* 動態填滿：手機直向用 vw，電腦橫向用 vh */
+      font-size: clamp(8rem, 43vw, 76vh);
     }
 
     /* 平滑過渡動畫，用於交換場地時 */
@@ -93,7 +95,7 @@
 
     <!-- 中間大數字 -->
     <div class="flex flex-col items-center justify-center flex-grow">
-      <div id="score-a" class="score-number text-[14rem] sm:text-[18rem] md:text-[22rem] lg:text-[26rem] select-none transition-transform duration-100 active:scale-95">0</div>
+      <div id="score-a" class="score-number select-none transition-transform duration-100 active:scale-95">0</div>
     </div>
 
     <!-- 底部輔助按鈕 (減分) -->
@@ -121,7 +123,7 @@
 
     <!-- 中間大數字 -->
     <div class="flex flex-col items-center justify-center flex-grow">
-      <div id="score-b" class="score-number text-[14rem] sm:text-[18rem] md:text-[22rem] lg:text-[26rem] select-none transition-transform duration-100 active:scale-95">0</div>
+      <div id="score-b" class="score-number select-none transition-transform duration-100 active:scale-95">0</div>
     </div>
 
     <!-- 底部輔助按鈕 (減分) -->
@@ -135,6 +137,11 @@
 
   <!-- 懸浮控制板 (位於畫面中央) -->
   <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 flex items-center justify-around bg-white text-gray-800 rounded-full shadow-2xl px-6 py-3 border border-gray-100 gap-6 md:gap-8">
+    <!-- 全螢幕按鈕 -->
+    <button onclick="toggleFullscreen()" id="fullscreen-btn" class="hover:text-[#3b82f6] transition-colors active:scale-90" title="全螢幕">
+      <i data-lucide="maximize" class="w-6 h-6 md:w-7 md:h-7"></i>
+    </button>
+    
     <!-- 設定按鈕 -->
     <button onclick="toggleSettingsModal(true)" class="hover:text-[#3b82f6] transition-colors active:scale-90" title="設定">
       <i data-lucide="settings" class="w-6 h-6 md:w-7 md:h-7"></i>
@@ -626,6 +633,29 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       particles = [];
     }
+
+    // 全螢幕切換
+    function toggleFullscreen() {
+      const btn = document.getElementById('fullscreen-btn');
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+          btn.innerHTML = '<i data-lucide="minimize" class="w-6 h-6 md:w-7 md:h-7"></i>';
+          lucide.createIcons();
+        }).catch(() => {});
+      } else {
+        document.exitFullscreen().then(() => {
+          btn.innerHTML = '<i data-lucide="maximize" class="w-6 h-6 md:w-7 md:h-7"></i>';
+          lucide.createIcons();
+        }).catch(() => {});
+      }
+    }
+    document.addEventListener('fullscreenchange', () => {
+      const btn = document.getElementById('fullscreen-btn');
+      if (!document.fullscreenElement) {
+        btn.innerHTML = '<i data-lucide="maximize" class="w-6 h-6 md:w-7 md:h-7"></i>';
+        lucide.createIcons();
+      }
+    });
 
     // 鍵盤操控支援 (防呆便攜性，供電腦操作或無線快門)
     window.addEventListener('keydown', (e) => {
