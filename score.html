@@ -149,6 +149,10 @@
     <button onclick="confirmReset()" class="hover:text-red-500 transition-colors active:scale-90" title="歸零重置">
       <i data-lucide="rotate-ccw" class="w-6 h-6 md:w-7 md:h-7"></i>
     </button>
+
+    <button onclick="finishAndReturn()" class="hover:text-emerald-600 transition-colors active:scale-90" title="完成並帶回比分">
+      <i data-lucide="check-check" class="w-6 h-6 md:w-7 md:h-7"></i>
+    </button>
   </div>
 
   <!-- 設定對話盒 (Modal) -->
@@ -240,6 +244,14 @@
     let enableSound = true;
     let enableVibrate = true;
 
+    const scoreboardQuery = new URLSearchParams(window.location.search);
+    const sessionMeta = {
+      gameId: scoreboardQuery.get('gameId') || '',
+      scheduleId: scoreboardQuery.get('scheduleId') || '',
+      matchId: scoreboardQuery.get('matchId') || '',
+      mode: scoreboardQuery.get('mode') || 'single'
+    };
+
     // 音效
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     
@@ -266,8 +278,15 @@
       
       const savedNameA = localStorage.getItem('score_name_a');
       const savedNameB = localStorage.getItem('score_name_b');
-      if (savedNameA) document.getElementById('name-a').value = savedNameA;
-      if (savedNameB) document.getElementById('name-b').value = savedNameB;
+      const queryNameA = scoreboardQuery.get('team1');
+      const queryNameB = scoreboardQuery.get('team2');
+      document.getElementById('name-a').value = queryNameA || savedNameA || '主隊';
+      document.getElementById('name-b').value = queryNameB || savedNameB || '客隊';
+
+      const initialScoreA = parseInt(scoreboardQuery.get('score1') || '0', 10);
+      const initialScoreB = parseInt(scoreboardQuery.get('score2') || '0', 10);
+      if (!Number.isNaN(initialScoreA) && initialScoreA >= 0) scoreA = initialScoreA;
+      if (!Number.isNaN(initialScoreB) && initialScoreB >= 0) scoreB = initialScoreB;
     }
 
     // 儲存設定至 localStorage
@@ -370,6 +389,7 @@
         }
       }
       updateDisplay();
+      emitScoreUpdate(false);
     }
 
     // 交換場地 (對調面板的順序、顏色、分數與名稱)
@@ -393,6 +413,7 @@
       }
 
       showToast("場地已對調");
+      emitScoreUpdate(false);
     }
 
     // 確認與開關歸零對話盒
@@ -407,6 +428,7 @@
       toggleResetModal(false);
       showToast("分數已全部歸零");
       triggerVibrate([80, 50, 80]);
+      emitScoreUpdate(false);
     }
 
     // 開關設定 Modal
@@ -441,6 +463,30 @@
         toast.classList.remove('opacity-100');
         toast.classList.add('opacity-0');
       }, 1500);
+    }
+
+
+    function emitScoreUpdate(isFinished = false) {
+      if (!sessionMeta.gameId || !sessionMeta.matchId) return;
+      const payload = {
+        gameId: sessionMeta.gameId,
+        scheduleId: sessionMeta.scheduleId,
+        matchId: sessionMeta.matchId,
+        score1: scoreA,
+        score2: scoreB,
+        isFinished
+      };
+      localStorage.setItem('badminton_scoreboard_result', JSON.stringify(payload));
+    }
+
+    function finishAndReturn() {
+      if (sessionMeta.mode === 'single-elimination' && scoreA === scoreB) {
+        showToast('單敗淘汰賽不能平手');
+        return;
+      }
+      emitScoreUpdate(true);
+      showToast('比分已帶回賽程');
+      setTimeout(() => window.close(), 500);
     }
 
     // 檢查是否有隊伍勝出並顯示特效
@@ -605,6 +651,7 @@
     window.onload = function() {
       loadSavedState();
       updateDisplay();
+      emitScoreUpdate(false);
     };
   </script>
 </body>
