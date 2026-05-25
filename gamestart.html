@@ -823,7 +823,54 @@
         if (!ready) {
             return `<span style="font-size:13px;color:var(--text-muted);">等待上一輪完成後才可輸入分數。</span>`;
         }
-        return `<button style="width:100%;" onclick="saveScore(${schedule.id},'${match.id}')">確認分數</button>`;
+        return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button style="width:100%;background:#2563eb;" onclick="openScoreboard(${schedule.id},'${match.id}')">🎯 專業計分板</button>
+            <button style="width:100%;" onclick="saveScore(${schedule.id},'${match.id}')">確認分數</button>
+        </div>`;
+    }
+
+    function openScoreboard(scheduleId, matchId) {
+        const schedule = schedules.find(item => item.id === scheduleId);
+        const match = schedule?.matches.find(item => item.id === matchId);
+        if (!schedule || !match || !match.team1 || !match.team2) return;
+
+        const team1Name = `${match.team1.name1} / ${match.team1.name2}`;
+        const team2Name = `${match.team2.name1} / ${match.team2.name2}`;
+        const params = new URLSearchParams({
+            gameId: GAME_ID,
+            scheduleId: String(scheduleId),
+            matchId,
+            team1: team1Name,
+            team2: team2Name,
+            score1: String(match.score1 ?? 0),
+            score2: String(match.score2 ?? 0),
+            mode: schedule.mode || 'single'
+        });
+        window.open(`score.html?${params.toString()}`, '_blank');
+    }
+
+    function applyScoreboardResult(payload) {
+        if (!payload || String(payload.gameId) !== String(GAME_ID)) return;
+        const scheduleId = Number(payload.scheduleId);
+        const schedule = schedules.find(item => item.id === scheduleId);
+        const match = schedule?.matches.find(item => item.id === payload.matchId);
+        if (!schedule || !match || !match.team1 || !match.team2) return;
+
+        const score1 = Number(payload.score1);
+        const score2 = Number(payload.score2);
+        if (!Number.isFinite(score1) || !Number.isFinite(score2) || score1 < 0 || score2 < 0) return;
+        if (schedule.mode === 'single-elimination' && score1 === score2) {
+            alert('單敗淘汰賽不能平手，請重新調整比分。');
+            return;
+        }
+
+        match.score1 = score1;
+        match.score2 = score2;
+        match.isFinished = !!payload.isFinished;
+        if (schedule.mode === 'single-elimination') updateSingleEliminationProgress(schedule, match);
+        renderAll();
+        saveStorage();
+        autoSync();
     }
 
     function saveScore(scheduleId, matchId) {
@@ -952,6 +999,16 @@
             setTimeout(() => { btn.innerText = '複製'; btn.style.background = 'var(--secondary)'; }, 2000);
         }).catch(() => { input.select(); document.execCommand('copy'); });
     }
+window.addEventListener('storage', (event) => {
+        if (event.key !== 'badminton_scoreboard_result' || !event.newValue) return;
+        try {
+            const payload = JSON.parse(event.newValue);
+            applyScoreboardResult(payload);
+        } catch (error) {
+            console.warn('無法解析計分板回傳資料', error);
+        }
+    });
+
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </body>
