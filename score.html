@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="計分板">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>專業雙色計分板 Pro Scoreboard</title>
   
   <!-- 引入 Tailwind CSS 用於快速版面微調 -->
@@ -37,13 +41,19 @@
       transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* 隱藏預設捲軸並確保滿版 */
+    /* 隱藏預設捲軸並確保滿版 — 用 dvh 解決 iOS Safari/iPad 網址列問題 */
     html, body {
       height: 100%;
+      height: -webkit-fill-available;
       margin: 0;
       padding: 0;
       position: fixed;
       width: 100%;
+      /* 延伸至 safe area (iPhone 瀏海、iPad 圓角) */
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
     }
 
     /* 防止 iOS 點擊高亮變色 */
@@ -135,14 +145,14 @@
     </div>
   </div>
 
-  <!-- 懸浮控制板 (位於畫面中央) -->
-  <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 flex items-center justify-around bg-white text-gray-800 rounded-full shadow-2xl px-6 py-3 border border-gray-100 gap-6 md:gap-8">
+  <!-- 懸浮控制板 (位於畫面中央) — 精簡為 3 個按鈕 -->
+  <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 flex items-center bg-white text-gray-800 rounded-full shadow-2xl px-5 py-2.5 border border-gray-100 gap-5">
     <!-- 全螢幕按鈕 -->
     <button onclick="toggleFullscreen()" id="fullscreen-btn" class="hover:text-[#3b82f6] transition-colors active:scale-90" title="全螢幕">
       <i data-lucide="maximize" class="w-6 h-6 md:w-7 md:h-7"></i>
     </button>
     
-    <!-- 設定按鈕 -->
+    <!-- 設定按鈕 (含歸零) -->
     <button onclick="toggleSettingsModal(true)" class="hover:text-[#3b82f6] transition-colors active:scale-90" title="設定">
       <i data-lucide="settings" class="w-6 h-6 md:w-7 md:h-7"></i>
     </button>
@@ -151,14 +161,15 @@
     <button onclick="swapTeams()" class="hover:text-[#3b82f6] transition-colors active:scale-90" title="交換場地">
       <i data-lucide="arrow-left-right" class="w-6 h-6 md:w-7 md:h-7"></i>
     </button>
+  </div>
 
-    <!-- 歸零按鈕 -->
-    <button onclick="confirmReset()" class="hover:text-red-500 transition-colors active:scale-90" title="歸零重置">
-      <i data-lucide="rotate-ccw" class="w-6 h-6 md:w-7 md:h-7"></i>
-    </button>
-
-    <button onclick="finishAndReturn()" class="hover:text-emerald-600 transition-colors active:scale-90" title="完成並帶回比分">
-      <i data-lucide="check-check" class="w-6 h-6 md:w-7 md:h-7"></i>
+  <!-- 完賽按鈕：底部正中央，低調小按鈕 -->
+  <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30" style="bottom: calc(1rem + env(safe-area-inset-bottom))">
+    <button onclick="finishAndReturn()" 
+            class="flex items-center gap-1.5 bg-black/30 hover:bg-black/50 text-white/80 hover:text-white text-xs font-semibold px-4 py-2 rounded-full backdrop-blur-sm transition-all active:scale-95 border border-white/20"
+            title="完成並帶回比分">
+      <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
+      完賽
     </button>
   </div>
 
@@ -201,6 +212,15 @@
 
         <div class="text-xs text-gray-400 border-t pt-3">
           提示：您可直接點擊畫面上的「主隊 / 客隊」來更改名稱。
+        </div>
+
+        <!-- 歸零區塊 -->
+        <div class="border-t pt-4">
+          <button onclick="toggleSettingsModal(false); confirmReset();" 
+                  class="w-full py-2.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-xl transition flex items-center justify-center gap-2 border border-red-200">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+            分數歸零
+          </button>
         </div>
       </div>
 
