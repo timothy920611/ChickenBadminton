@@ -151,9 +151,9 @@
             "name2": "海薇",
             "totalLevel": 9
           },
-          "score1": 3,
-          "score2": 2,
-          "isFinished": true
+          "score1": null,
+          "score2": null,
+          "isFinished": false
         }
       ],
       "restMsg": "單數球員：<strong>慕華</strong> 本輪輪空"
@@ -162,5 +162,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-05-25T09:35:26.544Z"
+  "lastUpdated": "2026-05-25T09:37:20.855Z"
 }
