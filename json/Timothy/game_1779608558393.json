@@ -245,9 +245,9 @@
             "name2": "則宇",
             "totalLevel": 8
           },
-          "score1": 16,
-          "score2": 18,
-          "isFinished": true
+          "score1": null,
+          "score2": null,
+          "isFinished": false
         },
         {
           "id": "M_4_1",
@@ -296,5 +296,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-05-29T06:50:10.873Z"
+  "lastUpdated": "2026-05-29T06:50:21.510Z"
 }
