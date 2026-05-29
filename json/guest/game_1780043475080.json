@@ -57,14 +57,77 @@
       "totalLevel": 8
     }
   ],
-  "schedules": [],
+  "schedules": [
+    {
+      "id": 1,
+      "mode": "round-robin",
+      "matches": [
+        {
+          "id": "M_1_0",
+          "round": 1,
+          "matchNumber": 1,
+          "team1": {
+            "id": "Team_1780043581551_1",
+            "name1": "黃瓜",
+            "name2": "姐",
+            "totalLevel": 12
+          },
+          "team2": {
+            "id": "Team_1780043581551_2",
+            "name1": "麥芽",
+            "name2": "菜雞",
+            "totalLevel": 8
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_1",
+          "round": 2,
+          "matchNumber": 2,
+          "team1": {
+            "id": "Team_1780043581551_0",
+            "name1": "哥",
+            "name2": "鴨子",
+            "totalLevel": 12
+          },
+          "team2": {
+            "id": "Team_1780043581551_2",
+            "name1": "麥芽",
+            "name2": "菜雞",
+            "totalLevel": 8
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_2",
+          "round": 3,
+          "matchNumber": 3,
+          "team1": {
+            "id": "Team_1780043581551_0",
+            "name1": "哥",
+            "name2": "鴨子",
+            "totalLevel": 12
+          },
+          "team2": {
+            "id": "Team_1780043581551_1",
+            "name1": "黃瓜",
+            "name2": "姐",
+            "totalLevel": 12
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        }
+      ],
+      "restMsg": ""
+    }
+  ],
   "matchMode": "round-robin",
   "pendingRestMsg": "",
-  "savedTeamDraft": [],
-  "savedDraftMode": "",
-  "savedDraftRestMsg": "",
-  "savedDraftRestPlayer": null,
-  "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-05-29T08:33:11.859Z",
-  "needsInitialSchedule": true
+  "needsInitialSchedule": false,
+  "lastUpdated": "2026-05-29T08:33:13.073Z"
 }
