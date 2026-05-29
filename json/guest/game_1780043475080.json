@@ -1,0 +1,21 @@
+{
+  "players": [
+    {
+      "id": 1780043496850.5164,
+      "name": "麥芽",
+      "gender": "女",
+      "level": 4
+    }
+  ],
+  "lastUpdated": "2026-05-29T08:31:37.547Z",
+  "currentTeams": [],
+  "schedules": [],
+  "matchMode": "single",
+  "pendingRestMsg": "",
+  "savedTeamDraft": [],
+  "savedDraftMode": "",
+  "savedDraftRestMsg": "",
+  "savedDraftRestPlayer": null,
+  "savedDraftUpdatedAt": null,
+  "needsInitialSchedule": false
+}
