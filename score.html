@@ -110,7 +110,7 @@
       font-weight: 900;
       color: white;
       /* 依容器寬度縮放，不超出面板 */
-      font-size: clamp(0.95rem, 3.4vw, 2rem);
+      font-size: clamp(0.95rem, 3vw, 2rem);
       width: 100%;
       max-width: min(76%, 20rem);
       text-shadow: 0 3px 10px rgba(15, 23, 42, 0.20);
@@ -154,14 +154,14 @@
       font-variant-numeric: tabular-nums lining-nums;
       font-feature-settings: 'tnum' 1, 'lnum' 1;
       /* 直向：放大比分，讓數字成為最強視覺焦點 */
-      font-size: clamp(8rem, 41vh, 999px);
+      font-size: clamp(13rem, 41vh, 999px);
       text-shadow: 0 8px 18px rgba(15, 23, 42, 0.20), 0 0 22px rgba(255,255,255,0.16);
       color: white;
     }
 
     @media (orientation: landscape) {
       /* 橫向：殼是全螢幕高的 55%，數字縮小以確保不溢出 */
-      .score-number { font-size: clamp(7rem, 54vh, 999px); }
+      .score-number { font-size: clamp(13rem, 54vh, 999px); }
     }
 
     /* ── 浮動控制列 ── */
