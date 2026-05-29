@@ -11,6 +11,12 @@
       "name": "菜雞",
       "gender": "男",
       "level": 4
+    },
+    {
+      "id": 1780043525942.9114,
+      "name": "黃瓜",
+      "gender": "男",
+      "level": 8
     }
   ],
   "currentTeams": [],
@@ -22,6 +28,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-05-29T08:31:54.342Z",
+  "lastUpdated": "2026-05-29T08:32:06.324Z",
   "needsInitialSchedule": false
 }
