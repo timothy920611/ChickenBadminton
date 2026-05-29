@@ -291,10 +291,71 @@
         }
       ],
       "restMsg": "單數球員：<strong>茂樹</strong> 本輪輪空"
+    },
+    {
+      "id": 5,
+      "mode": "single-elimination",
+      "matches": [
+        {
+          "id": "M_5_0",
+          "round": 1,
+          "matchNumber": 1,
+          "team1": {
+            "id": "T_1780033309767_2",
+            "name1": "重運",
+            "name2": "則宇",
+            "totalLevel": 8
+          },
+          "team2": null,
+          "score1": null,
+          "score2": null,
+          "isFinished": false,
+          "nextMatchId": "M_5_2",
+          "slotInNext": "team1"
+        },
+        {
+          "id": "M_5_1",
+          "round": 1,
+          "matchNumber": 2,
+          "team1": {
+            "id": "T_1780033309767_1",
+            "name1": "怡瑱",
+            "name2": "海薇",
+            "totalLevel": 9
+          },
+          "team2": {
+            "id": "T_1780033309767_0",
+            "name1": "慕華",
+            "name2": "惠足",
+            "totalLevel": 11
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false,
+          "nextMatchId": "M_5_2",
+          "slotInNext": "team2"
+        },
+        {
+          "id": "M_5_2",
+          "round": 2,
+          "matchNumber": 1,
+          "team1": {
+            "id": "T_1780033309767_2",
+            "name1": "重運",
+            "name2": "則宇",
+            "totalLevel": 8
+          },
+          "team2": null,
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        }
+      ],
+      "restMsg": "依目前總戰績建立種子：1. 重運 & 則宇、2. 怡瑱 & 海薇、3. 慕華 & 惠足"
     }
   ],
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-05-29T08:17:27.469Z"
+  "lastUpdated": "2026-05-29T08:17:51.349Z"
 }
