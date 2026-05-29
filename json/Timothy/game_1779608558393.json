@@ -265,9 +265,9 @@
             "name2": "則宇",
             "totalLevel": 8
           },
-          "score1": 11,
-          "score2": 10,
-          "isFinished": true
+          "score1": 3,
+          "score2": 0,
+          "isFinished": false
         },
         {
           "id": "M_4_2",
@@ -285,9 +285,9 @@
             "name2": "海薇",
             "totalLevel": 9
           },
-          "score1": 8,
-          "score2": 11,
-          "isFinished": true
+          "score1": null,
+          "score2": null,
+          "isFinished": false
         }
       ],
       "restMsg": "單數球員：<strong>茂樹</strong> 本輪輪空"
@@ -296,5 +296,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-05-29T07:20:42.005Z"
+  "lastUpdated": "2026-05-29T07:25:27.348Z"
 }
