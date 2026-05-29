@@ -114,6 +114,14 @@
 
     @media (max-height: 560px) and (orientation: landscape) {
       .score-number { font-size: clamp(7rem, 28vw, 62vh); }
+      .team-name-input {
+        min-width: 0;
+        width: min(34vw, 24rem);
+        max-width: calc(50vw - max(3rem, env(safe-area-inset-left, 0px)) - max(3rem, env(safe-area-inset-right, 0px)));
+        font-size: clamp(2.25rem, 5vw, 3.5rem);
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
       .score-shell { width: min(28vw, 24rem); }
       .team-panel::after { inset: 8px; border-radius: 22px; }
     }
@@ -140,6 +148,17 @@
 
     .team-panel {
       min-height: 0;
+      padding-left: max(1rem, env(safe-area-inset-left, 0px));
+      padding-right: max(1rem, env(safe-area-inset-right, 0px));
+    }
+
+    @media (orientation: landscape) {
+      .team-panel {
+        padding-top: max(1rem, env(safe-area-inset-top, 0px));
+        padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
+        padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+        padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+      }
     }
 
     /* 防止 iOS 點擊高亮變色 */
