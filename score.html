@@ -70,14 +70,42 @@
     }
 
        /* 橫向模式：左右並排 */
+       /* ── 各面板：各佔一半，永不超出 ── */
+    .team-panel {
+      flex: 1 1 0;
+      min-height: 0;
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      transition: filter 0.45s ease, box-shadow 0.45s ease;
+
+      /* 面板內部改成上往下排，避免文字被擠掉 */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: clamp(0.5rem, 1.2vh, 1rem);
+
+      /* 安全區域 padding */
+      padding-left: max(1rem, env(safe-area-inset-left, 0px));
+      padding-right: max(1rem, env(safe-area-inset-right, 0px));
+      padding-top: max(1rem, env(safe-area-inset-top, 0px));
+      padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    /* 橫向模式：左右並排 */
     @media (orientation: landscape) {
       body { flex-direction: row; }
+
       .team-panel {
         /* 橫向時安全區域在左右 */
         padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
         padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
         padding-left: max(1rem, env(safe-area-inset-left, 0px));
         padding-right: max(1rem, env(safe-area-inset-right, 0px));
+        gap: 0.5rem;
       }
     }
 
@@ -109,6 +137,15 @@
       text-align: center;
       font-weight: 900;
       color: white;
+
+      /* 關鍵：不要讓中文字上下被裁切 */
+      display: block;
+      height: auto;
+      line-height: 1.05;
+      padding: 0.08em 0;
+      overflow: visible;
+      white-space: nowrap;
+
       /* 依容器寬度縮放，不超出面板 */
       font-size: clamp(0.95rem, 3vw, 2rem);
       width: 100%;
@@ -116,14 +153,19 @@
       text-shadow: 0 3px 10px rgba(15, 23, 42, 0.20);
       letter-spacing: 0.035em;
       cursor: text;
+      position: relative;
+      z-index: 2;
+      flex: 0 0 auto;
     }
+
     .team-name-input:focus { outline: none; border-bottom: 2px solid rgba(255,255,255,0.8); }
 
     @media (orientation: landscape) {
       .team-name-input {
-        font-size: clamp(0.7rem, 0.9vw, 0.95rem);
-        max-width: 90%;
+        font-size: clamp(0.62rem, 0.85vw, 0.95rem);
+        max-width: 92%;
         line-height: 1;
+        padding: 0.04em 0;
       }
     }
 
@@ -142,14 +184,16 @@
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), 0 22px 44px rgba(15,23,42,0.12);
       backdrop-filter: blur(2px);
       margin: 0;
-      margin-top: 2rem;
+      margin-top: 1rem;
       overflow: hidden;
+      position: relative;
+      z-index: 1;
     }
 
     @media (orientation: landscape) {
       .score-shell {
         width: min(96%, 38rem);
-        margin: 1rem 0 0;
+        margin: 0.6rem 0 0;
       }
     }
 
@@ -165,13 +209,15 @@
       font-size: clamp(13rem, 41vh, 999px);
       text-shadow: 0 8px 18px rgba(15, 23, 42, 0.20), 0 0 22px rgba(255,255,255,0.16);
       color: white;
+      position: relative;
+      z-index: 2;
     }
 
     @media (orientation: landscape) {
-      /* 橫向：殼是全螢幕高的 55%，數字縮小以確保不溢出 */
+      /* 橫向：微微下移即可，不要太多 */
       .score-number {
         font-size: clamp(13rem, 37vw, 999px);
-        transform: translateY(12px);
+        transform: translateY(10px);
       }
     }
 
