@@ -191,10 +191,71 @@
         }
       ],
       "restMsg": ""
+    },
+    {
+      "id": 3,
+      "mode": "single-elimination",
+      "matches": [
+        {
+          "id": "M_3_0",
+          "round": 1,
+          "matchNumber": 1,
+          "team1": {
+            "id": "T_1780043651713_0",
+            "name1": "菜雞",
+            "name2": "鴨子",
+            "totalLevel": 7
+          },
+          "team2": null,
+          "score1": null,
+          "score2": null,
+          "isFinished": false,
+          "nextMatchId": "M_3_2",
+          "slotInNext": "team1"
+        },
+        {
+          "id": "M_3_1",
+          "round": 1,
+          "matchNumber": 2,
+          "team1": {
+            "id": "T_1780043651713_1",
+            "name1": "黃瓜",
+            "name2": "麥芽",
+            "totalLevel": 12
+          },
+          "team2": {
+            "id": "T_1780043651713_2",
+            "name1": "姐",
+            "name2": "哥",
+            "totalLevel": 13
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false,
+          "nextMatchId": "M_3_2",
+          "slotInNext": "team2"
+        },
+        {
+          "id": "M_3_2",
+          "round": 2,
+          "matchNumber": 1,
+          "team1": {
+            "id": "T_1780043651713_0",
+            "name1": "菜雞",
+            "name2": "鴨子",
+            "totalLevel": 7
+          },
+          "team2": null,
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        }
+      ],
+      "restMsg": "依目前總戰績建立種子：1. 菜雞 & 鴨子、2. 黃瓜 & 麥芽、3. 姐 & 哥"
     }
   ],
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-05-29T08:34:33.111Z"
+  "lastUpdated": "2026-05-29T08:34:37.198Z"
 }
