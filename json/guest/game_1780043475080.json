@@ -98,9 +98,9 @@
             "name2": "菜雞",
             "totalLevel": 8
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 11,
+          "score2": 4,
+          "isFinished": true
         },
         {
           "id": "M_1_2",
@@ -129,5 +129,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-05-29T08:33:21.240Z"
+  "lastUpdated": "2026-05-29T08:33:29.004Z"
 }
