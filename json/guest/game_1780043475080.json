@@ -39,22 +39,22 @@
   ],
   "currentTeams": [
     {
-      "id": "Team_1780043581551_0",
-      "name1": "哥",
+      "id": "T_1780043651713_0",
+      "name1": "菜雞",
       "name2": "鴨子",
-      "totalLevel": 12
+      "totalLevel": 7
     },
     {
-      "id": "Team_1780043581551_1",
+      "id": "T_1780043651713_1",
       "name1": "黃瓜",
-      "name2": "姐",
+      "name2": "麥芽",
       "totalLevel": 12
     },
     {
-      "id": "Team_1780043581551_2",
-      "name1": "麥芽",
-      "name2": "菜雞",
-      "totalLevel": 8
+      "id": "T_1780043651713_2",
+      "name1": "姐",
+      "name2": "哥",
+      "totalLevel": 13
     }
   ],
   "schedules": [
@@ -124,10 +124,77 @@
         }
       ],
       "restMsg": ""
+    },
+    {
+      "id": 2,
+      "mode": "round-robin",
+      "matches": [
+        {
+          "id": "M_2_0",
+          "round": 1,
+          "matchNumber": 1,
+          "team1": {
+            "id": "T_1780043651713_1",
+            "name1": "黃瓜",
+            "name2": "麥芽",
+            "totalLevel": 12
+          },
+          "team2": {
+            "id": "T_1780043651713_2",
+            "name1": "姐",
+            "name2": "哥",
+            "totalLevel": 13
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_2_1",
+          "round": 2,
+          "matchNumber": 2,
+          "team1": {
+            "id": "T_1780043651713_0",
+            "name1": "菜雞",
+            "name2": "鴨子",
+            "totalLevel": 7
+          },
+          "team2": {
+            "id": "T_1780043651713_2",
+            "name1": "姐",
+            "name2": "哥",
+            "totalLevel": 13
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_2_2",
+          "round": 3,
+          "matchNumber": 3,
+          "team1": {
+            "id": "T_1780043651713_0",
+            "name1": "菜雞",
+            "name2": "鴨子",
+            "totalLevel": 7
+          },
+          "team2": {
+            "id": "T_1780043651713_1",
+            "name1": "黃瓜",
+            "name2": "麥芽",
+            "totalLevel": 12
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        }
+      ],
+      "restMsg": ""
     }
   ],
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-05-29T08:33:35.946Z"
+  "lastUpdated": "2026-05-29T08:34:11.715Z"
 }
