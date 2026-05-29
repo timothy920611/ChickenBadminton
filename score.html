@@ -16,7 +16,7 @@
   <!-- Google 字型 (用於精美、有張力的大數字) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Teko:wght@700&display=swap" rel="stylesheet">
 
   <style>
     /* ── 基礎重置 ── */
@@ -54,7 +54,7 @@
       position: relative;
       isolation: isolate;
       overflow: hidden;
-      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: filter 0.45s ease, box-shadow 0.45s ease;
       /* 面板內部也用 flex 排列三個區塊 */
       display: flex;
       flex-direction: column;
@@ -86,9 +86,8 @@
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(circle at 18% 20%, rgba(255,255,255,0.28), transparent 28%),
-        radial-gradient(circle at 78% 82%, rgba(255,255,255,0.16), transparent 26%),
-        linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0));
+        radial-gradient(circle at 50% 0%, rgba(255,255,255,0.26), transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.02) 42%, rgba(0,0,0,0.06));
       pointer-events: none;
       z-index: 0;
     }
@@ -110,23 +109,23 @@
       font-weight: 900;
       color: white;
       /* 依容器寬度縮放，不超出面板 */
-      font-size: clamp(1.6rem, 6vw, 3.5rem);
+      font-size: clamp(1.25rem, 4.8vw, 2.8rem);
       width: 100%;
-      max-width: min(80%, 26rem);
-      text-shadow: 0 4px 14px rgba(15, 23, 42, 0.22);
-      letter-spacing: 0.04em;
+      max-width: min(72%, 22rem);
+      text-shadow: 0 3px 10px rgba(15, 23, 42, 0.20);
+      letter-spacing: 0.035em;
       cursor: text;
     }
     .team-name-input:focus { outline: none; border-bottom: 2px solid rgba(255,255,255,0.8); }
 
     @media (orientation: landscape) {
-      .team-name-input { font-size: clamp(1.2rem, 3.5vw, 2.5rem); }
+      .team-name-input { font-size: clamp(1.05rem, 2.8vw, 2rem); }
     }
 
     /* ── 分數殼 ── */
     .score-shell {
       /* 寬度不超過面板，高度由 flex-grow 分配後自適應 */
-      width: min(75%, 28rem);
+      width: min(82%, 32rem);
       flex: 1 1 0;
       min-height: 0;
       border-radius: 28px;
@@ -135,31 +134,33 @@
       justify-content: center;
       background: rgba(255,255,255,0.10);
       border: 1px solid rgba(255,255,255,0.20);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 24px 48px rgba(15,23,42,0.13);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), 0 22px 44px rgba(15,23,42,0.12);
       backdrop-filter: blur(2px);
-      margin: 0.5rem 0;
+      margin: 0.25rem 0 0.35rem;
       overflow: hidden;
     }
 
     @media (orientation: landscape) {
-      .score-shell { width: min(70%, 24rem); margin: 0.4rem 0; }
+      .score-shell { width: min(80%, 29rem); margin: 0.2rem 0 0.3rem; }
     }
 
     /* ── 大數字：用 container 單位讓數字永遠貼合殼的大小 ── */
     .score-number {
-      font-family: 'Bebas Neue', sans-serif;
+      font-family: 'Teko', 'Noto Sans TC', sans-serif;
       font-weight: 700;
-      line-height: 0.85;
-      letter-spacing: 0.02em;
-      /* 直向：數字大小約為殼高度的 80%，殼高約為半螢幕的 60% */
-      font-size: clamp(5rem, 22vh, 999px);
-      text-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+      line-height: 0.78;
+      letter-spacing: 0.015em;
+      font-variant-numeric: tabular-nums lining-nums;
+      font-feature-settings: 'tnum' 1, 'lnum' 1;
+      /* 直向：放大比分，讓數字成為最強視覺焦點 */
+      font-size: clamp(6rem, 26vh, 999px);
+      text-shadow: 0 8px 18px rgba(15, 23, 42, 0.20), 0 0 22px rgba(255,255,255,0.16);
       color: white;
     }
 
     @media (orientation: landscape) {
       /* 橫向：殼是全螢幕高的 55%，數字縮小以確保不溢出 */
-      .score-number { font-size: clamp(4rem, 32vh, 999px); }
+      .score-number { font-size: clamp(5rem, 40vh, 999px); }
     }
 
     /* ── 減分按鈕 ── */
@@ -197,9 +198,60 @@
       backdrop-filter: blur(12px);
     }
 
-    /* ── 面板內 z 層級 ── */
-    .panel-top, .panel-mid, .panel-bot { position: relative; z-index: 10; width: 100%; display: flex; flex-direction: column; align-items: center; }
-    .panel-mid { flex: 1 1 0; min-height: 0; justify-content: center; }
+    /* ── 面板內 z 層級與比例 ── */
+    .team-name-zone {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      min-height: 15%;
+      flex: 0 0 15%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 0.15rem;
+    }
+    .team-name-row {
+      position: relative;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .team-name-row .team-crown {
+      position: absolute;
+      left: calc(50% + min(38%, 12rem));
+      top: 50%;
+      transform: translateY(-50%) scale(0.5);
+    }
+    .team-name-row .team-crown.scale-100 { transform: translateY(-50%) scale(1); }
+    .score-zone {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding-inline: 0.5rem;
+    }
+    .team-panel.is-leading {
+      filter: brightness(1.1) saturate(1.04);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18), 0 0 52px rgba(255,255,255,0.20);
+      animation: leaderBreath 2.2s ease-in-out infinite;
+    }
+    .team-panel.is-leading .score-shell {
+      border-color: rgba(255,255,255,0.38);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 0 34px rgba(255,255,255,0.34), 0 22px 44px rgba(15,23,42,0.12);
+    }
+    .team-panel.is-trailing {
+      filter: saturate(0.95) brightness(0.98);
+    }
+    @keyframes leaderBreath {
+      0%, 100% { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.16), 0 0 38px rgba(255,255,255,0.16); }
+      50% { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.24), 0 0 64px rgba(255,255,255,0.27); }
+    }
 
     /* ── Modal ── */
     .modal { transition: opacity 0.25s ease, transform 0.25s ease; }
@@ -224,20 +276,20 @@
   <!-- 左邊/上邊：隊伍 A (預設主隊-藍色) -->
   <div id="panel-a" class="team-panel flex-1 flex flex-col justify-between items-center py-8 relative cursor-pointer select-none bg-gradient-to-br from-[#60a5fa] via-[#3b82f6] to-[#1d4ed8] text-white h-1/2 md:h-full" onclick="changeScore('A', 1)">
     <!-- 頂部資訊：隊名與贏家皇冠 -->
-    <div class="flex flex-col items-center z-10 mt-3 md:mt-10">
-      <div class="flex items-center gap-2">
+    <div class="team-name-zone">
+      <div class="team-name-row">
         <!-- 點擊隊名可直接原地修改 -->
         <input type="text" id="name-a" value="主隊" 
                class="team-name-input bg-transparent text-center font-black text-4xl md:text-6xl focus:outline-none focus:border-b-2 border-white/80 cursor-text tracking-wide"
                onclick="event.stopPropagation();" onchange="saveSettings()">
-        <span id="crown-a" class="text-yellow-300 drop-shadow-lg transition-all duration-300 opacity-0 transform scale-50">
+        <span id="crown-a" class="team-crown text-yellow-300 drop-shadow-lg transition-all duration-300 opacity-0 transform scale-50">
           <i data-lucide="crown" class="w-8 h-8 fill-current"></i>
         </span>
       </div>
     </div>
 
     <!-- 中間大數字 -->
-    <div class="flex flex-col items-center justify-center flex-grow z-10 w-full px-4">
+    <div class="score-zone">
       <div class="score-shell">
         <div id="score-a" class="score-number select-none transition-transform duration-100 active:scale-95">0</div>
       </div>
@@ -255,19 +307,19 @@
   <!-- 右邊/下邊：隊伍 B (預設客隊-紅色) -->
   <div id="panel-b" class="team-panel flex-1 flex flex-col justify-between items-center py-8 relative cursor-pointer select-none bg-gradient-to-br from-[#fb7185] via-[#ef4444] to-[#b91c1c] text-white h-1/2 md:h-full" onclick="changeScore('B', 1)">
     <!-- 頂部資訊：隊名與贏家皇冠 -->
-    <div class="flex flex-col items-center z-10 mt-3 md:mt-10">
-      <div class="flex items-center gap-2">
+    <div class="team-name-zone">
+      <div class="team-name-row">
         <input type="text" id="name-b" value="客隊" 
                class="team-name-input bg-transparent text-center font-black text-4xl md:text-6xl focus:outline-none focus:border-b-2 border-white/80 cursor-text tracking-wide"
                onclick="event.stopPropagation();" onchange="saveSettings()">
-        <span id="crown-b" class="text-yellow-300 drop-shadow-lg transition-all duration-300 opacity-0 transform scale-50">
+        <span id="crown-b" class="team-crown text-yellow-300 drop-shadow-lg transition-all duration-300 opacity-0 transform scale-50">
           <i data-lucide="crown" class="w-8 h-8 fill-current"></i>
         </span>
       </div>
     </div>
 
     <!-- 中間大數字 -->
-    <div class="flex flex-col items-center justify-center flex-grow z-10 w-full px-4">
+    <div class="score-zone">
       <div class="score-shell">
         <div id="score-b" class="score-number select-none transition-transform duration-100 active:scale-95">0</div>
       </div>
@@ -656,9 +708,26 @@
     // 檢查是否有隊伍勝出並顯示特效
     let winnerCelebrated = false;
 
+
+    // 自動偵測領先與落後隊伍，讓比分差異更容易被快速辨識
+    function updateLeaderState() {
+      const panelA = document.getElementById('panel-a');
+      const panelB = document.getElementById('panel-b');
+      panelA.classList.remove('is-leading', 'is-trailing');
+      panelB.classList.remove('is-leading', 'is-trailing');
+
+      if (scoreA === scoreB) return;
+
+      const leadingPanel = scoreA > scoreB ? panelA : panelB;
+      const trailingPanel = scoreA > scoreB ? panelB : panelA;
+      leadingPanel.classList.add('is-leading');
+      trailingPanel.classList.add('is-trailing');
+    }
+
     function checkWinnerState() {
       const crownA = document.getElementById('crown-a');
       const crownB = document.getElementById('crown-b');
+      updateLeaderState();
 
       if (targetScore > 0) {
         const winA = scoreA >= targetScore && (scoreA - scoreB >= 2);
