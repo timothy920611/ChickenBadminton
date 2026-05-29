@@ -204,7 +204,7 @@
     }
 
     function teamSignature(team) {
-        return team?.id || '';
+        return team?.id || getTeamStatsKey(team);
     }
 
     function getScheduleRoundMatches(schedule, round) {
@@ -416,10 +416,9 @@
         (teamPool || currentTeams).forEach(ensureTeam);
 
         schedules.forEach(schedule => schedule.matches.forEach(match => {
-            if (!match.team1 || !match.team2) return;
             const stat1 = ensureTeam(match.team1);
             const stat2 = ensureTeam(match.team2);
-            if (!match.isFinished || !stat1 || !stat2) return;
+            if (!match.team1 || !match.team2 || !match.isFinished || !stat1 || !stat2) return;
 
             const score1 = Number(match.score1) || 0;
             const score2 = Number(match.score2) || 0;
@@ -439,9 +438,15 @@
         return sortStandingRows(Object.values(stats));
     }
 
+    function cloneTeamForBracket(team) {
+        return team ? { ...team } : null;
+    }
+
     function getRankedTeamsByStandings() {
-        const ranked = buildStandingsTableRows(currentTeams).map(row => row.team).filter(Boolean);
-        return ranked.length > 0 ? ranked : [...currentTeams];
+        return buildStandingsTableRows()
+            .map(row => row.team)
+            .filter(Boolean)
+            .map(cloneTeamForBracket);
     }
 
     function buildSingleEliminationSchedule() {
@@ -454,12 +459,12 @@
         const { slots, conflictCount } = optimizeBracketSlots(initialSlots, scheduleId);
         const matches = buildSingleEliminationMatchesFromSlots(slots, scheduleId);
 
-        const seededNames = rankedTeams.map((team, index) => `${index + 1}. ${team.name1} & ${team.name2}`);
+        const seededNames = rankedTeams.map((team, index) => `${index + 1}. ${getTeamDisplayName(team)}`);
         const schedule = {
             id: scheduleId,
             mode: 'single-elimination',
             matches,
-            restMsg: `依目前總戰績建立種子：${seededNames.join('、')}`
+            restMsg: `依目前總戰績最新排名建立 ${rankedTeams.length} 隊單敗淘汰賽種子：${seededNames.join('、')}`
         };
         initializeSingleEliminationSchedule(schedule);
 
@@ -468,7 +473,7 @@
             const conflictNames = conflicts.map(match => `${getTeamDisplayName(match.team1)} vs ${getTeamDisplayName(match.team2)}`).join('、');
             return {
                 error: 'player-conflict',
-                message: `目前隊伍名單無法產生不重複選手的單敗淘汰賽，請先調整分組。衝突場次：${conflictNames || '未知場次'}`
+                message: `目前總戰績表的隊伍無法產生不重複選手的單敗淘汰賽，請先調整隊伍。衝突場次：${conflictNames || '未知場次'}`
             };
         }
 
