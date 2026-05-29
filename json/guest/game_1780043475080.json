@@ -5,9 +5,14 @@
       "name": "麥芽",
       "gender": "女",
       "level": 4
+    },
+    {
+      "id": 1780043513942.1191,
+      "name": "菜雞",
+      "gender": "男",
+      "level": 4
     }
   ],
-  "lastUpdated": "2026-05-29T08:31:37.547Z",
   "currentTeams": [],
   "schedules": [],
   "matchMode": "single",
@@ -17,5 +22,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
+  "lastUpdated": "2026-05-29T08:31:54.342Z",
   "needsInitialSchedule": false
 }
