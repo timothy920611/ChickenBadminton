@@ -229,9 +229,9 @@
             "name2": "哥",
             "totalLevel": 13
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false,
+          "score1": 12,
+          "score2": 10,
+          "isFinished": true,
           "nextMatchId": "M_3_2",
           "slotInNext": "team2"
         },
@@ -245,7 +245,12 @@
             "name2": "鴨子",
             "totalLevel": 7
           },
-          "team2": null,
+          "team2": {
+            "id": "T_1780043651713_1",
+            "name1": "黃瓜",
+            "name2": "麥芽",
+            "totalLevel": 12
+          },
           "score1": null,
           "score2": null,
           "isFinished": false
@@ -257,5 +262,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-05-29T08:34:37.198Z"
+  "lastUpdated": "2026-05-29T08:37:35.672Z"
 }
