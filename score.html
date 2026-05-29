@@ -66,6 +66,7 @@
       padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
       padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
       cursor: pointer;
+      touch-action: none;
     }
 
     /* 橫向模式：左右並排 */
@@ -109,9 +110,9 @@
       font-weight: 900;
       color: white;
       /* 依容器寬度縮放，不超出面板 */
-      font-size: clamp(1.25rem, 4.8vw, 2.8rem);
+      font-size: clamp(0.95rem, 3.4vw, 2rem);
       width: 100%;
-      max-width: min(72%, 22rem);
+      max-width: min(76%, 20rem);
       text-shadow: 0 3px 10px rgba(15, 23, 42, 0.20);
       letter-spacing: 0.035em;
       cursor: text;
@@ -119,16 +120,16 @@
     .team-name-input:focus { outline: none; border-bottom: 2px solid rgba(255,255,255,0.8); }
 
     @media (orientation: landscape) {
-      .team-name-input { font-size: clamp(1.05rem, 2.8vw, 2rem); }
+      .team-name-input { font-size: clamp(0.85rem, 2vw, 1.45rem); }
     }
 
     /* ── 分數殼 ── */
     .score-shell {
       /* 寬度不超過面板，高度由 flex-grow 分配後自適應 */
-      width: min(82%, 32rem);
+      width: min(96%, 46rem);
       flex: 1 1 0;
       min-height: 0;
-      border-radius: 28px;
+      border-radius: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -136,12 +137,12 @@
       border: 1px solid rgba(255,255,255,0.20);
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), 0 22px 44px rgba(15,23,42,0.12);
       backdrop-filter: blur(2px);
-      margin: 0.25rem 0 0.35rem;
+      margin: 0;
       overflow: hidden;
     }
 
     @media (orientation: landscape) {
-      .score-shell { width: min(80%, 29rem); margin: 0.2rem 0 0.3rem; }
+      .score-shell { width: min(96%, 38rem); margin: 0; }
     }
 
     /* ── 大數字：用 container 單位讓數字永遠貼合殼的大小 ── */
@@ -153,36 +154,14 @@
       font-variant-numeric: tabular-nums lining-nums;
       font-feature-settings: 'tnum' 1, 'lnum' 1;
       /* 直向：放大比分，讓數字成為最強視覺焦點 */
-      font-size: clamp(6rem, 26vh, 999px);
+      font-size: clamp(8rem, 34vh, 999px);
       text-shadow: 0 8px 18px rgba(15, 23, 42, 0.20), 0 0 22px rgba(255,255,255,0.16);
       color: white;
     }
 
     @media (orientation: landscape) {
       /* 橫向：殼是全螢幕高的 55%，數字縮小以確保不溢出 */
-      .score-number { font-size: clamp(5rem, 40vh, 999px); }
-    }
-
-    /* ── 減分按鈕 ── */
-    .minus-btn {
-      flex-shrink: 0;
-      width: clamp(3rem, 11vw, 5rem);
-      height: clamp(3rem, 11vw, 5rem);
-      background: rgba(15, 23, 42, 0.26);
-      border: 1px solid rgba(255,255,255,0.20);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.20), 0 12px 28px rgba(15,23,42,0.18);
-      backdrop-filter: blur(8px);
-      color: white;
-      border-radius: 9999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
-    }
-    .minus-btn:active { transform: scale(0.9); background: rgba(0,0,0,0.4); }
-
-    @media (orientation: landscape) {
-      .minus-btn { width: clamp(2.4rem, 7vw, 3.8rem); height: clamp(2.4rem, 7vw, 3.8rem); }
+      .score-number { font-size: clamp(7rem, 54vh, 999px); }
     }
 
     /* ── 浮動控制列 ── */
@@ -203,12 +182,12 @@
       position: relative;
       z-index: 10;
       width: 100%;
-      min-height: 15%;
-      flex: 0 0 15%;
+      min-height: 10%;
+      flex: 0 0 10%;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding-top: 0.15rem;
+      padding-block: 0.08rem;
     }
     .team-name-row {
       position: relative;
@@ -234,7 +213,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding-inline: 0.5rem;
+      padding-inline: 0;
     }
     .team-panel.is-leading {
       filter: brightness(1.1) saturate(1.04);
@@ -274,7 +253,7 @@
   <canvas id="celebration-canvas"></canvas>
 
   <!-- 左邊/上邊：隊伍 A (預設主隊-藍色) -->
-  <div id="panel-a" class="team-panel flex-1 flex flex-col justify-between items-center py-8 relative cursor-pointer select-none bg-gradient-to-br from-[#60a5fa] via-[#3b82f6] to-[#1d4ed8] text-white h-1/2 md:h-full" onclick="changeScore('A', 1)">
+  <div id="panel-a" data-score-panel="A" class="team-panel flex-1 flex flex-col justify-between items-center py-8 relative cursor-pointer select-none bg-gradient-to-br from-[#60a5fa] via-[#3b82f6] to-[#1d4ed8] text-white h-1/2 md:h-full">
     <!-- 頂部資訊：隊名與贏家皇冠 -->
     <div class="team-name-zone">
       <div class="team-name-row">
@@ -295,17 +274,10 @@
       </div>
     </div>
 
-    <!-- 底部輔助按鈕 (減分) -->
-    <div class="z-20 mb-2 md:mb-6">
-      <button class="minus-btn hover:bg-black/40 text-white rounded-full flex items-center justify-center transition-all active:scale-90" 
-              onclick="event.stopPropagation(); changeScore('A', -1)">
-        <i data-lucide="minus" class="w-6 h-6 md:w-8 md:h-8"></i>
-      </button>
-    </div>
   </div>
 
   <!-- 右邊/下邊：隊伍 B (預設客隊-紅色) -->
-  <div id="panel-b" class="team-panel flex-1 flex flex-col justify-between items-center py-8 relative cursor-pointer select-none bg-gradient-to-br from-[#fb7185] via-[#ef4444] to-[#b91c1c] text-white h-1/2 md:h-full" onclick="changeScore('B', 1)">
+  <div id="panel-b" data-score-panel="B" class="team-panel flex-1 flex flex-col justify-between items-center py-8 relative cursor-pointer select-none bg-gradient-to-br from-[#fb7185] via-[#ef4444] to-[#b91c1c] text-white h-1/2 md:h-full">
     <!-- 頂部資訊：隊名與贏家皇冠 -->
     <div class="team-name-zone">
       <div class="team-name-row">
@@ -325,13 +297,6 @@
       </div>
     </div>
 
-    <!-- 底部輔助按鈕 (減分) -->
-    <div class="z-20 mb-2 md:mb-6">
-      <button class="minus-btn hover:bg-black/40 text-white rounded-full flex items-center justify-center transition-all active:scale-90" 
-              onclick="event.stopPropagation(); changeScore('B', -1)">
-        <i data-lucide="minus" class="w-6 h-6 md:w-8 md:h-8"></i>
-      </button>
-    </div>
   </div>
 
   <!-- 懸浮控制板 (位於畫面中央) — 精簡為 3 個按鈕 -->
@@ -400,7 +365,7 @@
         </div>
 
         <div class="text-xs text-gray-400 border-t pt-3">
-          提示：您可直接點擊畫面上的「主隊 / 客隊」來更改名稱。
+          提示：點擊隊伍面板加 1 分；在面板上向下滑動可減 1 分；點擊「主隊 / 客隊」可更改名稱。
         </div>
 
         <!-- 歸零區塊 -->
@@ -606,6 +571,52 @@
       }
       updateDisplay();
       emitScoreUpdate(false);
+    }
+
+    // 面板手勢：點擊加分，向下滑動減分，避免減分按鈕佔用比分空間
+    function setupPanelGestures() {
+      const swipeThreshold = 55;
+      document.querySelectorAll('[data-score-panel]').forEach((panelElement) => {
+        const panel = panelElement.dataset.scorePanel;
+        let startX = 0;
+        let startY = 0;
+        let suppressNextClick = false;
+
+        const isInteractiveTarget = (target) => target.closest('input, button, textarea, select, a');
+
+        panelElement.addEventListener('pointerdown', (event) => {
+          if (isInteractiveTarget(event.target)) return;
+          startX = event.clientX;
+          startY = event.clientY;
+        });
+
+        panelElement.addEventListener('pointerup', (event) => {
+          if (isInteractiveTarget(event.target)) return;
+
+          const deltaX = event.clientX - startX;
+          const deltaY = event.clientY - startY;
+          const isDownSwipe = deltaY > swipeThreshold && Math.abs(deltaY) > Math.abs(deltaX) * 1.15;
+
+          if (isDownSwipe) {
+            suppressNextClick = true;
+            event.preventDefault();
+            event.stopPropagation();
+            changeScore(panel, -1);
+            showToast('向下滑動：減 1 分');
+            setTimeout(() => { suppressNextClick = false; }, 300);
+          }
+        });
+
+        panelElement.addEventListener('click', (event) => {
+          if (suppressNextClick || isInteractiveTarget(event.target)) {
+            event.preventDefault();
+            event.stopPropagation();
+            suppressNextClick = false;
+            return;
+          }
+          changeScore(panel, 1);
+        });
+      });
     }
 
     // 交換場地 (對調面板的順序、顏色、分數與名稱)
@@ -906,6 +917,7 @@
     // 初始化載入
     window.onload = function() {
       loadSavedState();
+      setupPanelGestures();
       updateDisplay();
       emitScoreUpdate(false);
     };
