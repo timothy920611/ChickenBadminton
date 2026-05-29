@@ -247,47 +247,76 @@
         schedule.matches.filter(match => match.round === 1).forEach(match => updateSingleEliminationProgress(schedule, match));
     }
 
-    function buildStandingsTableRows() {
-        const stats = {};
-        currentTeams.forEach(team => {
-            stats[team.id] = {
-                id: team.id,
-                name: `${team.name1} & ${team.name2}`,
-                team,
-                win: 0,
-                loss: 0,
-                ptsFor: 0,
-                ptsAgainst: 0
-            };
-        });
+    function getTeamStatsKey(team) {
+        if (!team) return '';
+        return [team.name1, team.name2].map(name => String(name || '').trim()).sort().join(' & ');
+    }
 
-        schedules.forEach(schedule => schedule.matches.forEach(match => {
-            if (!match.isFinished || !match.team1 || !match.team2) return;
-            if (!stats[match.team1.id] || !stats[match.team2.id]) return;
-            stats[match.team1.id].ptsFor += match.score1;
-            stats[match.team1.id].ptsAgainst += match.score2;
-            stats[match.team2.id].ptsFor += match.score2;
-            stats[match.team2.id].ptsAgainst += match.score1;
-            if (match.score1 > match.score2) {
-                stats[match.team1.id].win++;
-                stats[match.team2.id].loss++;
-            } else if (match.score2 > match.score1) {
-                stats[match.team2.id].win++;
-                stats[match.team1.id].loss++;
-            }
-        }));
+    function getTeamDisplayName(team) {
+        if (!team) return '未定';
+        return `${team.name1} & ${team.name2}`;
+    }
 
-        return Object.values(stats).sort((a, b) => {
+    function sortStandingRows(rows) {
+        return rows.sort((a, b) => {
             if (b.win !== a.win) return b.win - a.win;
             const diffA = a.ptsFor - a.ptsAgainst;
             const diffB = b.ptsFor - b.ptsAgainst;
             if (diffB !== diffA) return diffB - diffA;
-            return b.ptsFor - a.ptsFor;
+            if (b.ptsFor !== a.ptsFor) return b.ptsFor - a.ptsFor;
+            return a.name.localeCompare(b.name, 'zh-Hant');
         });
     }
 
+    function buildStandingsTableRows(teamPool = null) {
+        const stats = {};
+        const allowKeys = teamPool ? new Set(teamPool.map(getTeamStatsKey).filter(Boolean)) : null;
+
+        function ensureTeam(team) {
+            const key = getTeamStatsKey(team);
+            if (!key || (allowKeys && !allowKeys.has(key))) return null;
+            if (!stats[key]) {
+                stats[key] = {
+                    id: key,
+                    name: getTeamDisplayName(team),
+                    team,
+                    win: 0,
+                    loss: 0,
+                    ptsFor: 0,
+                    ptsAgainst: 0
+                };
+            }
+            return stats[key];
+        }
+
+        (teamPool || currentTeams).forEach(ensureTeam);
+
+        schedules.forEach(schedule => schedule.matches.forEach(match => {
+            if (!match.team1 || !match.team2) return;
+            const stat1 = ensureTeam(match.team1);
+            const stat2 = ensureTeam(match.team2);
+            if (!match.isFinished || !stat1 || !stat2) return;
+
+            const score1 = Number(match.score1) || 0;
+            const score2 = Number(match.score2) || 0;
+            stat1.ptsFor += score1;
+            stat1.ptsAgainst += score2;
+            stat2.ptsFor += score2;
+            stat2.ptsAgainst += score1;
+            if (score1 > score2) {
+                stat1.win++;
+                stat2.loss++;
+            } else if (score2 > score1) {
+                stat2.win++;
+                stat1.loss++;
+            }
+        }));
+
+        return sortStandingRows(Object.values(stats));
+    }
+
     function getRankedTeamsByStandings() {
-        const ranked = buildStandingsTableRows().map(row => row.team).filter(Boolean);
+        const ranked = buildStandingsTableRows(currentTeams).map(row => row.team).filter(Boolean);
         return ranked.length > 0 ? ranked : [...currentTeams];
     }
 
@@ -919,7 +948,7 @@
 
         const sorted = buildStandingsTableRows();
         document.getElementById('standingsArea').innerHTML = `
-            <h3 style="color:var(--secondary);margin-bottom:10px;">📊 總戰績表 <span style="font-size:14px;font-weight:normal;">(結算至目前所有賽程)</span></h3>
+            <h3 style="color:var(--secondary);margin-bottom:10px;">📊 總戰績表 <span style="font-size:14px;font-weight:normal;">(所有分組組合，結算至目前所有賽程)</span></h3>
             <div style="overflow-x:auto;margin-bottom:25px;">
             <table class="standings-table">
                 <thead><tr><th>名次</th><th>隊伍</th><th>勝</th><th>負</th><th>得分</th><th>失分</th><th>淨勝分</th></tr></thead>
