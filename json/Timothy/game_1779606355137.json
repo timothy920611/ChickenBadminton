@@ -283,9 +283,9 @@
             "name2": "代",
             "totalLevel": 9
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 12,
+          "score2": 10,
+          "isFinished": true
         },
         {
           "id": "M_2_4",
@@ -334,5 +334,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-05-29T08:19:31.980Z"
+  "lastUpdated": "2026-05-29T08:19:36.232Z"
 }
