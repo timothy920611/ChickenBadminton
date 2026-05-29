@@ -317,9 +317,9 @@
             "name2": "麥芽",
             "totalLevel": 12
           },
-          "score1": 11,
-          "score2": 3,
-          "isFinished": true,
+          "score1": null,
+          "score2": null,
+          "isFinished": false,
           "nextMatchId": "M_4_5",
           "slotInNext": "team1"
         },
@@ -366,12 +366,7 @@
           "id": "M_4_5",
           "round": 2,
           "matchNumber": 2,
-          "team1": {
-            "id": "T_1780043651713_0",
-            "name1": "菜雞",
-            "name2": "鴨子",
-            "totalLevel": 7
-          },
+          "team1": null,
           "team2": {
             "id": "Team_1780043581551_2",
             "name1": "麥芽",
@@ -389,7 +384,12 @@
           "round": 3,
           "matchNumber": 1,
           "team1": null,
-          "team2": null,
+          "team2": {
+            "id": "Team_1780043581551_2",
+            "name1": "麥芽",
+            "name2": "菜雞",
+            "totalLevel": 8
+          },
           "score1": null,
           "score2": null,
           "isFinished": false
@@ -401,5 +401,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-05-29T08:46:36.834Z"
+  "lastUpdated": "2026-05-29T08:46:57.457Z"
 }
