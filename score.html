@@ -31,14 +31,91 @@
     .score-number {
       font-family: 'Bebas Neue', sans-serif;
       font-weight: 700;
-      line-height: 0.82;
-      /* 動態填滿：手機直向用 vw，電腦橫向用 vh */
-      font-size: clamp(8rem, 43vw, 76vh);
+      line-height: 0.78;
+      letter-spacing: 0.02em;
+      font-size: clamp(9rem, 42vw, 70vh);
+      text-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+    }
+
+    .team-name-input {
+      min-width: min(74vw, 19rem);
+      max-width: min(82vw, 28rem);
+      text-shadow: 0 4px 14px rgba(15, 23, 42, 0.22);
     }
 
     /* 平滑過渡動畫，用於交換場地時 */
     .team-panel {
       transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      isolation: isolate;
+      overflow: hidden;
+    }
+
+    .team-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 18% 20%, rgba(255,255,255,0.28), transparent 28%),
+        radial-gradient(circle at 78% 82%, rgba(255,255,255,0.16), transparent 26%),
+        linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0));
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .team-panel::after {
+      content: '';
+      position: absolute;
+      inset: 10px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 28px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .score-shell {
+      width: min(72vw, 30rem);
+      aspect-ratio: 1 / 0.78;
+      border-radius: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.20);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 24px 48px rgba(15,23,42,0.13);
+      backdrop-filter: blur(2px);
+    }
+
+    .minus-btn {
+      width: clamp(4rem, 13vw, 5.75rem);
+      height: clamp(4rem, 13vw, 5.75rem);
+      background: rgba(15, 23, 42, 0.26);
+      border: 1px solid rgba(255,255,255,0.20);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.20), 0 12px 28px rgba(15,23,42,0.18);
+      backdrop-filter: blur(8px);
+    }
+
+    .floating-controls {
+      background: rgba(255,255,255,0.92);
+      box-shadow: 0 18px 42px rgba(15,23,42,0.24), inset 0 1px 0 rgba(255,255,255,0.7);
+      backdrop-filter: blur(16px);
+    }
+
+    .finish-button {
+      background: linear-gradient(135deg, rgba(15,23,42,0.42), rgba(15,23,42,0.28));
+      box-shadow: 0 12px 26px rgba(15,23,42,0.20), inset 0 1px 0 rgba(255,255,255,0.18);
+      backdrop-filter: blur(12px);
+    }
+
+    @media (min-width: 768px) {
+      .score-number { font-size: clamp(10rem, 31vw, 68vh); }
+      .team-name-input { min-width: min(36vw, 28rem); max-width: min(40vw, 34rem); }
+      .score-shell { width: min(33vw, 34rem); aspect-ratio: 1 / 0.95; }
+    }
+
+    @media (max-height: 560px) and (orientation: landscape) {
+      .score-number { font-size: clamp(7rem, 28vw, 62vh); }
+      .score-shell { width: min(28vw, 24rem); }
+      .team-panel::after { inset: 8px; border-radius: 22px; }
     }
 
     /* 隱藏預設捲軸並確保滿版 — 用 dvh 解決 iOS Safari/iPad 網址列問題 */
@@ -89,13 +166,13 @@
   <canvas id="celebration-canvas"></canvas>
 
   <!-- 左邊/上邊：隊伍 A (預設主隊-藍色) -->
-  <div id="panel-a" class="team-panel flex-1 flex flex-col justify-between items-center py-8 relative cursor-pointer select-none bg-[#3b82f6] text-white h-1/2 md:h-full" onclick="changeScore('A', 1)">
+  <div id="panel-a" class="team-panel flex-1 flex flex-col justify-between items-center py-8 relative cursor-pointer select-none bg-gradient-to-br from-[#60a5fa] via-[#3b82f6] to-[#1d4ed8] text-white h-1/2 md:h-full" onclick="changeScore('A', 1)">
     <!-- 頂部資訊：隊名與贏家皇冠 -->
-    <div class="flex flex-col items-center z-10 mt-2 md:mt-8">
+    <div class="flex flex-col items-center z-10 mt-3 md:mt-10">
       <div class="flex items-center gap-2">
         <!-- 點擊隊名可直接原地修改 -->
         <input type="text" id="name-a" value="主隊" 
-               class="bg-transparent text-center font-black text-3xl md:text-5xl focus:outline-none focus:border-b-2 border-white w-48 md:w-64 cursor-text"
+               class="team-name-input bg-transparent text-center font-black text-4xl md:text-6xl focus:outline-none focus:border-b-2 border-white/80 cursor-text tracking-wide"
                onclick="event.stopPropagation();" onchange="saveSettings()">
         <span id="crown-a" class="text-yellow-300 drop-shadow-lg transition-all duration-300 opacity-0 transform scale-50">
           <i data-lucide="crown" class="w-8 h-8 fill-current"></i>
@@ -104,13 +181,15 @@
     </div>
 
     <!-- 中間大數字 -->
-    <div class="flex flex-col items-center justify-center flex-grow">
-      <div id="score-a" class="score-number select-none transition-transform duration-100 active:scale-95">0</div>
+    <div class="flex flex-col items-center justify-center flex-grow z-10 w-full px-4">
+      <div class="score-shell">
+        <div id="score-a" class="score-number select-none transition-transform duration-100 active:scale-95">0</div>
+      </div>
     </div>
 
     <!-- 底部輔助按鈕 (減分) -->
     <div class="z-20 mb-2 md:mb-6">
-      <button class="bg-black/30 hover:bg-black/40 text-white rounded-full p-3 md:p-4 flex items-center justify-center transition-all active:scale-90" 
+      <button class="minus-btn hover:bg-black/40 text-white rounded-full flex items-center justify-center transition-all active:scale-90" 
               onclick="event.stopPropagation(); changeScore('A', -1)">
         <i data-lucide="minus" class="w-6 h-6 md:w-8 md:h-8"></i>
       </button>
@@ -118,12 +197,12 @@
   </div>
 
   <!-- 右邊/下邊：隊伍 B (預設客隊-紅色) -->
-  <div id="panel-b" class="team-panel flex-1 flex flex-col justify-between items-center py-8 relative cursor-pointer select-none bg-[#ef4444] text-white h-1/2 md:h-full" onclick="changeScore('B', 1)">
+  <div id="panel-b" class="team-panel flex-1 flex flex-col justify-between items-center py-8 relative cursor-pointer select-none bg-gradient-to-br from-[#fb7185] via-[#ef4444] to-[#b91c1c] text-white h-1/2 md:h-full" onclick="changeScore('B', 1)">
     <!-- 頂部資訊：隊名與贏家皇冠 -->
-    <div class="flex flex-col items-center z-10 mt-2 md:mt-8">
+    <div class="flex flex-col items-center z-10 mt-3 md:mt-10">
       <div class="flex items-center gap-2">
         <input type="text" id="name-b" value="客隊" 
-               class="bg-transparent text-center font-black text-3xl md:text-5xl focus:outline-none focus:border-b-2 border-white w-48 md:w-64 cursor-text"
+               class="team-name-input bg-transparent text-center font-black text-4xl md:text-6xl focus:outline-none focus:border-b-2 border-white/80 cursor-text tracking-wide"
                onclick="event.stopPropagation();" onchange="saveSettings()">
         <span id="crown-b" class="text-yellow-300 drop-shadow-lg transition-all duration-300 opacity-0 transform scale-50">
           <i data-lucide="crown" class="w-8 h-8 fill-current"></i>
@@ -132,13 +211,15 @@
     </div>
 
     <!-- 中間大數字 -->
-    <div class="flex flex-col items-center justify-center flex-grow">
-      <div id="score-b" class="score-number select-none transition-transform duration-100 active:scale-95">0</div>
+    <div class="flex flex-col items-center justify-center flex-grow z-10 w-full px-4">
+      <div class="score-shell">
+        <div id="score-b" class="score-number select-none transition-transform duration-100 active:scale-95">0</div>
+      </div>
     </div>
 
     <!-- 底部輔助按鈕 (減分) -->
     <div class="z-20 mb-2 md:mb-6">
-      <button class="bg-black/30 hover:bg-black/40 text-white rounded-full p-3 md:p-4 flex items-center justify-center transition-all active:scale-90" 
+      <button class="minus-btn hover:bg-black/40 text-white rounded-full flex items-center justify-center transition-all active:scale-90" 
               onclick="event.stopPropagation(); changeScore('B', -1)">
         <i data-lucide="minus" class="w-6 h-6 md:w-8 md:h-8"></i>
       </button>
@@ -146,7 +227,7 @@
   </div>
 
   <!-- 懸浮控制板 (位於畫面中央) — 精簡為 3 個按鈕 -->
-  <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 flex items-center bg-white text-gray-800 rounded-full shadow-2xl px-5 py-2.5 border border-gray-100 gap-5">
+  <div class="floating-controls absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 flex items-center text-gray-800 rounded-full px-5 py-2.5 border border-white/60 gap-5">
     <!-- 全螢幕按鈕 -->
     <button onclick="toggleFullscreen()" id="fullscreen-btn" class="hover:text-[#3b82f6] transition-colors active:scale-90" title="全螢幕">
       <i data-lucide="maximize" class="w-6 h-6 md:w-7 md:h-7"></i>
@@ -166,7 +247,7 @@
   <!-- 完賽按鈕：底部正中央，低調小按鈕 -->
   <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30" style="bottom: calc(1rem + env(safe-area-inset-bottom))">
     <button onclick="finishAndReturn()" 
-            class="flex items-center gap-1.5 bg-black/30 hover:bg-black/50 text-white/80 hover:text-white text-xs font-semibold px-4 py-2 rounded-full backdrop-blur-sm transition-all active:scale-95 border border-white/20"
+            class="finish-button flex items-center gap-1.5 hover:bg-black/50 text-white/90 hover:text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-all active:scale-95 border border-white/25"
             title="完成並帶回比分">
       <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
       完賽
