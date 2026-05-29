@@ -51,27 +51,27 @@
   ],
   "currentTeams": [
     {
-      "id": "Team_1779606391596_0",
+      "id": "T_1780042744169_0",
       "name1": "慕華",
       "name2": "惠足",
       "totalLevel": 11
     },
     {
-      "id": "Team_1779606391596_1",
+      "id": "T_1780042744169_1",
       "name1": "怡瑱",
+      "name2": "代",
+      "totalLevel": 9
+    },
+    {
+      "id": "T_1780042744169_2",
+      "name1": "茂樹",
       "name2": "海薇",
       "totalLevel": 9
     },
     {
-      "id": "Team_1779606391596_2",
-      "name1": "茂樹",
-      "name2": "則宇",
-      "totalLevel": 9
-    },
-    {
-      "id": "Team_1779606391596_3",
+      "id": "T_1780042744169_3",
       "name1": "重運",
-      "name2": "代",
+      "name2": "則宇",
       "totalLevel": 8
     }
   ],
@@ -202,10 +202,137 @@
         }
       ],
       "restMsg": ""
+    },
+    {
+      "id": 2,
+      "mode": "round-robin",
+      "matches": [
+        {
+          "id": "M_2_0",
+          "round": 1,
+          "matchNumber": 1,
+          "team1": {
+            "id": "T_1780042744169_0",
+            "name1": "慕華",
+            "name2": "惠足",
+            "totalLevel": 11
+          },
+          "team2": {
+            "id": "T_1780042744169_3",
+            "name1": "重運",
+            "name2": "則宇",
+            "totalLevel": 8
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_2_1",
+          "round": 1,
+          "matchNumber": 2,
+          "team1": {
+            "id": "T_1780042744169_1",
+            "name1": "怡瑱",
+            "name2": "代",
+            "totalLevel": 9
+          },
+          "team2": {
+            "id": "T_1780042744169_2",
+            "name1": "茂樹",
+            "name2": "海薇",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_2_2",
+          "round": 2,
+          "matchNumber": 3,
+          "team1": {
+            "id": "T_1780042744169_0",
+            "name1": "慕華",
+            "name2": "惠足",
+            "totalLevel": 11
+          },
+          "team2": {
+            "id": "T_1780042744169_2",
+            "name1": "茂樹",
+            "name2": "海薇",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_2_3",
+          "round": 2,
+          "matchNumber": 4,
+          "team1": {
+            "id": "T_1780042744169_3",
+            "name1": "重運",
+            "name2": "則宇",
+            "totalLevel": 8
+          },
+          "team2": {
+            "id": "T_1780042744169_1",
+            "name1": "怡瑱",
+            "name2": "代",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_2_4",
+          "round": 3,
+          "matchNumber": 5,
+          "team1": {
+            "id": "T_1780042744169_0",
+            "name1": "慕華",
+            "name2": "惠足",
+            "totalLevel": 11
+          },
+          "team2": {
+            "id": "T_1780042744169_1",
+            "name1": "怡瑱",
+            "name2": "代",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_2_5",
+          "round": 3,
+          "matchNumber": 6,
+          "team1": {
+            "id": "T_1780042744169_2",
+            "name1": "茂樹",
+            "name2": "海薇",
+            "totalLevel": 9
+          },
+          "team2": {
+            "id": "T_1780042744169_3",
+            "name1": "重運",
+            "name2": "則宇",
+            "totalLevel": 8
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        }
+      ],
+      "restMsg": ""
     }
   ],
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-05-24T07:34:02.950Z"
+  "lastUpdated": "2026-05-29T08:19:04.172Z"
 }
