@@ -118,9 +118,9 @@
             "name2": "姐",
             "totalLevel": 12
           },
-          "score1": null,
-          "score2": null,
-          "isFinished": false
+          "score1": 12,
+          "score2": 10,
+          "isFinished": true
         }
       ],
       "restMsg": ""
@@ -129,5 +129,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-05-29T08:33:29.004Z"
+  "lastUpdated": "2026-05-29T08:33:35.946Z"
 }
