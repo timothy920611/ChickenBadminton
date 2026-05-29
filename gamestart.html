@@ -257,6 +257,130 @@
         return `${team.name1} & ${team.name2}`;
     }
 
+    function normalizePlayerName(name) {
+        return String(name || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('zh-Hant');
+    }
+
+    function getTeamPlayerKeys(team) {
+        if (!team) return [];
+        return [team.name1, team.name2].map(normalizePlayerName).filter(Boolean);
+    }
+
+    function teamsSharePlayer(teamA, teamB) {
+        if (!teamA || !teamB) return false;
+        const playerKeysA = new Set(getTeamPlayerKeys(teamA));
+        return getTeamPlayerKeys(teamB).some(key => playerKeysA.has(key));
+    }
+
+    function generateStandardSeedOrder(size) {
+        let seeds = [1, 2];
+        while (seeds.length < size) {
+            const nextSize = seeds.length * 2;
+            seeds = seeds.flatMap(seed => [seed, nextSize + 1 - seed]);
+        }
+        return seeds.slice(0, size);
+    }
+
+    function createBracketSlotsFromRankings(rankedTeams, bracketSize) {
+        return generateStandardSeedOrder(bracketSize).map(seed => (seed <= rankedTeams.length ? { ...rankedTeams[seed - 1] } : null));
+    }
+
+    function buildSingleEliminationMatchesFromSlots(slots, scheduleId) {
+        const matches = [];
+        let counter = 0;
+        for (let index = 0; index < slots.length; index += 2) {
+            matches.push({
+                id: `M_${scheduleId}_${counter++}`,
+                round: 1,
+                matchNumber: (index / 2) + 1,
+                team1: slots[index] ? { ...slots[index] } : null,
+                team2: slots[index + 1] ? { ...slots[index + 1] } : null,
+                score1: null,
+                score2: null,
+                isFinished: false
+            });
+        }
+
+        let previousRound = matches.slice();
+        let round = 2;
+        while (previousRound.length > 1) {
+            const nextRound = [];
+            for (let index = 0; index < previousRound.length; index += 2) {
+                const nextMatch = {
+                    id: `M_${scheduleId}_${counter++}`,
+                    round,
+                    matchNumber: (index / 2) + 1,
+                    team1: null,
+                    team2: null,
+                    score1: null,
+                    score2: null,
+                    isFinished: false
+                };
+                previousRound[index].nextMatchId = nextMatch.id;
+                previousRound[index].slotInNext = 'team1';
+                previousRound[index + 1].nextMatchId = nextMatch.id;
+                previousRound[index + 1].slotInNext = 'team2';
+                nextRound.push(nextMatch);
+            }
+            matches.push(...nextRound);
+            previousRound = nextRound;
+            round += 1;
+        }
+        return matches;
+    }
+
+    function findPlayerConflictMatches(schedule) {
+        if (!schedule) return [];
+        return schedule.matches.filter(match => match.team1 && match.team2 && teamsSharePlayer(match.team1, match.team2));
+    }
+
+    function evaluateBracketSlots(slots, scheduleId, idealSlotIndexes) {
+        const schedule = { id: scheduleId, mode: 'single-elimination', matches: buildSingleEliminationMatchesFromSlots(slots, scheduleId) };
+        initializeSingleEliminationSchedule(schedule);
+        const conflictCount = findPlayerConflictMatches(schedule).length;
+        const displacement = slots.reduce((sum, team, slotIndex) => {
+            if (!team) return sum;
+            const idealSlotIndex = idealSlotIndexes.get(teamSignature(team));
+            return sum + (Number.isInteger(idealSlotIndex) ? Math.abs(slotIndex - idealSlotIndex) : 0);
+        }, 0);
+        return { conflictCount, displacement };
+    }
+
+    function optimizeBracketSlots(slots, scheduleId) {
+        const idealSlotIndexes = new Map();
+        slots.forEach((team, slotIndex) => {
+            const signature = teamSignature(team);
+            if (signature) idealSlotIndexes.set(signature, slotIndex);
+        });
+
+        const scoreSlots = candidateSlots => evaluateBracketSlots(candidateSlots, scheduleId, idealSlotIndexes);
+        let bestScore = scoreSlots(slots);
+        let improved = true;
+
+        while (bestScore.conflictCount > 0 && improved) {
+            improved = false;
+            let bestSwap = null;
+            for (let i = 0; i < slots.length - 1; i++) {
+                for (let j = i + 1; j < slots.length; j++) {
+                    if (!slots[i] && !slots[j]) continue;
+                    const candidateSlots = slots.slice();
+                    [candidateSlots[i], candidateSlots[j]] = [candidateSlots[j], candidateSlots[i]];
+                    const candidateScore = scoreSlots(candidateSlots);
+                    const isBetter = candidateScore.conflictCount < bestScore.conflictCount ||
+                        (candidateScore.conflictCount === bestScore.conflictCount && candidateScore.displacement < bestScore.displacement);
+                    if (isBetter) {
+                        bestScore = candidateScore;
+                        bestSwap = [i, j];
+                        improved = true;
+                    }
+                }
+            }
+            if (bestSwap) [slots[bestSwap[0]], slots[bestSwap[1]]] = [slots[bestSwap[1]], slots[bestSwap[0]]];
+        }
+
+        return { slots, conflictCount: bestScore.conflictCount };
+    }
+
     function sortStandingRows(rows) {
         return rows.sort((a, b) => {
             if (b.win !== a.win) return b.win - a.win;
@@ -325,60 +449,10 @@
         if (rankedTeams.length < 2) return null;
 
         const bracketSize = 2 ** Math.ceil(Math.log2(rankedTeams.length));
-        const firstRoundMatchCount = bracketSize / 2;
-        const byeCount = bracketSize - rankedTeams.length;
         const scheduleId = schedules.length + 1;
-        const matches = [];
-        let counter = 0;
-
-        for (let index = 0; index < firstRoundMatchCount; index++) {
-            let team1 = null;
-            let team2 = null;
-            if (index < byeCount) {
-                team1 = rankedTeams[index] || null;
-            } else {
-                const offset = index - byeCount;
-                team1 = rankedTeams[byeCount + offset] || null;
-                team2 = rankedTeams[rankedTeams.length - 1 - offset] || null;
-            }
-
-            matches.push({
-                id: `M_${scheduleId}_${counter++}`,
-                round: 1,
-                matchNumber: index + 1,
-                team1: team1 ? { ...team1 } : null,
-                team2: team2 ? { ...team2 } : null,
-                score1: null,
-                score2: null,
-                isFinished: false
-            });
-        }
-
-        let previousRound = matches.slice();
-        let round = 2;
-        while (previousRound.length > 1) {
-            const nextRound = [];
-            for (let index = 0; index < previousRound.length; index += 2) {
-                const nextMatch = {
-                    id: `M_${scheduleId}_${counter++}`,
-                    round,
-                    matchNumber: (index / 2) + 1,
-                    team1: null,
-                    team2: null,
-                    score1: null,
-                    score2: null,
-                    isFinished: false
-                };
-                previousRound[index].nextMatchId = nextMatch.id;
-                previousRound[index].slotInNext = 'team1';
-                previousRound[index + 1].nextMatchId = nextMatch.id;
-                previousRound[index + 1].slotInNext = 'team2';
-                nextRound.push(nextMatch);
-            }
-            matches.push(...nextRound);
-            previousRound = nextRound;
-            round += 1;
-        }
+        const initialSlots = createBracketSlotsFromRankings(rankedTeams, bracketSize);
+        const { slots, conflictCount } = optimizeBracketSlots(initialSlots, scheduleId);
+        const matches = buildSingleEliminationMatchesFromSlots(slots, scheduleId);
 
         const seededNames = rankedTeams.map((team, index) => `${index + 1}. ${team.name1} & ${team.name2}`);
         const schedule = {
@@ -388,6 +462,16 @@
             restMsg: `依目前總戰績建立種子：${seededNames.join('、')}`
         };
         initializeSingleEliminationSchedule(schedule);
+
+        const conflicts = findPlayerConflictMatches(schedule);
+        if (conflictCount > 0 || conflicts.length > 0) {
+            const conflictNames = conflicts.map(match => `${getTeamDisplayName(match.team1)} vs ${getTeamDisplayName(match.team2)}`).join('、');
+            return {
+                error: 'player-conflict',
+                message: `目前隊伍名單無法產生不重複選手的單敗淘汰賽，請先調整分組。衝突場次：${conflictNames || '未知場次'}`
+            };
+        }
+
         return schedule;
     }
 
@@ -765,6 +849,10 @@
         const schedule = buildSingleEliminationSchedule();
         if (!schedule) {
             alert('至少需要 2 隊才能產生單敗淘汰賽。');
+            return;
+        }
+        if (schedule.error) {
+            alert(schedule.message);
             return;
         }
         schedules.push(schedule);
