@@ -23,6 +23,12 @@
       "name": "鴨子",
       "gender": "女",
       "level": 3
+    },
+    {
+      "id": 1780043569626.651,
+      "name": "哥",
+      "gender": "男",
+      "level": 9
     }
   ],
   "currentTeams": [],
@@ -34,6 +40,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-05-29T08:32:26.908Z",
+  "lastUpdated": "2026-05-29T08:32:50.048Z",
   "needsInitialSchedule": false
 }
