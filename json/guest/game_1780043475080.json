@@ -17,6 +17,12 @@
       "name": "黃瓜",
       "gender": "男",
       "level": 8
+    },
+    {
+      "id": 1780043546503.001,
+      "name": "鴨子",
+      "gender": "女",
+      "level": 3
     }
   ],
   "currentTeams": [],
@@ -28,6 +34,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-05-29T08:32:06.324Z",
+  "lastUpdated": "2026-05-29T08:32:26.908Z",
   "needsInitialSchedule": false
 }
