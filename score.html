@@ -69,7 +69,7 @@
       touch-action: none;
     }
 
-    /* 橫向模式：左右並排 */
+       /* 橫向模式：左右並排 */
     @media (orientation: landscape) {
       body { flex-direction: row; }
       .team-panel {
@@ -120,7 +120,11 @@
     .team-name-input:focus { outline: none; border-bottom: 2px solid rgba(255,255,255,0.8); }
 
     @media (orientation: landscape) {
-      .team-name-input { font-size: clamp(0.75rem, 1.2vw, 1.3rem); }
+      .team-name-input {
+        font-size: clamp(0.7rem, 0.9vw, 0.95rem);
+        max-width: 90%;
+        line-height: 1;
+      }
     }
 
     /* ── 分數殼 ── */
@@ -143,7 +147,10 @@
     }
 
     @media (orientation: landscape) {
-      .score-shell { width: min(96%, 38rem); margin: 0; }
+      .score-shell {
+        width: min(96%, 38rem);
+        margin: 1rem 0 0;
+      }
     }
 
     /* ── 大數字：用 container 單位讓數字永遠貼合殼的大小 ── */
@@ -162,7 +169,10 @@
 
     @media (orientation: landscape) {
       /* 橫向：殼是全螢幕高的 55%，數字縮小以確保不溢出 */
-      .score-number { font-size: clamp(13rem, 37vw, 999px); }
+      .score-number {
+        font-size: clamp(13rem, 37vw, 999px);
+        transform: translateY(12px);
+      }
     }
 
     /* ── 浮動控制列 ── */
