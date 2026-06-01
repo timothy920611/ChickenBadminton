@@ -198,7 +198,7 @@
             "name2": "則宇",
             "totalLevel": 8
           },
-          "score1": 3,
+          "score1": 5,
           "score2": 3,
           "isFinished": false
         },
@@ -229,5 +229,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-06-01T10:50:10.586Z"
+  "lastUpdated": "2026-06-01T10:50:12.176Z"
 }
