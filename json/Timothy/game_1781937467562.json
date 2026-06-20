@@ -5,9 +5,14 @@
       "name": "慕華",
       "gender": "男",
       "level": 8
+    },
+    {
+      "id": 1781937492294.9412,
+      "name": "米樂",
+      "gender": "男",
+      "level": 3
     }
   ],
-  "lastUpdated": "2026-06-20T06:37:57.145Z",
   "currentTeams": [],
   "schedules": [],
   "matchMode": "single",
@@ -17,5 +22,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
+  "lastUpdated": "2026-06-20T06:38:13.167Z",
   "needsInitialSchedule": false
 }
