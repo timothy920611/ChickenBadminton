@@ -11,6 +11,12 @@
       "name": "米樂",
       "gender": "男",
       "level": 3
+    },
+    {
+      "id": 1781937508605.397,
+      "name": "浩文",
+      "gender": "男",
+      "level": 4
     }
   ],
   "currentTeams": [],
@@ -22,6 +28,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-06-20T06:38:13.167Z",
+  "lastUpdated": "2026-06-20T06:38:29.211Z",
   "needsInitialSchedule": false
 }
