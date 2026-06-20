@@ -87,7 +87,7 @@
             "name2": "芝喜",
             "totalLevel": 6
           },
-          "score1": 18,
+          "score1": 19,
           "score2": 15,
           "isFinished": false
         }
@@ -98,5 +98,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-06-20T07:29:09.162Z"
+  "lastUpdated": "2026-06-20T07:29:24.801Z"
 }
