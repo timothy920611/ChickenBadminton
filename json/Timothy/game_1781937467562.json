@@ -1,0 +1,21 @@
+{
+  "players": [
+    {
+      "id": 1781937476139.74,
+      "name": "慕華",
+      "gender": "男",
+      "level": 8
+    }
+  ],
+  "lastUpdated": "2026-06-20T06:37:57.145Z",
+  "currentTeams": [],
+  "schedules": [],
+  "matchMode": "single",
+  "pendingRestMsg": "",
+  "savedTeamDraft": [],
+  "savedDraftMode": "",
+  "savedDraftRestMsg": "",
+  "savedDraftRestPlayer": null,
+  "savedDraftUpdatedAt": null,
+  "needsInitialSchedule": false
+}
