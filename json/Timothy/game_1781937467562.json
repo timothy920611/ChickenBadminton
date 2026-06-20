@@ -100,7 +100,7 @@
           },
           "score1": 13,
           "score2": 21,
-          "isFinished": false
+          "isFinished": true
         },
         {
           "id": "M_1_2",
@@ -129,5 +129,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-06-20T06:54:38.042Z"
+  "lastUpdated": "2026-06-20T06:54:46.063Z"
 }
