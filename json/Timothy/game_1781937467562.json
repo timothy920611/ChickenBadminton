@@ -29,6 +29,12 @@
       "name": "世偉",
       "gender": "男",
       "level": 8
+    },
+    {
+      "id": 1781937573061.6692,
+      "name": "代",
+      "gender": "男",
+      "level": 4
     }
   ],
   "currentTeams": [],
@@ -40,6 +46,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-06-20T06:39:09.041Z",
+  "lastUpdated": "2026-06-20T06:39:33.718Z",
   "needsInitialSchedule": false
 }
