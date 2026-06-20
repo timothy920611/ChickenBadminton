@@ -57,14 +57,77 @@
       "totalLevel": 9
     }
   ],
-  "schedules": [],
+  "schedules": [
+    {
+      "id": 1,
+      "mode": "round-robin",
+      "matches": [
+        {
+          "id": "M_1_0",
+          "round": 1,
+          "matchNumber": 1,
+          "team1": {
+            "id": "Team_1781937575346_1",
+            "name1": "世偉",
+            "name2": "浩文",
+            "totalLevel": 12
+          },
+          "team2": {
+            "id": "Team_1781937575346_2",
+            "name1": "蔡珉",
+            "name2": "代",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_1",
+          "round": 2,
+          "matchNumber": 2,
+          "team1": {
+            "id": "Team_1781937575346_0",
+            "name1": "慕華",
+            "name2": "米樂",
+            "totalLevel": 11
+          },
+          "team2": {
+            "id": "Team_1781937575346_2",
+            "name1": "蔡珉",
+            "name2": "代",
+            "totalLevel": 9
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        },
+        {
+          "id": "M_1_2",
+          "round": 3,
+          "matchNumber": 3,
+          "team1": {
+            "id": "Team_1781937575346_0",
+            "name1": "慕華",
+            "name2": "米樂",
+            "totalLevel": 11
+          },
+          "team2": {
+            "id": "Team_1781937575346_1",
+            "name1": "世偉",
+            "name2": "浩文",
+            "totalLevel": 12
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        }
+      ],
+      "restMsg": ""
+    }
+  ],
   "matchMode": "round-robin",
   "pendingRestMsg": "",
-  "savedTeamDraft": [],
-  "savedDraftMode": "",
-  "savedDraftRestMsg": "",
-  "savedDraftRestPlayer": null,
-  "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-06-20T06:39:41.090Z",
-  "needsInitialSchedule": true
+  "needsInitialSchedule": false,
+  "lastUpdated": "2026-06-20T06:39:43.352Z"
 }
