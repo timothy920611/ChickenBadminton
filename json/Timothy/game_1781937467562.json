@@ -37,15 +37,34 @@
       "level": 4
     }
   ],
-  "currentTeams": [],
+  "currentTeams": [
+    {
+      "id": "Team_1781937575346_0",
+      "name1": "慕華",
+      "name2": "米樂",
+      "totalLevel": 11
+    },
+    {
+      "id": "Team_1781937575346_1",
+      "name1": "世偉",
+      "name2": "浩文",
+      "totalLevel": 12
+    },
+    {
+      "id": "Team_1781937575346_2",
+      "name1": "蔡珉",
+      "name2": "代",
+      "totalLevel": 9
+    }
+  ],
   "schedules": [],
-  "matchMode": "single",
+  "matchMode": "round-robin",
   "pendingRestMsg": "",
   "savedTeamDraft": [],
   "savedDraftMode": "",
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-06-20T06:39:33.718Z",
-  "needsInitialSchedule": false
+  "lastUpdated": "2026-06-20T06:39:41.090Z",
+  "needsInitialSchedule": true
 }
