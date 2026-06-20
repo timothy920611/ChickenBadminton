@@ -17,6 +17,12 @@
       "name": "如珊",
       "gender": "女",
       "level": 3
+    },
+    {
+      "id": 1781939294062.5608,
+      "name": "蔡",
+      "gender": "男",
+      "level": 5
     }
   ],
   "currentTeams": [],
@@ -28,6 +34,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-06-20T07:08:05.621Z",
+  "lastUpdated": "2026-06-20T07:08:14.834Z",
   "needsInitialSchedule": false
 }
