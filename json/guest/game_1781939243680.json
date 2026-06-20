@@ -60,8 +60,8 @@
             "name2": "米樂",
             "totalLevel": 6
           },
-          "score1": 18,
-          "score2": 16,
+          "score1": 17,
+          "score2": 17,
           "isFinished": false
         }
       ],
@@ -71,5 +71,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-06-20T07:15:55.515Z"
+  "lastUpdated": "2026-06-20T07:16:04.935Z"
 }
