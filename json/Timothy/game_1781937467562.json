@@ -78,7 +78,7 @@
             "name2": "代",
             "totalLevel": 9
           },
-          "score1": 14,
+          "score1": 15,
           "score2": 16,
           "isFinished": false
         },
@@ -129,5 +129,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-06-20T07:02:31.801Z"
+  "lastUpdated": "2026-06-20T07:02:52.757Z"
 }
