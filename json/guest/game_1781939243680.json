@@ -11,6 +11,12 @@
       "name": "芝喜",
       "gender": "女",
       "level": 3
+    },
+    {
+      "id": 1781939284945.5376,
+      "name": "如珊",
+      "gender": "女",
+      "level": 3
     }
   ],
   "currentTeams": [],
@@ -22,6 +28,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-06-20T07:07:50.360Z",
+  "lastUpdated": "2026-06-20T07:08:05.621Z",
   "needsInitialSchedule": false
 }
