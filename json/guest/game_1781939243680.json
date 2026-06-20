@@ -88,7 +88,7 @@
             "totalLevel": 6
           },
           "score1": 11,
-          "score2": 5,
+          "score2": 6,
           "isFinished": false
         }
       ],
@@ -98,5 +98,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-06-20T07:25:15.807Z"
+  "lastUpdated": "2026-06-20T07:25:28.086Z"
 }
