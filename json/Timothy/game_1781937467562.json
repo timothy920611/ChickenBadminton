@@ -23,6 +23,12 @@
       "name": "蔡珉",
       "gender": "男",
       "level": 5
+    },
+    {
+      "id": 1781937548459.8557,
+      "name": "世偉",
+      "gender": "男",
+      "level": 8
     }
   ],
   "currentTeams": [],
@@ -34,6 +40,6 @@
   "savedDraftRestMsg": "",
   "savedDraftRestPlayer": null,
   "savedDraftUpdatedAt": null,
-  "lastUpdated": "2026-06-20T06:38:47.138Z",
+  "lastUpdated": "2026-06-20T06:39:09.041Z",
   "needsInitialSchedule": false
 }
