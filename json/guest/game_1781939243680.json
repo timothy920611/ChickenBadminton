@@ -89,7 +89,7 @@
           },
           "score1": 21,
           "score2": 16,
-          "isFinished": false
+          "isFinished": true
         }
       ],
       "restMsg": ""
@@ -98,5 +98,5 @@
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-06-20T07:30:19.503Z"
+  "lastUpdated": "2026-06-20T07:30:30.029Z"
 }
