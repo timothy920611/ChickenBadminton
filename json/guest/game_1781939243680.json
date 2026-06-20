@@ -1,0 +1,21 @@
+{
+  "players": [
+    {
+      "id": 1781939254532.6777,
+      "name": "米樂",
+      "gender": "男",
+      "level": 3
+    }
+  ],
+  "lastUpdated": "2026-06-20T07:07:35.787Z",
+  "currentTeams": [],
+  "schedules": [],
+  "matchMode": "single",
+  "pendingRestMsg": "",
+  "savedTeamDraft": [],
+  "savedDraftMode": "",
+  "savedDraftRestMsg": "",
+  "savedDraftRestPlayer": null,
+  "savedDraftUpdatedAt": null,
+  "needsInitialSchedule": false
+}
