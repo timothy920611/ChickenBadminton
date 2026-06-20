@@ -27,15 +27,15 @@
   ],
   "currentTeams": [
     {
-      "id": "Team_1781939295141_0",
+      "id": "T_1781939954159_0",
       "name1": "蔡",
-      "name2": "芝喜",
+      "name2": "如珊",
       "totalLevel": 8
     },
     {
-      "id": "Team_1781939295141_1",
-      "name1": "如珊",
-      "name2": "米樂",
+      "id": "T_1781939954159_1",
+      "name1": "米樂",
+      "name2": "芝喜",
       "totalLevel": 6
     }
   ],
@@ -66,10 +66,37 @@
         }
       ],
       "restMsg": ""
+    },
+    {
+      "id": 2,
+      "mode": "round-robin",
+      "matches": [
+        {
+          "id": "M_2_0",
+          "round": 1,
+          "matchNumber": 1,
+          "team1": {
+            "id": "T_1781939954159_0",
+            "name1": "蔡",
+            "name2": "如珊",
+            "totalLevel": 8
+          },
+          "team2": {
+            "id": "T_1781939954159_1",
+            "name1": "米樂",
+            "name2": "芝喜",
+            "totalLevel": 6
+          },
+          "score1": null,
+          "score2": null,
+          "isFinished": false
+        }
+      ],
+      "restMsg": ""
     }
   ],
   "matchMode": "round-robin",
   "pendingRestMsg": "",
   "needsInitialSchedule": false,
-  "lastUpdated": "2026-06-20T07:18:58.690Z"
+  "lastUpdated": "2026-06-20T07:19:14.160Z"
 }
