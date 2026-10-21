@@ -1,0 +1,25 @@
+{
+  "indexes": [],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "games",
+      "fieldPath": "players",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "games",
+      "fieldPath": "currentTeams",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "games",
+      "fieldPath": "schedules",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "games",
+      "fieldPath": "savedTeamDraft",
+      "indexes": []
+    }
+  ]
+}

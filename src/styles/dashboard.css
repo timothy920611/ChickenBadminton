@@ -1,0 +1,76 @@
+:root {
+            --primary: #059669;
+            --primary-hover: #047857;
+            --secondary: #0f766e;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg); color: var(--text-main); padding: 20px; max-width: 900px; margin: 0 auto; }
+
+        /* 頂部導覽列 */
+        .header { display: flex; justify-content: space-between; align-items: center; background-color: var(--primary); color: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .header h1 { font-size: 20px; display: flex; align-items: center; gap: 10px; }
+        .user-info { display: flex; align-items: center; gap: 15px; font-size: 14px; }
+
+        .card { background-color: var(--card-bg); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        h2 { font-size: 18px; color: var(--secondary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+
+        /* 表單與按鈕 */
+        .input-group { display: flex; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+        input { flex: 1; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; outline: none; min-width: 200px; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2); }
+
+        button { padding: 12px 20px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-danger { background-color: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 8px 15px; font-size: 14px;}
+        .btn-danger:hover { background-color: #fef2f2; }
+        .btn-logout { background-color: rgba(255, 255, 255, 0.2); color: white; padding: 8px 15px; font-size: 14px;}
+        .btn-logout:hover { background-color: rgba(255, 255, 255, 0.3); }
+        button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+
+        /* 比賽列表網格 */
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 10px; }
+        .game-card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; background: #fafafa; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s, box-shadow 0.2s; }
+        .game-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-color: #d1d5db; }
+        .game-card h3 { font-size: 18px; color: var(--text-main); margin-bottom: 8px; }
+        .game-date { font-size: 13px; color: var(--text-muted); }
+        .empty-state { grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-muted); background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db; }
+
+        /* 常用選手管理 */
+        select { padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 15px; outline: none; background: white; cursor: pointer; }
+        select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(5,150,105,0.2); }
+        .fp-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+        .fp-sync-status { font-size: 12px; color: var(--text-muted); }
+        .fp-add-form { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; padding: 16px; background: #f8fafc; border-radius: 10px; border: 1px solid #e5e7eb; }
+        .fp-add-form input { flex: 1; min-width: 120px; padding: 10px 12px; }
+        .fp-list { border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; max-height: 420px; overflow-y: auto; }
+        .fp-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f3f4f6; gap: 10px; flex-wrap: wrap; }
+        .fp-item:last-child { border-bottom: none; }
+        .fp-item:hover { background: #f8fafc; }
+        .fp-name { font-weight: bold; font-size: 16px; color: var(--text-main); }
+        .fp-meta { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+        .fp-actions { display: flex; align-items: center; gap: 8px; }
+        .level-select { padding: 5px 8px; font-size: 14px; border-radius: 6px; border: 1px solid #d1d5db; }
+        .btn-sm-danger { background-color: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 6px 12px; font-size: 13px; border-radius: 6px; }
+        .btn-sm-danger:hover { background-color: #fef2f2; }
+        .btn-sm { padding: 8px 14px; font-size: 14px; }
+        .fp-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+
+.dashboard-style-1 { color: var(--text-muted); font-size: 14px; margin-bottom: 15px; }
+.dashboard-style-2 { color: #6b7280; padding: 20px; }
+.dashboard-style-3 { display:none; }
+.dashboard-style-4 { flex:2; min-width:120px; }
+.dashboard-style-5 { min-width:130px; }
+.dashboard-style-6 { display:flex; gap:8px; flex-wrap:wrap; }
+.dashboard-style-7 { background-color:#8b5cf6; }
+.dashboard-style-8 { background-color:var(--secondary); }
+
+.game-actions { margin-top: 15px; display: flex; gap: 10px; }
+.btn-enter-game { flex: 1; padding: 8px; }
+.error-message { color: var(--danger); }

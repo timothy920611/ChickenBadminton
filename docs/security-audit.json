@@ -1,0 +1,30 @@
+{
+  "score": 3,
+  "summary": "共用原型：任何有背景匿名驗證的訪客都可管理任一工作區，這是明確授權，不是私人帳號。Rules 預設拒絕未知路徑並驗證文件外層；深層商業規則仍在前端。",
+  "findings": [
+    {
+      "check": "Nested data validation",
+      "severity": "moderate",
+      "issue": "Rules bound the state arrays but do not validate every nested player, team and match. A visitor who bypasses the website can corrupt shared nested state. Client validation cannot prevent this.",
+      "recommendation": "For hostile public use, normalize nested entities into individually validated documents, or adopt a trusted backend after explicitly revisiting the free-only requirement."
+    }
+  ],
+  "verifiedControls": [
+    "Anonymous authentication required for all data access",
+    "All authenticated visitors intentionally share management access",
+    "Strict top-level fields, required fields, types and array sizes on create and update",
+    "Server timestamps and immutable game metadata",
+    "Revision increments on whole-game, roster and score changes",
+    "Transaction conflict retries preserve scores on different matches",
+    "No physical profile or game deletes; archive is irreversible in client rules",
+    "No orphan subcollection access or arbitrary settings paths",
+    "Share creation is atomic with its active hash; expiry is at most 24 hours",
+    "Share tokens are never stored; hashes cannot be listed; expired and revoked links fail"
+  ],
+  "additionalControls": [
+    "前端 GitHub Pages，Firebase SDK 官方 CDN",
+    "動態使用者內容使用 DOM/textContent",
+    "Web key 僅允許 GitHub Pages referrer",
+    "App Check 初始化已備妥，尚未設定 site key 或強制執行"
+  ]
+}

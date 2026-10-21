@@ -1,0 +1,116 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Spark shared workspace: profiles contain only id/name/timestamps, never passwords.
+    // Every anonymous session may manage every profile, as explicitly requested.
+    // games: immutable id/name/date/createdAt, revision, bounded state arrays and
+    // timestamps. Nested scheduling/business validation is in the shared client
+    // domain module, not a trusted server boundary on this free deployment.
+    // settings/frequentPlayers: players (<=200), revision, updatedAt.
+    // gameShares: active token hash + expiry. shareLinks: hash-keyed capability
+    // metadata; get by a known hash only, never list; expires in at most 24 hours.
+    function signedIn() { return request.auth != null; }
+    function validId(id) { return id is string && id.matches('^[A-Za-z0-9_-]{1,100}$'); }
+    function boundedText(value, max) { return value is string && value.size() <= max; }
+    function profileExists(id) { return exists(/databases/$(database)/documents/profiles/$(id)); }
+    function validProfile(d, id) {
+      return validId(id) && d.keys().hasAll(['id','name','createdAt','updatedAt'])
+        && d.keys().hasOnly(['id','name','createdAt','updatedAt'])
+        && d.id == id && boundedText(d.name,80) && d.name.size() > 0
+        && d.createdAt is timestamp && d.updatedAt == request.time;
+    }
+    function validGame(d, id) {
+      return validId(id)
+        && d.keys().hasAll(['id','name','date','players','currentTeams','schedules','matchMode',
+          'pendingRestMsg','needsInitialSchedule','savedTeamDraft','savedDraftMode',
+          'savedDraftRestMsg','savedDraftRestPlayer','savedDraftUpdatedAt','revision',
+          'deletedAt','createdAt','updatedAt','lastUpdated'])
+        && d.keys().hasOnly(['id','name','date','players','currentTeams','schedules','matchMode',
+          'pendingRestMsg','needsInitialSchedule','savedTeamDraft','savedDraftMode',
+          'savedDraftRestMsg','savedDraftRestPlayer','savedDraftUpdatedAt','revision',
+          'deletedAt','createdAt','updatedAt','lastUpdated'])
+        && d.id == id && boundedText(d.name,120) && d.name.size() > 0 && boundedText(d.date,40)
+        && d.players is list && d.players.size() <= 20
+        && d.currentTeams is list && d.currentTeams.size() <= 20
+        && d.schedules is list && d.schedules.size() <= 100
+        && d.savedTeamDraft is list && d.savedTeamDraft.size() <= 20
+        && d.matchMode in ['single','round-robin','single-elimination']
+        && d.savedDraftMode in ['','single','round-robin','single-elimination']
+        && boundedText(d.pendingRestMsg,4000) && boundedText(d.savedDraftRestMsg,4000)
+        && d.needsInitialSchedule is bool
+        && (d.savedDraftRestPlayer == null || d.savedDraftRestPlayer is map)
+        && (d.savedDraftUpdatedAt == null || boundedText(d.savedDraftUpdatedAt,40))
+        && d.revision is int && d.revision > 0 && d.revision <= 9007199254740991
+        && (d.deletedAt == null || d.deletedAt is timestamp)
+        && d.createdAt is timestamp && d.updatedAt == request.time
+        && boundedText(d.lastUpdated,40);
+    }
+    function validRoster(d) {
+      return d.keys().hasAll(['players','revision','updatedAt'])
+        && d.keys().hasOnly(['players','revision','updatedAt'])
+        && d.players is list && d.players.size() <= 200
+        && d.revision is int && d.revision > 0 && d.revision <= 9007199254740991
+        && d.updatedAt == request.time;
+    }
+    function validActiveShare(d, profileId, gameId) {
+      let link = getAfter(/databases/$(database)/documents/shareLinks/$(d.tokenHash)).data;
+      return d.keys().hasAll(['tokenHash','expiresAt']) && d.keys().hasOnly(['tokenHash','expiresAt'])
+        && d.tokenHash is string && d.tokenHash.matches('^[a-f0-9]{64}$')
+        && d.expiresAt is timestamp && d.expiresAt > request.time
+        && d.expiresAt <= request.time + duration.value(24,'h')
+        && link.profileId == profileId && link.gameId == gameId && link.expiresAt == d.expiresAt;
+    }
+    function validShare(d, hash) {
+      let game = get(/databases/$(database)/documents/profiles/$(d.profileId)/games/$(d.gameId)).data;
+      let active = getAfter(/databases/$(database)/documents/profiles/$(d.profileId)/gameShares/$(d.gameId)).data;
+      return hash.matches('^[a-f0-9]{64}$')
+        && d.keys().hasAll(['profileId','gameId','expiresAt','createdAt'])
+        && d.keys().hasOnly(['profileId','gameId','expiresAt','createdAt'])
+        && validId(d.profileId) && validId(d.gameId) && profileExists(d.profileId)
+        && game.deletedAt == null && active.tokenHash == hash && active.expiresAt == d.expiresAt
+        && d.createdAt == request.time && d.expiresAt is timestamp
+        && d.expiresAt > request.time && d.expiresAt <= request.time + duration.value(24,'h');
+    }
+    match /profiles/{profileId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && validProfile(request.resource.data,profileId)
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+      match /games/{gameId} {
+        allow read: if signedIn() && profileExists(profileId);
+        allow create: if signedIn() && profileExists(profileId) && validGame(request.resource.data,gameId)
+          && request.resource.data.revision == 1 && request.resource.data.deletedAt == null
+          && request.resource.data.createdAt == request.time;
+        allow update: if signedIn() && profileExists(profileId) && validGame(request.resource.data,gameId)
+          && resource.data.deletedAt == null && request.resource.data.revision == resource.data.revision + 1
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.name == resource.data.name && request.resource.data.date == resource.data.date
+          && (request.resource.data.deletedAt == null || request.resource.data.deletedAt == request.time);
+        allow delete: if false;
+      }
+      match /settings/{settingId} {
+        allow read: if signedIn() && profileExists(profileId) && settingId == 'frequentPlayers';
+        allow create: if signedIn() && profileExists(profileId) && settingId == 'frequentPlayers'
+          && validRoster(request.resource.data) && request.resource.data.revision == 1;
+        allow update: if signedIn() && profileExists(profileId) && settingId == 'frequentPlayers'
+          && validRoster(request.resource.data) && request.resource.data.revision == resource.data.revision + 1;
+        allow delete: if false;
+      }
+      match /gameShares/{gameId} {
+        allow get: if signedIn() && profileExists(profileId);
+        allow list: if false;
+        allow create, update: if signedIn() && profileExists(profileId)
+          && validActiveShare(request.resource.data,profileId,gameId);
+        allow delete: if signedIn() && profileExists(profileId);
+      }
+    }
+    match /shareLinks/{hash} {
+      allow get: if signedIn() && (resource == null || resource.data.expiresAt > request.time);
+      allow list: if false;
+      allow create: if signedIn() && validShare(request.resource.data,hash);
+      allow update: if false;
+      allow delete: if signedIn();
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

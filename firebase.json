@@ -1,0 +1,90 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "public": "hosting-redirect",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "no-referrer"
+          }
+        ]
+      }
+    ],
+    "redirects": [
+      {
+        "source": "/",
+        "destination": "https://timothy920611.github.io/ChickenBadminton/",
+        "type": 302
+      },
+      {
+        "source": "/index.html",
+        "destination": "https://timothy920611.github.io/ChickenBadminton/index.html",
+        "type": 302
+      },
+      {
+        "source": "/dashboard.html",
+        "destination": "https://timothy920611.github.io/ChickenBadminton/dashboard.html",
+        "type": 302
+      },
+      {
+        "source": "/play.html",
+        "destination": "https://timothy920611.github.io/ChickenBadminton/play.html",
+        "type": 302
+      },
+      {
+        "source": "/gamestart.html",
+        "destination": "https://timothy920611.github.io/ChickenBadminton/gamestart.html",
+        "type": 302
+      },
+      {
+        "source": "/helper.html",
+        "destination": "https://timothy920611.github.io/ChickenBadminton/helper.html",
+        "type": 302
+      },
+      {
+        "source": "/score.html",
+        "destination": "https://timothy920611.github.io/ChickenBadminton/score.html",
+        "type": 302
+      }
+    ]
+  },
+  "emulators": {
+    "auth": {
+      "host": "127.0.0.1",
+      "port": 9099
+    },
+    "firestore": {
+      "host": "127.0.0.1",
+      "port": 8080
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
+  },
+  "auth": {
+    "authorizedDomains": [
+      "chickenbadminton.firebaseapp.com",
+      "chickenbadminton.web.app",
+      "timothy920611.github.io"
+    ],
+    "providers": {
+      "anonymous": true
+    }
+  }
+}

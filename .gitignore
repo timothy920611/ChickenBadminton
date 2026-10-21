@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.env*
+!.env.example
+!.env.emulator
+!.env.production
+.firebase/
+*-debug.log*
+playwright-report/
+test-results/
+coverage/
+*.local.json
+service-account*.json
+
+# 舊球員資料只留本機遷移，不再公開追蹤。
+json/
