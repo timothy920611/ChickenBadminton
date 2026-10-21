@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Shared profiles: id/name/createdAt/updatedAt, no passwords or private accounts.
+    // Every visitor establishes a Firebase anonymous session. All such visitors
+    // may select, read, and manage any profile through validated callable functions.
+    // games: metadata + validated state, revision, deletedAt, server timestamps.
+    // settings/frequentPlayers: players, revision, server updatedAt.
+    // gameShares and shareLinks contain server-only capability hashes.
+    // There are deliberately NO client write grants; functions/domain.js validates
+    // every write, including nested players, teams, matches and revisions.
+    function isAuthenticated() { return request.auth != null; }
+    function profileExists(profileId) {
+      return exists(/databases/$(database)/documents/profiles/$(profileId));
+    }
+    match /profiles/{profileId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+      match /games/{gameId} {
+        allow read: if isAuthenticated() && profileExists(profileId);
+        allow write: if false;
+      }
+      match /settings/{settingId} {
+        allow read: if isAuthenticated() && profileExists(profileId) && settingId == 'frequentPlayers';
+        allow write: if false;
+      }
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

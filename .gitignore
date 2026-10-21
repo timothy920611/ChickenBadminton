@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env*
+!.env.example
+!.env.emulator
+.firebase/
+*-debug.log*
+playwright-report/
+test-results/
+coverage/
+*.local.json
+service-account*.json

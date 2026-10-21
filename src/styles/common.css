@@ -1,0 +1,10 @@
+#pageError {
+  padding:16px;
+  margin:16px;
+  border:1px solid #b91c1c;
+  border-radius:12px;
+  background:#fff1f2;
+  color:#991b1b;
+  position:relative;
+  z-index:9999;
+}
