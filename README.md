@@ -38,18 +38,18 @@ npm run test:emulators
 
 ## Firebase 設定與部署
 
-本次未建立或部署正式 Firebase 專案。後續設定：
+正式目標為既有 Firebase 專案 `chickenbadminton`，已設定於 `.firebaserc`。目前尚未完成正式部署。後續設定：
 
-1. 在 Firebase Console 建立專案與 Web app，啟用 **Authentication → Anonymous**。
-2. 建立 **Standard edition、Native mode** 的 Cloud Firestore `(default)` 資料庫；本程式及模擬器以這個 edition 為目標。區域可選 `asia-east1`，與 Functions 的設定一致。
+1. 在 Firebase Console 選取既有專案 `chickenbadminton`，檢查 Web app 設定並啟用 **Authentication → Anonymous**。
+2. 先確認現有 Cloud Firestore `(default)` 資料庫的 edition 與區域。本程式及模擬器以 **Standard edition、Native mode** 為開發目標；若尚無資料庫，完成設定後再部署。Functions 目前使用 `asia-east1`。
 3. 部署 Functions 需要 Firebase Blaze 方案。確認計費設定後，複製 `.env.example` 為 `.env.local`，填入 Web app 的 Firebase config。這些前端設定不是管理員私鑰；服務帳戶憑證不得放入前端或 Git。
 4. 將正式網站的網域加入 Authentication 的 Authorized domains（只填網域，不包含協定或 port）。
 5. 在已授權的開發環境執行：
 
 ```bash
-npx firebase login
+npx -y firebase-tools@latest login
 npm run build
-npx firebase deploy --project YOUR_PROJECT_ID --only firestore,functions,hosting
+npx -y firebase-tools@latest deploy --project chickenbadminton --only firestore,functions,hosting
 ```
 
 `firebase.json` 只發佈 `dist/`。舊的 `json/`、`users/`、遷移工具、原始碼及服務帳戶檔不會被複製到 Hosting。
