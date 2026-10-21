@@ -1,38 +1,32 @@
 # 部署紀錄（2026-10-21，Asia/Taipei）
 
-## 本版目標與狀態
+## 最終架構
 
-- 正式前端目標：`https://timothy920611.github.io/ChickenBadminton/`，由 GitHub Actions 建置及發布 `dist/`。使用者已回覆完成 Pages Source／environment 設定，待本次 Actions 發布驗證；不能把既有舊版網址 HTTP 200 當作新版已發布。
-- Firebase 專案 `chickenbadminton`，Web app `1:307486695888:web:b0dffdc8284a33069919d5`。
-- 資料庫已重新回讀：`(default)`／`STANDARD`／`FIRESTORE_NATIVE`／`asia-east1`／`freeTier=true`，PITR 關閉。維持 Spark、不啟用 Cloud Functions 或計費。
-- Google 登入設定已成功部署，加入 `timothy920611.github.io` 授權網域；程式不再自動匿名登入。
-- 個人所有權 Rules／Indexes 已部署成功；待回讀雲端內容核對。無 ownerUid 的舊資料部署新 Rules 後會封鎖，不能由前端自行認領。
-- 舊 `https://chickenbadminton.web.app` 為上一版 Firebase Hosting 網址；不當成本版 Pages 發布成功的證據。
-- API key 網域限制正在設定；App Check 已接好前端初始化，但未提供 reCAPTCHA site key／Console secret，不宣稱已啟用 enforcement。
+- 前端：`https://timothy920611.github.io/ChickenBadminton/`，純 HTML／CSS／JavaScript ES Modules，由 GitHub Actions 建置發布 dist/。瀏覽器從官方 CDN 載入 modular Firebase SDK。
+- 後端：既有 Firebase chickenbadminton，背景匿名 Auth＋Firestore，共用模式直接選人，不顯示 Google 登入，也不需要舊資料綁定。
+- 資料庫重新確認為 `(default)`／STANDARD／FIRESTORE_NATIVE／asia-east1／freeTier=true，PITR 關閉。gcloud 重新確認 billingEnabled=false，維持 Spark，未啟用 Cloud Functions 或計費。
+- 舊 chickenbadminton.web.app 已部署為 302 轉往 Pages，Firebase Hosting 只存一份搬家頁，沒有前端應用程式。
+- Web API key 已限制 `https://timothy920611.github.io/*`，允許來源回應 200，其他來源回應 403，保留原有 API 限制。
 
-## 舊資料與所有權
+## 資料與權限
 
-| 工作區 | 有效賽事 | 常用選手 |
+| 共用工作區 | 有效賽事 | 常用選手 |
 | --- | ---: | ---: |
 | Timothy | 8 | 17 |
 | guest | 4 | 0 |
 
-上一次已匯入 12 份賽事文件及 1 份名冊，共 13 份文件，並逐欄讀回核對；31 份原始 JSON 的 SHA-256 不變。本次不重複匯入、不覆寫賽事。詳見 [原始匯入紀錄](migration-record.json)。
+先前已匯入 12 場賽事及一份名冊，共 13 份文件，逐欄讀回核對通過；原始 31 份 JSON 保留本機，不再 Git 追蹤或發佈至 Pages。不重複匯入、不覆寫賽事。詳見 migration-record.json。
 
-使用者確認兩個工作區全部歸自己的 Google 帳號。須先由本人 Google 登入取得 Firebase UID，再由管理員使用 `assign-legacy-owner.mjs` dry-run 及 `--write` 綁定。綁定工具禁止轉移已有不同擁有者的工作區，且不修改賽事文件。
+本系統刻意讓任何訪客都能管理所有工作區，不是私人帳號。Rules 預設拒絕未知路徑及未經背景驗證的請求，檢查頂層欄位、型別、長度、數量、revision 與時間；深層商業規則仍由可繞過的前端處理。協助計分連結 24 小時有效、可撤銷，但不是私人權限邊界。原型 Rules 的界線見 security-audit.json。
 
-舊 JSON 已從本分支停止 Git 追蹤，本機來源仍保留；不發佈於 Pages。舊公開歷史與尚未合併的 main 版本可能仍有舊資料，不能宣稱已撤回公開副本。
+## 發布與驗證
 
-## 本版驗證
+首次 Pages 工作流程 39617062138 已成功建立網站，CI 39617072777 已通過。本版最後回復共用模式的提交與正式驗證結果，將更新在 PR #17；不以暫時的私人版結果冒充共用版已完成。
 
-- 32 項資料／交易／遷移／實際 Firestore Rules Emulator 測試全部通過。
-- 2 項 Chromium 測試通過：模擬 Google 登入、個人工作區、名冊 XSS 測試、分組草稿重載、賽程、專業計分板、相同帳號跨裝置同步、其他帳號看不到工作區、舊分享連結停用及延遲載入控制項。
-- 模擬 Google credential 只適用 Auth Emulator，不等同 Google 真實 popup 已驗收；正式 Google 登入須本人操作。
-- 正式建置通過，SDK 由官方 CDN 載入、資源使用相對路徑，dist 不含舊 JSON、管理腳本、Admin SDK 或機密。
-- GitHub Actions／正式 Pages 結果待新提交後驗證，以 [PR #17](https://github.com/timothy920611/ChickenBadminton/pull/17) 為準；PR 保持 Draft、不合併。
+本機實際 Emulator 的 36 項測試、2 項 Chromium 流程及正式建置通過，含三個獨立瀏覽器、共用選人、名冊 XSS、分組草稿、專業計分板、同步比分、分享、撤銷與延遲載入。正式共用部署與 UI 的最後驗證以 PR 及輸出紀錄為準。PR 保持 Draft，不合併。
 
-## 尚需本人完成
+## 使用者設定清單
 
-Pages Source／environment 設定、正式 Google 登入及 UID、App Check reCAPTCHA 註冊與 site key，以及 GitHub 2FA／main 保護規則的確認。完整點選步驟見 [設定清單](setup.md)。
+完整 Firebase、授權網域、API key、App Check、Spark／預算警示、GitHub 2FA／main 保護及 Pages 設定在 setup.md。Pages Source／environment 已由本人完成；共用模式不需要本人 Google 登入或 UID。
 
-Cloud Billing API 本次回讀因未啟用而失敗；上次部署曾確認未連結計費帳戶，這次未更改計費設定。Spark 無 Billing account 時不建立 Cloud Billing budget；不為警示而升級付費。未來升級時依設定清單建立預算警示，警示不是支出硬上限。
+App Check 前端初始化已備妥，未提供 reCAPTCHA site key／Console secret，尚未啟用 enforcement。Spark 未連結 Billing account 時不建立 Cloud Billing budget，不為警示升級付費；未來若自行升級，預算警示不是支出硬上限。

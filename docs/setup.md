@@ -1,6 +1,6 @@
 # ChickenBadminton 設定步驟
 
-本版固定使用 GitHub Pages 靜態前端、Firebase Authentication（Google）及 Cloud Firestore Standard / Native mode。沒有 Cloud Functions，也不需要開啟 Blaze。原始碼為 HTML、CSS、ES Modules；Vite 僅在開發與 CI 建置時執行，不是正式站伺服器。瀏覽器從官方 gstatic CDN 載入固定版本 modular Firebase Web SDK。
+本版固定使用 GitHub Pages 靜態前端、Firebase Authentication（背景 Anonymous）及 Cloud Firestore Standard / Native mode。沒有 Cloud Functions，也不需要開啟 Blaze。原始碼為 HTML、CSS、ES Modules；Vite 僅在開發與 CI 建置時執行，不是正式站伺服器。瀏覽器從官方 gstatic CDN 載入固定版本 modular Firebase Web SDK。
 
 ## 1. Firebase 專案與 Web app
 
@@ -9,38 +9,35 @@
 3. 選擇 SDK 設定與配置，核對 `.env.production` 的 apiKey、authDomain、projectId、appId。這些是公開識別設定，不是管理員機密。
 4. 確認方案維持 Spark。Firestore `(default)` 是 Standard、Native mode、`asia-east1`。新專案應選正式模式，禁止測試模式的全開 Rules。
 
-## 2. 啟用 Google 登入
+## 2. 啟用背景匿名驗證
 
-1. Authentication → Sign-in method → Google → 啟用，選擇專案支援信箱。
-2. 停用 Anonymous，不使用舊的無密碼共用選人模式。Google 登入不要求使用者替本站另設密碼。
-3. Authentication → Settings → Authorized domains → 加入 `timothy920611.github.io`。這裡不填 `https://`、路徑或 `/*`。
-4. 保留 Firebase 的 `chickenbadminton.firebaseapp.com` 網域，Google 彈出登入視窗使用 Firebase Auth handler。前端仍託管於 GitHub Pages。
-5. 開啟正式站並點「使用 Google 帳號登入」，允許登入彈出視窗。首頁只列出 `ownerUid == request.auth.uid` 的個人工作區。
+1. Authentication → Sign-in method → Anonymous → 啟用。前端會自動 signInAnonymously，不顯示登入畫面。
+2. 不使用 Google provider；一般訪客不需要 Google 帳號或密碼。
+3. Authentication → Settings → Authorized domains → 加入 `timothy920611.github.io`。不填 https://、路徑或 /*。
+4. 管理員先跑 `node scripts/configure-auth.mjs` dry-run，再加 `--write`，透過官方管理 API 套用並回讀匿名啟用、Google 停用與 Pages 授權網域。不要只依賴 CLI 成功訊息。
+5. 開啟正式網站，直接選 Timothy、guest 或建立新使用者。背景匿名 UID 不代表資料所有權。
 
-## 3. Firestore Rules 與資料歸屬
+## 3. Firestore Rules 與共用權限
 
-1. 先跑 `npm ci`、`npm run test:emulators`，再執行 `npx firebase-tools@latest deploy --project chickenbadminton --only firestore`。
-2. Rules 預設拒絕；未登入、匿名登入、其他 UID、公開分享憑證及未列出的路徑都拒絕。工作區擁有者只能管理自己的賽事與名冊，不能改 ownerUid。
-3. Rules 驗證必填／允許欄位、頂層型別、文字長度、陣列數量、revision 與伺服器時間。深層賽程的商業規則仍由前端驗證；這不授予其他帳號讀寫權，也不能用來實作獎金、計費或不可竄改的官方賽事紀錄。
-4. 原本公開協助計分連結已停用。若日後需要多人協作，必須另外設計具名成員授權及最小資料副本，不能恢復「知道連結即可操作全部資料」。
-5. 使用者輸入透過 `textContent` 呈現，不放進 `innerHTML`；資料文件不儲存密碼、Google access token 或第三方私鑰。
+1. 執行 `npm ci`、`npm run test:emulators`，再以 `npx firebase-tools@latest deploy --project chickenbadminton --only firestore` 部署。
+2. Rules 預設拒絕，只開放必要工作區、賽事、名冊與分享路徑。未驗證請求、未知路徑及分享 hash 列舉一律拒絕。
+3. 本系統刻意讓所有訪客管理任一工作區，因此不使用 ownerUid 限制，也不宣稱只有本人能存取。不要在文件放密碼、email、電話、登入憑證或不應公開的欄位。
+4. 建立及更新均驗證頂層必填／允許欄位、型別、字串長度、陣列數量、revision 與伺服器時間。深層球員／賽程商業規則仍由可繞過的前端檢查；這不是可信任裁判或反作弊後端。
+5. 任何訪客仍可從清單開啟賽事，因此 24 小時、可撤銷的協助計分連結只是便利入口，不是私人資料邊界。
+6. 顯示使用者輸入時用 textContent，不解析為 HTML。原型 Rules 廣泛分享前仍應審查，詳見 security-audit.json。
 
-## 4. 舊資料綁定（管理員操作）
+## 4. 舊資料
 
-Timothy 的 8 場賽事與 17 位常用選手、guest 的 4 場賽事已匯入。使用者已確認兩個工作區都歸同一個 Google 帳號；在綁定前，缺少 ownerUid 的舊文件一律拒絕前端讀寫。
+Timothy 8 場賽事與 17 位常用選手、guest 4 場賽事已匯入，共 13 份目的文件。直接列出，不需要 Google 登入、認領或 UID 綁定。不要重複匯入或覆寫既有賽事。
 
-1. 本人先在正式站使用 Google 登入。
-2. 展開「帳號識別碼（舊資料綁定用）」並提供 UID。UID 不是密碼。
-3. 管理員執行 `node scripts/assign-legacy-owner.mjs --uid 實際UID`，先 dry-run。
-4. 核對該 UID 確為已驗證 Google 帳號及目的工作區，再加 `--write`。工具只新增 ownerUid，不覆寫賽事、不自動認領、不轉移既有擁有者。
-5. 綁定後重新整理，核對兩個工作區共 12 場有效賽事與 17 位常用選手。
+原始 json/ 在本機保留，停止 Git 追蹤及網站發布。新的資料只寫入 Firestore，所有人可讀寫；不儲存私人欄位。
 
 ## 5. 限制公開 API key
 
 1. [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials?project=chickenbadminton)，選擇這個 Web app 使用的 Browser key。
 2. Application restrictions → Websites / HTTP referrers，加入 `https://timothy920611.github.io/*`，移除不必要的 localhost 與測試來源。
-3. 保留 Firebase 必要 API 的 API restrictions，至少包含 Authentication 使用的 Identity Toolkit API、Token Service API；不要為不相關的付費 API 開放此 key。
-4. 實測 Google popup、重新整理後 token 更新與 Firestore 讀寫。如果 Firebase Auth handler 因 referrer 被拒，檢查錯誤來源；必要時只新增實際需要的 `https://chickenbadminton.firebaseapp.com/*`，不要設為所有網站。
+3. 保留 Firebase 必要 API 的 API restrictions，至少包含 背景匿名驗證使用的 Identity Toolkit API、Token Service API；不要為不相關的付費 API 開放此 key。
+4. 實測背景匿名驗證、重新整理後的 token 更新與 Firestore 讀寫；其他網站來源應遭拒絕。不要把 referrer 放寬為所有網站。
 5. HTTP referrer 限制是降低濫用的額外措施，可以被非瀏覽器偽造，不能替代 Rules 或 App Check。
 
 官方說明：https://firebase.google.com/docs/projects/api-keys
@@ -89,7 +86,7 @@ initializeAppCheck(app, {
 2. Repo Settings → Environments → `github-pages`：允許 `main` 與 `refactor/firebase-modular-frontend` 部署；若目前只允許 main，第一次分支部署會被擋住。
 3. `.github/workflows/pages.yml` 先跑 Rules Emulator 與 Chromium 測試，再建置及上傳 **只有 dist/** 的 artifact，最後以 `actions/deploy-pages` 發布。不需要 Firebase 管理員 key 或 GitHub PAT。
 4. 正式網址：`https://timothy920611.github.io/ChickenBadminton/`。Vite `base: './'`，避免 `/assets/` 指向帳號網站根目錄而造成 404。
-5. 驗收首頁登入、自己的工作區、分組草稿、計分、不同裝置同帳號同步、不同帳號拒絕、登出與 390px 行動版。Google 真實登入仍須本人確認，Emulator 憑證不等同 Google popup 驗收。
+5. 驗收首頁直接列出工作區、12 場舊賽事、17 人名冊、分組草稿、計分、不同裝置選同一工作區同步、分享與撤銷、切換使用者及 390px 行動版。
 6. 所有變更推回既有分支與 PR，不直接改 main 或合併 PR。
 
 官方 Pages workflow：https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages

@@ -6,13 +6,13 @@ import { readyUser, getConnectionUser } from './auth.js';
 const stateKeys = ['players', 'currentTeams', 'schedules', 'matchMode', 'pendingRestMsg',
   'needsInitialSchedule', 'lastUpdated', 'savedTeamDraft', 'savedDraftMode', 'savedDraftRestMsg',
   'savedDraftRestPlayer', 'savedDraftUpdatedAt'];
-// A tab must never save a loaded profile's data into a profile selected by another tab.
+// 分頁已載入的資料，不可誤存到另一分頁剛切換的使用者。
 let boundProfileId;
 async function currentProfile() {
   const profile = await readyUser();
-  if (!profile) throw new Error('請先回首頁登入並選擇自己的工作區。');
+  if (!profile) throw new Error('請先回首頁選擇使用者。');
   if (boundProfileId && boundProfileId !== profile.id) {
-    throw new Error('其他分頁已切換工作區，請重新載入此頁後再操作。');
+    throw new Error('其他分頁已切換使用者，請重新載入此頁後再操作。');
   }
   boundProfileId ||= profile.id;
   return profile.id;
@@ -71,4 +71,7 @@ export async function listFrequentPlayers() {
   return snapshot.exists() ? plain(snapshot.data()) : { players: [], revision: 0 };
 }
 export const saveFrequentPlayers = (players, expectedRevision) => call('saveFrequentPlayers', { players, expectedRevision });
-export const saveMatchScore = payload => call('saveMatchScore', payload);
+export const createShare = gameId => call('createShare', { gameId });
+export const revokeShare = gameId => call('revokeShare', { gameId });
+export const getSharedGame = token => call('getSharedGame', { token }, false);
+export const saveMatchScore = payload => call('saveMatchScore', payload, !payload.token);

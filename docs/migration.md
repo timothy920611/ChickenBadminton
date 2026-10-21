@@ -25,7 +25,7 @@ npm run migrate -- --source ./json --map ./mapping.local.json --project chickenb
 
 目的使用者必須已存在。既有目的文件會略過，不覆蓋目前雲端賽事；來源永遠不會被修改或刪除。每個文件以交易建立，中途失敗可修正後重跑。請在正式匯入前備份資料並先於 Emulator 或測試專案驗證結果。
 
-本版工作區為 Google 帳號私有資料；mapping 只是舊資料夾到 profileId 的路徑對照。授權依據為父工作區不可變更的 ownerUid，不能憑名稱或 mapping 認領。
+使用者是免密碼、跨裝置共用的資料分類，任何開啟網站的人都可管理；mapping 不是帳號權限或身分驗證。
 
 舊版的 GitHub PAT 曾放在前端，請到 GitHub Settings → Developer settings → Personal access tokens 撤銷該 PAT。移除程式碼及舊密碼檔不會消除 Git 歷史中的曝光。
 
@@ -33,8 +33,8 @@ npm run migrate -- --source ./json --map ./mapping.local.json --project chickenb
 
 Timothy 的 8 場賽事及 17 位常用選手、guest 的 4 場賽事已完成匯入，新增 13 份文件、略過 0 份。逐欄讀回比對通過，全部 31 份來源 JSON 的 SHA-256 不變。遊戲原有 Date.now() ID 保留為 createdAt，避免匯入時間改變舊賽事排序。
 
-目的 profile 已存在；後續請使用 [正式匯入紀錄](migration-record.json) 的 mapping，避免建立同名重複使用者。該紀錄只有profile ID 與數量，沒有 Firebase Auth 憑證或管理員金鑰。
+目的 profile 已存在；後續請使用 [正式匯入紀錄](migration-record.json) 的 mapping，避免建立同名重複使用者。該紀錄只有共用 profile ID 與數量，沒有 Firebase Auth 憑證或管理員金鑰。
 
-## 私有歸屬綁定
+## GitHub Pages 發布
 
-舊資料缺少 ownerUid 時一律封鎖。本人完成 Google 登入後，依 [設定清單](setup.md#4-舊資料綁定管理員操作) 使用 assign-legacy-owner.mjs，預設 dry-run；只有已驗證 Google UID 且未被其他人擁有的工作區才能綁定。原始 json/ 已停止 Git 追蹤，管理員應使用本機保留的來源副本。
+json/ 原始檔只保留本機，不再 Git 追蹤或上傳網站。既有共用 profiles 直接使用，不需要綁定 Google UID。新的前端由 Pages 提供，後端維持 Firebase。

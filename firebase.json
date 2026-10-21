@@ -4,7 +4,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "public": "dist",
+    "public": "hosting-redirect",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -25,8 +25,42 @@
         ]
       }
     ],
-    "predeploy": [
-      "npm run build:production"
+    "redirects": [
+      {
+        "source": "/",
+        "destination": "https://timothy920611.github.io/ChickenBadminton/",
+        "type": 302
+      },
+      {
+        "source": "/index.html",
+        "destination": "https://timothy920611.github.io/ChickenBadminton/index.html",
+        "type": 302
+      },
+      {
+        "source": "/dashboard.html",
+        "destination": "https://timothy920611.github.io/ChickenBadminton/dashboard.html",
+        "type": 302
+      },
+      {
+        "source": "/play.html",
+        "destination": "https://timothy920611.github.io/ChickenBadminton/play.html",
+        "type": 302
+      },
+      {
+        "source": "/gamestart.html",
+        "destination": "https://timothy920611.github.io/ChickenBadminton/gamestart.html",
+        "type": 302
+      },
+      {
+        "source": "/helper.html",
+        "destination": "https://timothy920611.github.io/ChickenBadminton/helper.html",
+        "type": 302
+      },
+      {
+        "source": "/score.html",
+        "destination": "https://timothy920611.github.io/ChickenBadminton/score.html",
+        "type": 302
+      }
     ]
   },
   "emulators": {
@@ -50,11 +84,7 @@
       "timothy920611.github.io"
     ],
     "providers": {
-      "anonymous": false,
-      "googleSignIn": {
-        "oAuthBrandDisplayName": "小雞羽球計分板",
-        "supportEmail": "timothy920611@gmail.com"
-      }
+      "anonymous": true
     }
   }
 }

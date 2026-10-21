@@ -1,6 +1,6 @@
 import { readyUser } from '../services/auth.js';
 import { configurationError } from '../services/firebase.js';
-import { getGame, watchGame, saveGame, saveMatchScore } from '../services/repository.js';
+import { getGame, watchGame, saveGame, saveMatchScore, createShare, revokeShare } from '../services/repository.js';
 import { writeGameCache, scoreboardResultKey } from '../services/cache.js';
 import { el, exposeActions, showPageError, enableStartupControls } from '../services/ui.js';
 import { buildStandingsTableRows, buildSingleEliminationSchedule } from '../domain/tournament.js';
@@ -487,10 +487,51 @@ async function syncToCloud() {
     await autoSync();
 }
 
+async function openShareModal() {
+    if (isSyncing || hasUnsavedChanges || !currentGame) { status('請先儲存比賽，再建立分享連結。'); return; }
+    const modal = document.getElementById('shareModal');
+    const urlInput = document.getElementById('shareUrl');
+    modal.style.display = 'block';
+    urlInput.value = '';
+    document.getElementById('qrcode').replaceChildren();
+    document.getElementById('shareExpiry').textContent = '正在建立分享連結...';
+    try {
+        const share = await createShare(GAME_ID);
+        const url = new URL('helper.html', window.location.href);
+        url.hash = new URLSearchParams({ token: share.token }).toString();
+        urlInput.value = url.href;
+        document.getElementById('shareExpiry').textContent = `有效至 ${new Date(share.expiresAt).toLocaleString('zh-TW')}；先前的分享連結已失效。`;
+        if (window.QRCode) {
+            new window.QRCode(document.getElementById('qrcode'), {
+                text: url.href, width: 200, height: 200, colorDark: '#0f766e', colorLight: '#ffffff', correctLevel: window.QRCode.CorrectLevel.M
+            });
+        }
+    } catch (error) { document.getElementById('shareExpiry').textContent = `無法分享：${error.message}`; }
+}
+function closeShareModal() { document.getElementById('shareModal').style.display = 'none'; }
+async function revokeShareLink() {
+    try {
+        await revokeShare(GAME_ID);
+        document.getElementById('shareUrl').value = '';
+        document.getElementById('qrcode').replaceChildren();
+        document.getElementById('shareExpiry').textContent = '分享連結已撤銷。';
+    } catch (error) { document.getElementById('shareExpiry').textContent = `撤銷失敗：${error.message}`; }
+}
+async function copyShareUrl() {
+    const input = document.getElementById('shareUrl');
+    if (!input.value) return;
+    try {
+        await navigator.clipboard.writeText(input.value);
+        document.getElementById('btnCopy').textContent = '已複製 ✓';
+        setTimeout(() => { document.getElementById('btnCopy').textContent = '複製'; }, 2000);
+    } catch { input.select(); status('請手動複製已選取的分享連結。'); }
+}
+
 window.addEventListener('storage', event => {
     if (!currentUser || event.key !== scoreboardResultKey(currentUser.uid) || !event.newValue) return;
     try { applyScoreboardResult(JSON.parse(event.newValue)); } catch { status('無法讀取計分板回傳的資料。'); }
 });
+window.addEventListener('click', event => { if (event.target === document.getElementById('shareModal')) closeShareModal(); });
 window.addEventListener('pagehide', () => { stopWatching?.(); stopWatching = null; });
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) { stopWatching?.(); stopWatching = null; }
@@ -500,5 +541,5 @@ window.addEventListener('beforeunload', event => {
     if (hasUnsavedChanges || isSyncing) { event.preventDefault(); event.returnValue = ''; }
 });
 exposeActions({ generateRematch, openRegroupModal, closeRegroupModal, autoRegroup, regroupSelectPlayer,
-    confirmRegroupAndStart, generateRankedSingleElimination, syncToCloud, reloadGame });
+    confirmRegroupAndStart, generateRankedSingleElimination, syncToCloud, reloadGame, openShareModal, closeShareModal, copyShareUrl, revokeShareLink });
 initialize();
