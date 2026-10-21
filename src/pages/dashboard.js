@@ -4,7 +4,7 @@ import {
     listFrequentPlayers, saveFrequentPlayers,
 } from '../services/repository.js';
 import { writeGameCache, removeGameCache, gamesIndexKey, frequentPlayersKey } from '../services/cache.js';
-import { escapeHtml, exposeActions, showPageError } from '../services/ui.js';
+import { el, exposeActions, showPageError } from '../services/ui.js';
 
 let currentUser = null;
 let gamesList = [];
@@ -54,13 +54,13 @@ function renderGames() {
     const container = document.getElementById('gamesList');
     container.replaceChildren();
     if (gamesList.length === 0) {
-        container.innerHTML = '<div class="empty-state">目前還沒有比賽紀錄喔！趕快在上方建立一場吧 🏸</div>';
+        container.append(el('div', 'empty-state', '目前還沒有比賽紀錄喔！趕快在上方建立一場吧 🏸'));
         return;
     }
     gamesList.forEach(game => {
         const card = document.createElement('div');
         card.className = 'game-card';
-        card.innerHTML = `<div><h3>${escapeHtml(game.name)}</h3><p class="game-date">建立時間：${escapeHtml(game.date || '')}</p></div>`;
+        card.append(el('div', '', null, el('h3', '', game.name), el('p', 'game-date', `建立時間：${game.date || ''}`)));
         const actions = document.createElement('div');
         actions.className = 'game-actions';
         const enter = document.createElement('button');
@@ -98,7 +98,7 @@ async function createGame() {
 }
 
 async function deleteGame(id, name, button) {
-    if (!confirm(`確定要刪除「${name}」嗎？賽事會封存，現有協助計分連結也會失效。`)) return;
+    if (!confirm(`確定要刪除「${name}」嗎？賽事會封存並保留雲端資料。`)) return;
     button.disabled = true;
     try {
         await archiveGame(id);
@@ -184,13 +184,13 @@ function renderFpList() {
     const list = document.getElementById('fpList');
     list.replaceChildren();
     if (!frequentPlayers.length) {
-        list.innerHTML = '<div class="fp-empty">尚無常用選手，請從上方新增或匯入 CSV 📋</div>';
+        list.append(el('div', 'fp-empty', '尚無常用選手，請從上方新增或匯入 CSV 📋'));
         return;
     }
     frequentPlayers.forEach(player => {
         const row = document.createElement('div');
         row.className = 'fp-item';
-        row.innerHTML = `<div><div class="fp-name">${escapeHtml(player.name)}</div><div class="fp-meta">${escapeHtml(player.gender)} · 實力 Lv.${escapeHtml(player.level)}</div></div>`;
+        row.append(el('div', '', null, el('div', 'fp-name', player.name), el('div', 'fp-meta', `${player.gender} · 實力 Lv.${player.level}`)));
         const actions = document.createElement('div');
         actions.className = 'fp-actions';
         const select = document.createElement('select');

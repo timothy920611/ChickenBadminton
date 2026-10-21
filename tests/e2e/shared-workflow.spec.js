@@ -1,12 +1,21 @@
 import { test, expect } from '@playwright/test';
-import { createMockBackend } from './mock-backend.js';
+// Emulator 專用 Google credential，正式站不接受這種測試憑證。
+async function signIn(page, uid = 'owner-e2e') {
+  await page.evaluate(async uid => {
+    const { auth } = await import('/src/services/firebase.js');
+    const { GoogleAuthProvider, signInWithCredential } = await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js');
+    const encode = value => btoa(JSON.stringify(value)).replaceAll('+','-').replaceAll('/','_').replaceAll('=','');
+    const token = `${encode({alg:'none',typ:'JWT'})}.${encode({sub:uid,email:`${uid}@example.test`,email_verified:true,name:uid,aud:'demo-chicken-badminton',iss:'https://accounts.google.com',iat:Math.floor(Date.now()/1000),exp:Math.floor(Date.now()/1000)+3600})}.`;
+    await signInWithCredential(auth, GoogleAuthProvider.credential(token));
+    await window.loadProfiles();
+  }, uid);
+}
+
 
 // Run with the Auth and Firestore emulators. No production data is used.
-test('shared users work across browsers and helper links update only scores', async ({ page, browser, baseURL }) => {
-  const attachBackend = createMockBackend();
-  await attachBackend(page.context());
+test('個人工作區跨裝置同步、分組、計分與 XSS 防護', async ({ page, browser, baseURL }) => {
   const suffix = process.env.E2E_RUN_ID || `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-  const profileName = `共享測試 ${suffix}`;
+  const profileName = `我的工作區 ${suffix}`;
   const gameName = `週末球局 ${suffix}`;
   const pageErrors = [];
   const attachChecks = target => {
@@ -15,18 +24,21 @@ test('shared users work across browsers and helper links update only scores', as
   };
   attachChecks(page);
   await page.goto('/index.html');
+  await expect(page.getByRole('button',{name:'使用 Google 帳號登入',exact:true})).toBeEnabled();
+  await signIn(page);
   await expect(page.getByRole('button', { name: '建立並進入', exact: true })).toBeEnabled();
-  await expect(page.locator('#statusMsg')).toContainText('選取使用者');
+  await expect(page.locator('#statusMsg')).toContainText('選取你的工作區');
   await page.locator('#profileName').fill(profileName);
   await page.getByRole('button', { name: '建立並進入', exact: true }).click();
   await expect(page).toHaveURL(/dashboard\.html$/);
   await expect(page.locator('#displayUser')).toHaveText(profileName);
 
   // A stored roster is scoped to the selected shared profile.
-  await page.locator('#fpName').fill('常用甲');
+  await page.locator('#fpName').fill('<img src=x onerror=alert(1)>');
   await page.locator('#fpLevel').selectOption('10');
   await page.locator('#btnAddFp').click();
-  await expect(page.locator('#fpList')).toContainText('常用甲');
+  await expect(page.locator('#fpList')).toContainText('<img src=x onerror=alert(1)>');
+  await expect(page.locator('#fpList img')).toHaveCount(0);
   await expect(page.locator('#fpSyncStatus')).toContainText('已');
   await page.locator('#newGameName').fill(gameName);
   await page.locator('#createGameBtn').click();
@@ -79,59 +91,47 @@ test('shared users work across browsers and helper links update only scores', as
   await expect(page.locator('#schedulesWrapper .score-display')).toHaveText(['21', '15']);
 
   const secondContext = await browser.newContext({ baseURL });
-  const helperContext = await browser.newContext({ baseURL });
+  const otherContext = await browser.newContext({ baseURL });
   try {
-    await attachBackend(secondContext);
-    await attachBackend(helperContext);
     const second = await secondContext.newPage();
     attachChecks(second);
     await second.goto('/index.html');
+    await signIn(second);
     await second.getByRole('button', { name: `👤 ${profileName}`, exact: true }).click();
     await expect(second).toHaveURL(/dashboard\.html$/);
     await expect(second.locator('#displayUser')).toHaveText(profileName);
-    await expect(second.locator('#fpList')).toContainText('常用甲');
+    await expect(second.locator('#fpList')).toContainText('<img src=x onerror=alert(1)>');
     const gameCard = second.locator('.game-card').filter({ has: second.getByRole('heading', { name: gameName, exact: true }) });
     await gameCard.getByRole('button', { name: '進入計分板', exact: true }).click();
     await expect(second).toHaveURL(/gamestart\.html\?gameId=/);
     await expect(second.locator('#schedulesWrapper .score-display')).toHaveText(['21', '15']);
 
-    await page.getByRole('button', { name: '🔗 邀請協助計分', exact: true }).click();
-    await expect(page.locator('#shareUrl')).toHaveValue(/helper\.html#token=.+/);
-    const shareUrl = await page.locator('#shareUrl').inputValue();
-    const helper = await helperContext.newPage();
-    attachChecks(helper);
-    await helper.goto(shareUrl);
-    await expect(helper.locator('#mainContent .score-display')).toHaveText(['21', '15']);
-    await helper.getByRole('button', { name: '✏️ 修改分數', exact: true }).click();
-    await helper.getByRole('spinbutton', { name: '第一隊分數', exact: true }).fill('19');
-    await helper.getByRole('spinbutton', { name: '第二隊分數', exact: true }).fill('21');
-    await helper.getByRole('button', { name: '✅ 確認分數', exact: true }).click();
-    await expect(helper.locator('#mainContent .score-display')).toHaveText(['19', '21']);
-    await expect(page.locator('#schedulesWrapper .score-display')).toHaveText(['19', '21']);
-    await expect(second.locator('#schedulesWrapper .score-display')).toHaveText(['19', '21']);
-
-    await page.getByRole('button', { name: '撤銷分享連結', exact: true }).click();
-    await expect(page.locator('#shareExpiry')).toHaveText('分享連結已撤銷。');
-    await helper.getByRole('button', { name: '🔄 重新整理', exact: true }).click();
-    await expect(helper.locator('#mainContent')).toContainText('分享連結已失效');
-    await expect(helper.locator('#mainContent input')).toHaveCount(0);
+    // 不同 Google 帳號看不到工作區，竄改本機選取 ID 也無法取得資料。
+    const other = await otherContext.newPage(); attachChecks(other);
+    await other.goto('/index.html'); await signIn(other, 'other-e2e');
+    await expect(other.getByRole('button', { name: `👤 ${profileName}`, exact: true })).toHaveCount(0);
+    await expect(page.locator('#fpList img')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: '🔗 邀請協助計分', exact: true })).toHaveCount(0);
+    const legacyLink = await otherContext.newPage();
+    await legacyLink.goto('/helper.html#token=old-link');
+    await expect(legacyLink.locator('#mainContent')).toContainText('公開協助計分連結已停用');
+    await expect(legacyLink.locator('#mainContent input')).toHaveCount(0);
     expect(pageErrors).toEqual([]);
   } finally {
     await secondContext.close();
-    await helperContext.close();
+    await otherContext.close();
   }
 });
 
 test('controls remain disabled while the entry module is still loading', async ({page}) => {
-  const attachBackend=createMockBackend();await attachBackend(page.context());
   let release;
   const gate=new Promise(resolve=>{release=resolve;});
   await page.route(/\/(?:src\/pages\/index\.js|assets\/index-[^/]+\.js)(?:\?|$)/,async route=>{await gate;await route.continue();});
   try {
     await page.goto('/index.html',{waitUntil:'commit'});
     await expect(page.locator('#profileName')).toBeDisabled();
-    await expect(page.getByRole('button',{name:'建立並進入',exact:true})).toBeDisabled();
+    await expect(page.getByRole('button',{name:'使用 Google 帳號登入',exact:true})).toBeDisabled();
     release();
-    await expect(page.getByRole('button',{name:'建立並進入',exact:true})).toBeEnabled();
+    await expect(page.getByRole('button',{name:'使用 Google 帳號登入',exact:true})).toBeEnabled();
   } finally {release();}
 });

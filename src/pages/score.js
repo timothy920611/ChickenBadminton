@@ -493,12 +493,12 @@ import { exposeActions, enableStartupControls } from '../services/ui.js';
       const btn = document.getElementById('fullscreen-btn');
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().then(() => {
-          btn.innerHTML = '<i data-lucide="minimize" class="w-6 h-6 md:w-7 md:h-7"></i>';
+          { const icon = document.createElement('i'); icon.dataset.lucide = 'minimize'; icon.className = 'w-6 h-6 md:w-7 md:h-7'; btn.replaceChildren(icon); }
           window.lucide?.createIcons();
         }).catch(() => {});
       } else {
         document.exitFullscreen().then(() => {
-          btn.innerHTML = '<i data-lucide="maximize" class="w-6 h-6 md:w-7 md:h-7"></i>';
+          { const icon = document.createElement('i'); icon.dataset.lucide = 'maximize'; icon.className = 'w-6 h-6 md:w-7 md:h-7'; btn.replaceChildren(icon); }
           window.lucide?.createIcons();
         }).catch(() => {});
       }
@@ -506,7 +506,7 @@ import { exposeActions, enableStartupControls } from '../services/ui.js';
     document.addEventListener('fullscreenchange', () => {
       const btn = document.getElementById('fullscreen-btn');
       if (!document.fullscreenElement) {
-        btn.innerHTML = '<i data-lucide="maximize" class="w-6 h-6 md:w-7 md:h-7"></i>';
+        { const icon = document.createElement('i'); icon.dataset.lucide = 'maximize'; icon.className = 'w-6 h-6 md:w-7 md:h-7'; btn.replaceChildren(icon); }
         window.lucide?.createIcons();
       }
     });

@@ -6,7 +6,7 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="shortcut icon" href="favicon.svg">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <title>🏸 羽球賽程系統 - 選擇使用者</title>
+    <title>🏸 羽球賽程系統 - 登入我的工作區</title>
     <link rel="stylesheet" href="/src/styles/index.css">
 </head>
 <body>
@@ -43,16 +43,22 @@
             <h1>小雞🐥羽球計分板</h1>
             <p class="subtitle">賽程安排與戰績管理系統</p>
 
-            <p class="warning-text shared-notice">這是共用賽程空間。任何開啟網站的人都能選取使用者，查看與管理其賽事；不需要帳號或密碼。</p>
-            <h2 class="profile-heading">選擇使用者</h2>
-            <div id="profileList" class="profile-list" aria-label="使用者清單"></div>
-            <button class="btn-secondary" type="button" onclick="loadProfiles()" disabled data-startup-disabled>重新整理使用者清單</button>
-            <h2 class="profile-heading">建立使用者</h2>
+            <p class="warning-text shared-notice">使用 Google 帳號登入，只有你能查看與管理自己的賽事。不同裝置登入同一帳號即可繼續使用。</p>
+            <button id="loginGoogleBtn" class="btn-primary" type="button" onclick="handleGoogleLogin()" disabled data-startup-disabled>使用 Google 帳號登入</button>
+            <div id="accountPanel" hidden>
+                <p id="accountName"></p>
+                <details><summary>帳號識別碼（舊資料綁定用）</summary><code id="accountUid"></code></details>
+                <button type="button" class="btn-secondary" onclick="handleLogout()" disabled data-startup-disabled>登出 Google 帳號</button>
+            <h2 class="profile-heading">選擇我的工作區</h2>
+            <div id="profileList" class="profile-list" aria-label="我的工作區"></div>
+            <button class="btn-secondary" type="button" onclick="loadProfiles()" disabled data-startup-disabled>重新整理我的工作區</button>
+            <h2 class="profile-heading">建立工作區</h2>
             <div class="input-group">
-                <label for="profileName">使用者名稱</label>
+                <label for="profileName">工作區名稱</label>
                 <input type="text" id="profileName" placeholder="例如：小雞羽球團" autocomplete="off" maxlength="80" required disabled data-startup-disabled>
             </div>
             <button class="btn-primary" type="button" onclick="handleCreateProfile()" disabled data-startup-disabled>建立並進入</button>
+            </div>
             <div id="statusMsg" role="status" aria-live="polite"></div>
         </div>
 
@@ -64,8 +70,8 @@
                 <div class="step">
                     <div class="step-num">1</div>
                     <div class="step-body">
-                        <div class="step-title">選擇 / 建立使用者</div>
-                        <div class="step-desc">選取使用者即可管理對應的比賽紀錄與常用選手名冊，也可輸入名稱建立新使用者。不同裝置選取同一位使用者，即可繼續編輯。</div>
+                        <div class="step-title">登入與選擇工作區</div>
+                        <div class="step-desc">以 Google 登入後選擇自己的工作區，也可建立新工作區。不同裝置登入同一 Google 帳號即可同步；其他帳號無法讀寫你的資料。</div>
                     </div>
                 </div>
 

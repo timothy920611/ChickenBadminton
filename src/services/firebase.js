@@ -1,6 +1,8 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
+import { getAuth, connectAuthEmulator } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
+import { getFirestore, connectFirestoreEmulator } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
+
+import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app-check.js';
 
 const env = import.meta.env;
 const config = {
@@ -14,6 +16,13 @@ export function configurationError() {
   return missing.length ? '尚未設定 Firebase。請依 README 填寫 .env.local，或使用 npm run dev -- --mode emulator 啟動本機模式。' : null;
 }
 const app = missing.length ? null : initializeApp(config);
+// 僅使用公開 site key；reCAPTCHA secret 只能存放在 Firebase 控制台。
+if (app && env.VITE_APPCHECK_SITE_KEY && env.VITE_USE_FIREBASE_EMULATORS !== 'true') {
+  initializeAppCheck(app, {
+    provider: new ReCaptchaV3Provider(env.VITE_APPCHECK_SITE_KEY),
+    isTokenAutoRefreshEnabled: true,
+  });
+}
 export const auth = app ? getAuth(app) : null;
 export const db = app ? getFirestore(app) : null;
 if (app && env.VITE_USE_FIREBASE_EMULATORS === 'true') {

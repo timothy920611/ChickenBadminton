@@ -1,7 +1,7 @@
 import { readyUser } from '../services/auth.js';
 import { getGame, saveGame, listFrequentPlayers, saveFrequentPlayers } from '../services/repository.js';
 import { writeGameCache, gamesIndexKey, frequentPlayersKey } from '../services/cache.js';
-import { escapeHtml, exposeActions, showPageError } from '../services/ui.js';
+import { el, exposeActions, showPageError } from '../services/ui.js';
 import { parsePlayersCsv, validPlayerInput } from '../domain/players.js';
 import { attachPlayerDrag } from '../domain/player-drag.js';
 
@@ -191,10 +191,13 @@ async function removePlayer(id) {
 }
 function updatePlayerUI() {
     const list = document.getElementById('playerList');
-    list.innerHTML = players.map((p, index) => `<div class="player-tag"><div class="player-info"><span class="player-name">${escapeHtml(p.name)}</span><span class="player-details">${escapeHtml(p.gender)} | 等級 ${escapeHtml(p.level)}</span></div><button type="button" class="btn-danger" data-remove-index="${index}">✕</button></div>`).join('');
-    list.querySelectorAll('[data-remove-index]').forEach(button => {
-        button.addEventListener('click', () => removePlayer(players[Number(button.dataset.removeIndex)].id));
-    });
+    list.replaceChildren(...players.map(p => {
+        const remove = el('button', 'btn-danger', '✕');
+        remove.type = 'button'; remove.setAttribute('aria-label', `移除${p.name}`);
+        remove.addEventListener('click', () => removePlayer(p.id));
+        return el('div', 'player-tag', null, el('div', 'player-info', null,
+            el('span', 'player-name', p.name), el('span', 'player-details', `${p.gender} | 等級 ${p.level}`)), remove);
+    }));
     document.getElementById('playerCount').innerText = players.length;
     document.getElementById('progressBar').style.width = `${(players.length / MAX_PLAYERS) * 100}%`;
 }
@@ -220,28 +223,23 @@ function cancelTeamEdit() { document.getElementById('teamEditorContainer').style
 
 function renderTeamEditor() {
     const grid = document.getElementById('teamsDragGrid');
-    let html = pendingTeams.map((team,idx) => `
-        <div class="team-slot" id="slot-${escapeHtml(team.id)}">
-            <div class="team-slot-label team-slot-heading">
-                <span>隊伍 ${idx+1}</span>
-                <span class="team-level-badge">Lv.${(team.p1?.level||0)+(team.p2?.level||0)}</span>
-            </div>
-            <div class="team-slot-players">
-                ${renderDragPlayer(team.p1, team.id, 'p1')}
-                ${renderDragPlayer(team.p2, team.id, 'p2')}
-            </div>
-        </div>`).join('');
-    const benchInner = pendingRestPlayer
-        ? renderDragPlayer(pendingRestPlayer,'bench','bench')
-        : `<div class="bench-drop-target" data-team-id="bench" data-slot="bench">拖曳到此休息</div>`;
-    html += `<div class="team-slot bench-slot"><div class="team-slot-label">😴 休息區</div><div class="team-slot-players">${benchInner}</div></div>`;
-    grid.innerHTML = html;
+    grid.replaceChildren(...pendingTeams.map((team, index) => {
+        const node = el('div', 'team-slot', null,
+            el('div', 'team-slot-label team-slot-heading', null, el('span', '', `隊伍 ${index + 1}`),
+                el('span', 'team-level-badge', `Lv.${(team.p1?.level || 0) + (team.p2?.level || 0)}`)),
+            el('div', 'team-slot-players', null, renderDragPlayer(team.p1, team.id, 'p1'), renderDragPlayer(team.p2, team.id, 'p2')));
+        node.id = `slot-${team.id}`; return node;
+    }));
+    const target = pendingRestPlayer ? renderDragPlayer(pendingRestPlayer, 'bench', 'bench') : el('div', 'bench-drop-target', '拖曳到此休息');
+    target.dataset.teamId = 'bench'; target.dataset.slot = 'bench';
+    grid.append(el('div', 'team-slot bench-slot', null, el('div', 'team-slot-label', '😴 休息區'), el('div', 'team-slot-players', null, target)));
 }
 function renderDragPlayer(player, teamId, slot) {
-    if (!player) return '';
-    return `<div class="drag-player" data-player-id="${escapeHtml(player.id)}" data-team-id="${escapeHtml(teamId)}" data-slot="${escapeHtml(slot)}">
-        <div><div class="drag-player-name">${escapeHtml(player.name)}</div><div class="drag-player-info">${escapeHtml(player.gender)} · Lv.${escapeHtml(player.level)}</div></div>
-        <span class="drag-handle">⠿</span></div>`;
+    if (!player) return null;
+    const node = el('div', 'drag-player', null, el('div', '', null,
+        el('div', 'drag-player-name', player.name), el('div', 'drag-player-info', `${player.gender} · Lv.${player.level}`)), el('span', 'drag-handle', '⠿'));
+    Object.assign(node.dataset, { playerId: String(player.id), teamId: String(teamId), slot });
+    return node;
 }
 
 function swapPlayers(srcTeamId, srcSlot, dstTeamId, dstSlot) {
@@ -393,15 +391,22 @@ async function saveFrequentPlayersToCloud() {
 function renderFrequentPlayersList() {
     const list = document.getElementById('frequentPlayersList');
     if (!hasFetchedFp) return;
-    if (!frequentPlayers.length) { list.innerHTML = '<div class="fp-empty">尚無常用選手</div>'; return; }
-    const options = Array.from({ length: 18 }, (_, index) => index + 1);
-    list.innerHTML = frequentPlayers.map((player, index) => {
+    list.replaceChildren();
+    if (!frequentPlayers.length) { list.append(el('div', 'fp-empty', '尚無常用選手')); return; }
+    frequentPlayers.forEach(player => {
         const inGame = players.some(item => item.name === player.name);
-        const select = `<select class="level-select" data-level-index="${index}">${options.map(level => `<option value="${level}"${player.level === level ? ' selected' : ''}>${level}</option>`).join('')}</select>`;
-        return `<div class="fp-item"><label class="fp-label${inGame ? ' fp-already-added' : ''}"><input type="checkbox" class="fp-checkbox" value="${escapeHtml(player.id)}"${inGame ? ' disabled checked' : ''}><div><span class="fp-player-name">${escapeHtml(player.name)}</span> <span class="player-details">(${escapeHtml(player.gender)})</span>${inGame ? '<span class="fp-added-note"> 已在名單</span>' : ''}</div></label><div class="fp-row-actions">${select}<button class="btn-danger" data-remove-fp-index="${index}">刪除</button></div></div>`;
-    }).join('');
-    list.querySelectorAll('[data-level-index]').forEach(select => select.addEventListener('change', () => updateFpLevel(frequentPlayers[Number(select.dataset.levelIndex)].id, select.value)));
-    list.querySelectorAll('[data-remove-fp-index]').forEach(button => button.addEventListener('click', () => removeFrequentPlayer(frequentPlayers[Number(button.dataset.removeFpIndex)].id)));
+        const checkbox = el('input', 'fp-checkbox');
+        Object.assign(checkbox, { type: 'checkbox', value: String(player.id), disabled: inGame, checked: inGame });
+        const description = el('div', '', null, el('span', 'fp-player-name', player.name), el('span', 'player-details', ` (${player.gender})`));
+        if (inGame) description.append(el('span', 'fp-added-note', ' 已在名單'));
+        const label = el('label', `fp-label${inGame ? ' fp-already-added' : ''}`, null, checkbox, description);
+        const select = el('select', 'level-select'); select.setAttribute('aria-label', `${player.name}的實力級數`);
+        for (let level = 1; level <= 18; level++) select.add(new Option(String(level), String(level), false, player.level === level));
+        select.addEventListener('change', () => updateFpLevel(player.id, select.value));
+        const remove = el('button', 'btn-danger', '刪除');
+        remove.addEventListener('click', () => removeFrequentPlayer(player.id));
+        list.append(el('div', 'fp-item', null, label, el('div', 'fp-row-actions', null, select, remove)));
+    });
 }
 
 async function updateFpLevel(id,val) { const p=frequentPlayers.find(p=>idsEqual(p.id, id)); if(!p) return; p.level=parseInt(val); saveFrequentPlayersLocally(); document.getElementById('fpSyncStatus').innerText="⏳ 同步中..."; await saveFrequentPlayersToCloud(); }

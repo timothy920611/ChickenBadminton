@@ -44,8 +44,17 @@
     "singleProjectMode": true
   },
   "auth": {
+    "authorizedDomains": [
+      "chickenbadminton.firebaseapp.com",
+      "chickenbadminton.web.app",
+      "timothy920611.github.io"
+    ],
     "providers": {
-      "anonymous": true
+      "anonymous": false,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "小雞羽球計分板",
+        "supportEmail": "timothy920611@gmail.com"
+      }
     }
   }
 }

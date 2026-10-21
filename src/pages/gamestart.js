@@ -1,8 +1,8 @@
 import { readyUser } from '../services/auth.js';
 import { configurationError } from '../services/firebase.js';
-import { getGame, watchGame, saveGame, saveMatchScore, createShare, revokeShare } from '../services/repository.js';
+import { getGame, watchGame, saveGame, saveMatchScore } from '../services/repository.js';
 import { writeGameCache, scoreboardResultKey } from '../services/cache.js';
-import { escapeHtml, exposeActions, showPageError, enableStartupControls } from '../services/ui.js';
+import { el, exposeActions, showPageError, enableStartupControls } from '../services/ui.js';
 import { buildStandingsTableRows, buildSingleEliminationSchedule } from '../domain/tournament.js';
 import { renderMatchSchedules, readScores } from '../ui/matches.js';
 
@@ -229,18 +229,17 @@ async function initialize() {
 
     function renderRegroupGrid() {
         const grid = document.getElementById('regroupGrid');
-        grid.innerHTML = regroupTeams.map((pair, ti) => {
-            return `<div class="regroup-team">
-                <div class="regroup-team-heading">組 ${ti + 1}　<span class="regroup-team-level">Lv.${pair.reduce((s,p)=>s+p.level,0)}</span></div>
-                ${pair.map((player, pi) => {
-                    const isSelected = regroupSelected && regroupSelected.teamIdx === ti && regroupSelected.playerIdx === pi;
-                    return `<div onclick="regroupSelectPlayer(${ti},${pi})" class="regroup-player${isSelected ? ' selected' : ''}">
-                        <div class="regroup-player-name">${escapeHtml(player.name)}</div>
-                        <div class="regroup-player-detail">${escapeHtml(player.gender)}・Lv.${escapeHtml(player.level)}</div>
-                    </div>`;
-                }).join('')}
-            </div>`;
-        }).join('');
+        grid.replaceChildren(...regroupTeams.map((pair, teamIdx) => {
+            const team = el('div', 'regroup-team', null, el('div', 'regroup-team-heading', `組 ${teamIdx + 1}　Lv.${pair.reduce((sum, player) => sum + player.level, 0)}`));
+            pair.forEach((player, playerIdx) => {
+                const selected = regroupSelected?.teamIdx === teamIdx && regroupSelected?.playerIdx === playerIdx;
+                const button = el('button', `regroup-player${selected ? ' selected' : ''}`, null,
+                    el('div', 'regroup-player-name', player.name), el('div', 'regroup-player-detail', `${player.gender}・Lv.${player.level}`));
+                button.type = 'button'; button.setAttribute('aria-pressed', String(selected));
+                button.addEventListener('click', () => regroupSelectPlayer(teamIdx, playerIdx)); team.append(button);
+            });
+            return team;
+        }));
     }
 
     function regroupSelectPlayer(teamIdx, playerIdx) {
@@ -362,30 +361,17 @@ async function initialize() {
     }
 
     function renderStandings() {
-        if (schedules.length === 0) {
-            document.getElementById('standingsArea').innerHTML = '';
-            return;
-        }
-
-        const sorted = buildStandingsTableRows(schedules, currentTeams);
-        document.getElementById('standingsArea').innerHTML = `
-            <h3 class="standings-heading">📊 總戰績表 <span class="standings-subtitle">(所有分組組合，結算至目前所有賽程)</span></h3>
-            <div class="standings-scroll">
-            <table class="standings-table">
-                <thead><tr><th>名次</th><th>隊伍</th><th>勝</th><th>負</th><th>得分</th><th>失分</th><th>淨勝分</th></tr></thead>
-                <tbody>${sorted.map((item, index) => {
-                    const diff = item.ptsFor - item.ptsAgainst;
-                    return `<tr>
-                        <td>${index + 1}</td>
-                        <td class="standings-name">${escapeHtml(item.name)}</td>
-                        <td class="standings-positive standings-emphasis">${item.win}</td>
-                        <td class="standings-negative standings-emphasis">${item.loss}</td>
-                        <td class="standings-positive">${item.ptsFor}</td>
-                        <td class="standings-negative">${item.ptsAgainst}</td>
-                        <td class="${diff >= 0 ? 'standings-positive' : 'standings-negative'} standings-emphasis">${diff > 0 ? '+' + diff : diff}</td>
-                    </tr>`;
-                }).join('')}</tbody>
-            </table></div>`;
+        const area = document.getElementById('standingsArea'); area.replaceChildren();
+        if (!schedules.length) return;
+        const table = el('table', 'standings-table');
+        table.append(el('thead', '', null, el('tr', '', null, ...['名次','隊伍','勝','負','得分','失分','淨勝分'].map(text => el('th', '', text)))));
+        const body = el('tbody');
+        buildStandingsTableRows(schedules, currentTeams).forEach((item, index) => {
+            const diff = item.ptsFor - item.ptsAgainst;
+            body.append(el('tr', '', null, ...[index + 1, item.name, item.win, item.loss, item.ptsFor, item.ptsAgainst, diff > 0 ? `+${diff}` : diff].map((value, col) => el('td', col === 1 ? 'standings-name' : '', value))));
+        });
+        table.append(body);
+        area.append(el('h3', 'standings-heading', '📊 總戰績表', el('span', 'standings-subtitle', '(所有分組組合，結算至目前所有賽程)')), el('div', 'standings-scroll', null, table));
     }
 
 
@@ -501,51 +487,10 @@ async function syncToCloud() {
     await autoSync();
 }
 
-async function openShareModal() {
-    if (isSyncing || hasUnsavedChanges || !currentGame) { status('請先儲存比賽，再建立分享連結。'); return; }
-    const modal = document.getElementById('shareModal');
-    const urlInput = document.getElementById('shareUrl');
-    modal.style.display = 'block';
-    urlInput.value = '';
-    document.getElementById('qrcode').replaceChildren();
-    document.getElementById('shareExpiry').textContent = '正在建立分享連結...';
-    try {
-        const share = await createShare(GAME_ID);
-        const url = new URL('helper.html', window.location.href);
-        url.hash = new URLSearchParams({ token: share.token }).toString();
-        urlInput.value = url.href;
-        document.getElementById('shareExpiry').textContent = `有效至 ${new Date(share.expiresAt).toLocaleString('zh-TW')}；先前的分享連結已失效。`;
-        if (window.QRCode) {
-            new window.QRCode(document.getElementById('qrcode'), {
-                text: url.href, width: 200, height: 200, colorDark: '#0f766e', colorLight: '#ffffff', correctLevel: window.QRCode.CorrectLevel.M
-            });
-        }
-    } catch (error) { document.getElementById('shareExpiry').textContent = `無法分享：${error.message}`; }
-}
-function closeShareModal() { document.getElementById('shareModal').style.display = 'none'; }
-async function revokeShareLink() {
-    try {
-        await revokeShare(GAME_ID);
-        document.getElementById('shareUrl').value = '';
-        document.getElementById('qrcode').replaceChildren();
-        document.getElementById('shareExpiry').textContent = '分享連結已撤銷。';
-    } catch (error) { document.getElementById('shareExpiry').textContent = `撤銷失敗：${error.message}`; }
-}
-async function copyShareUrl() {
-    const input = document.getElementById('shareUrl');
-    if (!input.value) return;
-    try {
-        await navigator.clipboard.writeText(input.value);
-        document.getElementById('btnCopy').textContent = '已複製 ✓';
-        setTimeout(() => { document.getElementById('btnCopy').textContent = '複製'; }, 2000);
-    } catch { input.select(); status('請手動複製已選取的分享連結。'); }
-}
-
 window.addEventListener('storage', event => {
     if (!currentUser || event.key !== scoreboardResultKey(currentUser.uid) || !event.newValue) return;
     try { applyScoreboardResult(JSON.parse(event.newValue)); } catch { status('無法讀取計分板回傳的資料。'); }
 });
-window.addEventListener('click', event => { if (event.target === document.getElementById('shareModal')) closeShareModal(); });
 window.addEventListener('pagehide', () => { stopWatching?.(); stopWatching = null; });
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) { stopWatching?.(); stopWatching = null; }
@@ -555,6 +500,5 @@ window.addEventListener('beforeunload', event => {
     if (hasUnsavedChanges || isSyncing) { event.preventDefault(); event.returnValue = ''; }
 });
 exposeActions({ generateRematch, openRegroupModal, closeRegroupModal, autoRegroup, regroupSelectPlayer,
-    confirmRegroupAndStart, generateRankedSingleElimination, syncToCloud, reloadGame, openShareModal,
-    closeShareModal, copyShareUrl, revokeShareLink });
+    confirmRegroupAndStart, generateRankedSingleElimination, syncToCloud, reloadGame });
 initialize();

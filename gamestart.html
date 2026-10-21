@@ -17,7 +17,6 @@
         <span id="gameTitle" class="gamestart-layout-2"></span>
         <div class="gamestart-layout-3">
             <span id="syncStatus" class="gamestart-layout-4"></span>
-            <button class="gamestart-layout-5 tool-btn" onclick="openShareModal()" disabled data-startup-disabled>🔗 邀請協助計分</button>
             <button class="tool-btn" onclick="reloadGame()" disabled data-startup-disabled>🔄 重新載入</button>
             <button class="tool-btn" id="btnSync" onclick="syncToCloud()" disabled data-startup-disabled>☁️ 儲存至雲端</button>
         </div>
@@ -25,23 +24,7 @@
 </div>
 
 <!-- 分享 Modal -->
-<div id="shareModal" class="gamestart-layout-6">
-    <div class="gamestart-layout-7">
-        <div class="gamestart-layout-8">
-            <h3 class="gamestart-layout-9">🔗 邀請朋友協助計分</h3>
-            <button onclick="closeShareModal()" class="gamestart-layout-10" disabled data-startup-disabled>&times;</button>
-        </div>
-        <p class="gamestart-layout-11">傳送連結或 QR Code 給朋友，對方開啟連結即可協助輸入這場比賽的比分。</p>
-        <div class="gamestart-layout-12">
-            <input id="shareUrl" type="text" readonly class="gamestart-layout-13" disabled data-startup-disabled>
-            <button onclick="copyShareUrl()" id="btnCopy" class="gamestart-layout-14" disabled data-startup-disabled>複製</button>
-        </div>
-        <p id="shareExpiry" class="share-expiry" role="status"></p>
-        <button class="revoke-share" onclick="revokeShareLink()" disabled data-startup-disabled>撤銷分享連結</button>
-        <div id="qrcode" class="gamestart-layout-15"></div>
-        <p class="gamestart-layout-16">⚠️ 持有此連結的人可以修改這場比賽的分數，請謹慎分享。</p>
-    </div>
-</div>
+
 
 <div class="card">
     <h2>📋 賽程與計分</h2>
@@ -92,6 +75,5 @@
 </div>
 
 <script type="module" src="/src/pages/gamestart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </body>
 </html>

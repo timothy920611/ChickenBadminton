@@ -93,14 +93,15 @@ test('data mutations require an existing selected profile', async () => {
   await expectCode(service.saveGame(request({ profileId: 'missing', gameId: game.id, state: {}, expectedRevision: game.revision })), 'not-found');
 });
 
-test('different anonymous sessions can intentionally manage the same shared profile', async () => {
+test('other accounts cannot mutate a profile or its data', async () => {
   const { service, game, ids } = await fixture();
-  const result = await service.saveGame(request({ ...ids, state: stateOf(game), expectedRevision: game.revision }, 'visitor-b'));
-  assert.equal(result.revision, game.revision + 1);
-  const created = await service.createGame(request({ profileId: ids.profileId, name: 'Second practice' }, 'visitor-c'));
-  assert.equal(created.name, 'Second practice');
-  const roster = await service.saveFrequentPlayers(request({ profileId: ids.profileId, players: [], expectedRevision: 0 }, 'visitor-d'));
-  assert.equal(roster.revision, 1);
+  for (const [name, data] of [
+    ['saveGame', { ...ids, state: stateOf(game), expectedRevision: game.revision }],
+    ['createGame', { profileId: ids.profileId, name: 'Forbidden' }],
+    ['saveFrequentPlayers', { profileId: ids.profileId, players: [], expectedRevision: 0 }],
+    ['archiveGame', ids],
+    ['saveMatchScore', { ...ids, ...matchUpdate('match-a') }],
+  ]) await expectCode(service[name](request(data, 'visitor-b')), 'permission-denied');
 });
 
 test('stale whole-game and roster writes reject without changing current data', async () => {
@@ -116,7 +117,7 @@ test('concurrent score submissions keep both matches and invalidate stale whole-
   const { db, service, game, ids } = await fixture();
   await Promise.all([
     service.saveMatchScore(request({ ...ids, ...matchUpdate('match-a', 21, 10) }, 'visitor-a')),
-    service.saveMatchScore(request({ ...ids, ...matchUpdate('match-b', 18, 21) }, 'visitor-b')),
+    service.saveMatchScore(request({ ...ids, ...matchUpdate('match-b', 18, 21) }, 'visitor-a')),
   ]);
   const saved = db.read(`profiles/${ids.profileId}/games/${ids.gameId}`);
   assert.equal(saved.schedules[0].matches[0].score1, 21);
@@ -128,65 +129,26 @@ test('concurrent score submissions keep both matches and invalidate stale whole-
   assert.equal(db.read(`profiles/${ids.profileId}/games/${ids.gameId}`).schedules[0].matches[1].score2, 21);
 });
 
-test('sharing stores only hashes; token rotation invalidates the old link', async () => {
-  const { db, service, ids } = await fixture();
-  const first = await service.createShare(request(ids));
-  assert.equal(first.token.length, 43);
-  assert.equal(JSON.stringify(db.entries()).includes(first.token), false);
-  const shared = await service.getSharedGame(request({ token: first.token }, 'helper'));
-  assert.equal(shared.id, ids.gameId);
-  const second = await service.createShare(request(ids));
-  assert.notEqual(second.token, first.token);
-  await expectCode(service.getSharedGame(request({ token: first.token }, 'helper')), 'permission-denied');
-  await expectCode(service.saveMatchScore(request({ token: first.token, ...matchUpdate('match-a') }, 'helper')), 'permission-denied');
-  assert.equal((await service.getSharedGame(request({ token: second.token }, 'helper'))).id, ids.gameId);
-});
-
-test('revoked or expired links cannot read or score a game', async () => {
-  const { service, ids, advance } = await fixture();
-  const revoked = await service.createShare(request(ids));
-  await service.revokeShare(request(ids));
-  await expectCode(service.getSharedGame(request({ token: revoked.token })), 'permission-denied');
-  await expectCode(service.saveMatchScore(request({ token: revoked.token, ...matchUpdate('match-a') })), 'permission-denied');
-  const expired = await service.createShare(request(ids));
-  advance(24 * 60 * 60 * 1000);
-  await expectCode(service.getSharedGame(request({ token: expired.token })), 'permission-denied');
-  await expectCode(service.saveMatchScore(request({ token: expired.token, ...matchUpdate('match-a') })), 'permission-denied');
-});
-
-test('helper responses reveal only game and schedule data; extra input cannot alter drafts or roster', async () => {
-  const { db, service, ids } = await fixture();
-  const { token } = await service.createShare(request(ids));
-  const expectedKeys = ['id', 'name', 'schedules', 'matchMode', 'revision', 'lastUpdated'].sort();
-  const shared = await service.getSharedGame(request({ token }));
-  assert.deepEqual(Object.keys(shared).sort(), expectedKeys);
-  const scored = await service.saveMatchScore(request({ token, ...matchUpdate('match-a'), players: [{ name: 'Injected' }], savedTeamDraft: ['Injected'] }));
-  assert.deepEqual(Object.keys(scored).sort(), expectedKeys);
-  const stored = db.read(`profiles/${ids.profileId}/games/${ids.gameId}`);
-  assert.deepEqual(stored.players, []);
-  assert.deepEqual(stored.savedTeamDraft, []);
+test('public scoring capabilities are no longer accepted', async () => {
+  const { service, ids } = await fixture();
+  assert.equal(service.createShare, undefined);
+  await expectCode(service.saveMatchScore(request({ ...ids, token: 'old-token', ...matchUpdate('match-a') })), 'permission-denied');
 });
 
 test('archiving a game preserves its data and invalidates both writes and sharing', async () => {
   const { db, service, game, ids } = await fixture();
-  const { token } = await service.createShare(request(ids));
   await service.archiveGame(request(ids));
   const stored = db.read(`profiles/${ids.profileId}/games/${ids.gameId}`);
   assert.ok(stored.deletedAt instanceof Date);
   assert.equal(stored.schedules[0].matches.length, 2);
-  await expectCode(service.getSharedGame(request({ token })), 'permission-denied');
   await expectCode(service.saveGame(request({ ...ids, state: stateOf(game), expectedRevision: stored.revision })), 'not-found');
   await expectCode(service.saveMatchScore(request({ ...ids, ...matchUpdate('match-a') })), 'not-found');
-  await expectCode(service.createShare(request(ids)), 'not-found');
 });
 
 test('invalid profile IDs and share token formats cannot address unrelated documents', async () => {
   const { service, ids } = await fixture();
   for (const profileId of ['../other', 'profiles/other', '..', '']) {
     await expectCode(service.createGame(request({ profileId, name: 'Practice' })), 'invalid-argument');
-  }
-  for (const token of ['', 'a'.repeat(42), '../secret', 'a'.repeat(44)]) {
-    await expectCode(service.getSharedGame(request({ token })), 'permission-denied');
   }
   await expectCode(service.saveMatchScore(request({ ...ids, token: 'bad', ...matchUpdate('match-a') })), 'permission-denied');
 });

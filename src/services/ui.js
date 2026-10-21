@@ -23,3 +23,12 @@ export function enableStartupControls() {
     control.removeAttribute('data-startup-disabled');
   });
 }
+
+// 所有動態內容均使用 textContent；不把使用者輸入當作 HTML 解析。
+export function el(tag, className = '', text = null, ...children) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== null) node.textContent = String(text);
+  node.append(...children.filter(Boolean));
+  return node;
+}

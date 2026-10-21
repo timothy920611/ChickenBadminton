@@ -1,24 +1,32 @@
 {
-  "score": 3,
-  "summary": "Spark shared prototype. Shared management is deliberate authorization, not an ownership bypass. Rules validate document envelopes and concurrency; client business validation is not a trusted server boundary.",
+  "score": 4,
+  "summary": "原型：Google UID 所有權、預設拒絕、不可變擁有者、建立與更新均有欄位驗證。未宣稱完整深層商業規則驗證或已完成正式 OAuth popup 驗收。",
   "findings": [
     {
-      "check": "Nested data validation",
+      "check": "深層型別與商業規則",
+      "severity": "minor",
+      "issue": "Rules 驗證頂層必填、型別、長度、數量；巢狀球員、草稿與賽程不變量仍由可繞過的前端檢查。擁有者可能破壞自己的資料，不能跨 UID 存取。",
+      "recommendation": "若要可信任的多人競賽／不可竄改成績，改以各球員及場次分文件並完整驗證，或另行評估可信任後端；目前不開放此類功能。"
+    },
+    {
+      "check": "原始資料公開歷史",
       "severity": "moderate",
-      "issue": "Rules bound the state arrays but do not validate every nested player, team and match. A visitor who bypasses the website can corrupt shared nested state. Client validation cannot prevent this.",
-      "recommendation": "For hostile public use, normalize nested entities into individually validated documents, or adopt a trusted backend after explicitly revisiting the free-only requirement."
+      "issue": "舊球員 JSON 曾公開在 Git 歷史與 main 分支；本次停止追蹤與發布不能撤回既有公開副本。",
+      "recommendation": "確認舊資料可否公開，必要時由使用者授權歷史清理；不誤稱 Rules 可保護 Git 版本。"
     }
   ],
-  "verifiedControls": [
-    "Anonymous authentication required for all data access",
-    "All authenticated visitors intentionally share management access",
-    "Strict top-level fields, required fields, types and array sizes on create and update",
-    "Server timestamps and immutable game metadata",
-    "Revision increments on whole-game, roster and score changes",
-    "Transaction conflict retries preserve scores on different matches",
-    "No physical profile or game deletes; archive is irreversible in client rules",
-    "No orphan subcollection access or arbitrary settings paths",
-    "Share creation is atomic with its active hash; expiry is at most 24 hours",
-    "Share tokens are never stored; hashes cannot be listed; expired and revoked links fail"
-  ]
+  "authorization": [
+    "僅 Google 登入",
+    "父 profile.ownerUid == request.auth.uid",
+    "ownerUid 不可由前端轉移或認領",
+    "未登入與匿名全部拒絕",
+    "shareLinks/gameShares 與未知路徑全部拒絕"
+  ],
+  "deploymentControls": [
+    "僅 dist artifact",
+    "CDN 固定版本",
+    "不含 Admin SDK 或機密",
+    "App Check site key 未填時不宣稱已強制執行"
+  ],
+  "verification": "參見部署紀錄；測試結果與正式部署分開記錄"
 }

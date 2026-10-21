@@ -1,4 +1,4 @@
-import { listProfiles, createProfile, selectProfile } from '../services/auth.js';
+import { listProfiles, createProfile, selectProfile, accountUser, loginGoogle, logout, authErrorMessage } from '../services/auth.js';
 import { configurationError } from '../services/firebase.js';
 import { exposeActions } from '../services/ui.js';
 
@@ -64,15 +64,21 @@ async function loadProfiles() {
     const setupError = configurationError();
     if (setupError) { setStatus(setupError, true); return; }
     setBusy(true);
-    setStatus('⏳ 載入使用者...');
+    setStatus('⏳ 載入你的工作區...');
     try {
+        const user = await accountUser();
+        document.getElementById('loginGoogleBtn').hidden = !!user;
+        document.getElementById('accountPanel').hidden = !user;
+        if (!user) { setStatus('請使用 Google 帳號登入；只有你能讀寫自己的資料。'); return; }
+        document.getElementById('accountName').textContent = user.displayName || user.email || '已登入';
+        document.getElementById('accountUid').textContent = user.uid;
         const profiles = await listProfiles();
         const list = document.getElementById('profileList');
         list.replaceChildren();
         if (!profiles.length) {
             const empty = document.createElement('p');
             empty.className = 'profile-empty';
-            empty.textContent = '尚無使用者，請輸入名稱建立第一位使用者。';
+            empty.textContent = '尚無工作區，可建立一個新工作區。舊資料須由管理員依此 UID 綁定，不可自行認領。';
             list.appendChild(empty);
         }
         for (const profile of profiles) {
@@ -83,9 +89,9 @@ async function loadProfiles() {
             button.addEventListener('click', () => enterProfile(profile));
             list.appendChild(button);
         }
-        setStatus('選取使用者即可開始管理賽事。');
+        setStatus('選取你的工作區即可管理賽事。');
     } catch (error) {
-        setStatus(error.message || '載入失敗，請重新整理。', true);
+        setStatus(authErrorMessage(error), true);
     } finally { setBusy(false); }
 }
 
@@ -106,7 +112,16 @@ async function handleCreateProfile() {
     }
 }
 
-exposeActions({ handleCreateProfile, loadProfiles });
+async function handleGoogleLogin() {
+    if (busy) return;
+    setBusy(true);
+    try { await loginGoogle(); }
+    catch (error) { setStatus(authErrorMessage(error), true); return; }
+    finally { setBusy(false); }
+    await loadProfiles();
+}
+async function handleLogout() { await logout(); location.reload(); }
+exposeActions({ handleCreateProfile, loadProfiles, handleGoogleLogin, handleLogout });
 document.getElementById('profileName').addEventListener('keydown', event => {
     if (event.key === 'Enter') handleCreateProfile();
 });

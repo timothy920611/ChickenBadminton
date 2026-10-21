@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, onSnapshot } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, onSnapshot } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 import { runOperation } from './client-store.js';
 import { db } from './firebase.js';
 import { readyUser, getConnectionUser } from './auth.js';
@@ -10,9 +10,9 @@ const stateKeys = ['players', 'currentTeams', 'schedules', 'matchMode', 'pending
 let boundProfileId;
 async function currentProfile() {
   const profile = await readyUser();
-  if (!profile) throw new Error('請先回首頁選擇使用者。');
+  if (!profile) throw new Error('請先回首頁登入並選擇自己的工作區。');
   if (boundProfileId && boundProfileId !== profile.id) {
-    throw new Error('其他分頁已切換使用者，請重新載入此頁後再操作。');
+    throw new Error('其他分頁已切換工作區，請重新載入此頁後再操作。');
   }
   boundProfileId ||= profile.id;
   return profile.id;
@@ -71,7 +71,4 @@ export async function listFrequentPlayers() {
   return snapshot.exists() ? plain(snapshot.data()) : { players: [], revision: 0 };
 }
 export const saveFrequentPlayers = (players, expectedRevision) => call('saveFrequentPlayers', { players, expectedRevision });
-export const createShare = gameId => call('createShare', { gameId });
-export const revokeShare = gameId => call('revokeShare', { gameId });
-export const getSharedGame = token => call('getSharedGame', { token }, false);
-export const saveMatchScore = payload => call('saveMatchScore', payload, !payload.token);
+export const saveMatchScore = payload => call('saveMatchScore', payload);

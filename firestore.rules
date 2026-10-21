@@ -1,22 +1,24 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Spark shared workspace: profiles contain only id/name/timestamps, never passwords.
-    // Every anonymous session may manage every profile, as explicitly requested.
-    // games: immutable id/name/date/createdAt, revision, bounded state arrays and
-    // timestamps. Nested scheduling/business validation is in the shared client
-    // domain module, not a trusted server boundary on this free deployment.
-    // settings/frequentPlayers: players (<=200), revision, updatedAt.
-    // gameShares: active token hash + expiry. shareLinks: hash-keyed capability
-    // metadata; get by a known hash only, never list; expires in at most 24 hours.
-    function signedIn() { return request.auth != null; }
+    // 資料模型：profiles/{id} = id、name(1–80)、ownerUid、createdAt、updatedAt。
+    // games 與 settings/frequentPlayers 的擁有者繼承自父 profile。
+    // 未綁定 ownerUid 的舊資料預設封鎖；僅管理員可指派歸屬。
+    // game：固定欄位、型別與集合上限、revision；時間由伺服器驗證。
+    // shareLinks 與 gameShares 不再開放，所有未列出的路徑一律拒絕。
+    function signedIn() {
+      return request.auth != null && request.auth.token.firebase.sign_in_provider == 'google.com';
+    }
+    function ownsProfile(id) {
+      return signedIn() && get(/databases/$(database)/documents/profiles/$(id)).data.ownerUid == request.auth.uid;
+    }
     function validId(id) { return id is string && id.matches('^[A-Za-z0-9_-]{1,100}$'); }
     function boundedText(value, max) { return value is string && value.size() <= max; }
     function profileExists(id) { return exists(/databases/$(database)/documents/profiles/$(id)); }
     function validProfile(d, id) {
-      return validId(id) && d.keys().hasAll(['id','name','createdAt','updatedAt'])
-        && d.keys().hasOnly(['id','name','createdAt','updatedAt'])
-        && d.id == id && boundedText(d.name,80) && d.name.size() > 0
+      return validId(id) && d.keys().hasAll(['id','name','ownerUid','createdAt','updatedAt'])
+        && d.keys().hasOnly(['id','name','ownerUid','createdAt','updatedAt'])
+        && d.id == id && d.ownerUid == request.auth.uid && boundedText(d.ownerUid,128) && boundedText(d.name,80) && d.name.size() > 0
         && d.createdAt is timestamp && d.updatedAt == request.time;
     }
     function validGame(d, id) {
@@ -52,36 +54,21 @@ service cloud.firestore {
         && d.revision is int && d.revision > 0 && d.revision <= 9007199254740991
         && d.updatedAt == request.time;
     }
-    function validActiveShare(d, profileId, gameId) {
-      let link = getAfter(/databases/$(database)/documents/shareLinks/$(d.tokenHash)).data;
-      return d.keys().hasAll(['tokenHash','expiresAt']) && d.keys().hasOnly(['tokenHash','expiresAt'])
-        && d.tokenHash is string && d.tokenHash.matches('^[a-f0-9]{64}$')
-        && d.expiresAt is timestamp && d.expiresAt > request.time
-        && d.expiresAt <= request.time + duration.value(24,'h')
-        && link.profileId == profileId && link.gameId == gameId && link.expiresAt == d.expiresAt;
-    }
-    function validShare(d, hash) {
-      let game = get(/databases/$(database)/documents/profiles/$(d.profileId)/games/$(d.gameId)).data;
-      let active = getAfter(/databases/$(database)/documents/profiles/$(d.profileId)/gameShares/$(d.gameId)).data;
-      return hash.matches('^[a-f0-9]{64}$')
-        && d.keys().hasAll(['profileId','gameId','expiresAt','createdAt'])
-        && d.keys().hasOnly(['profileId','gameId','expiresAt','createdAt'])
-        && validId(d.profileId) && validId(d.gameId) && profileExists(d.profileId)
-        && game.deletedAt == null && active.tokenHash == hash && active.expiresAt == d.expiresAt
-        && d.createdAt == request.time && d.expiresAt is timestamp
-        && d.expiresAt > request.time && d.expiresAt <= request.time + duration.value(24,'h');
-    }
     match /profiles/{profileId} {
-      allow read: if signedIn();
+      allow read: if signedIn() && resource.data.ownerUid == request.auth.uid;
       allow create: if signedIn() && validProfile(request.resource.data,profileId)
         && request.resource.data.createdAt == request.time;
-      allow update, delete: if false;
+      allow update: if signedIn() && resource.data.ownerUid == request.auth.uid
+        && validProfile(request.resource.data, profileId)
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false;
       match /games/{gameId} {
-        allow read: if signedIn() && profileExists(profileId);
-        allow create: if signedIn() && profileExists(profileId) && validGame(request.resource.data,gameId)
+        allow read: if ownsProfile(profileId);
+        allow create: if ownsProfile(profileId) && validGame(request.resource.data,gameId)
           && request.resource.data.revision == 1 && request.resource.data.deletedAt == null
           && request.resource.data.createdAt == request.time;
-        allow update: if signedIn() && profileExists(profileId) && validGame(request.resource.data,gameId)
+        allow update: if ownsProfile(profileId) && validGame(request.resource.data,gameId)
           && resource.data.deletedAt == null && request.resource.data.revision == resource.data.revision + 1
           && request.resource.data.createdAt == resource.data.createdAt
           && request.resource.data.name == resource.data.name && request.resource.data.date == resource.data.date
@@ -89,27 +76,13 @@ service cloud.firestore {
         allow delete: if false;
       }
       match /settings/{settingId} {
-        allow read: if signedIn() && profileExists(profileId) && settingId == 'frequentPlayers';
-        allow create: if signedIn() && profileExists(profileId) && settingId == 'frequentPlayers'
+        allow read: if ownsProfile(profileId) && settingId == 'frequentPlayers';
+        allow create: if ownsProfile(profileId) && settingId == 'frequentPlayers'
           && validRoster(request.resource.data) && request.resource.data.revision == 1;
-        allow update: if signedIn() && profileExists(profileId) && settingId == 'frequentPlayers'
+        allow update: if ownsProfile(profileId) && settingId == 'frequentPlayers'
           && validRoster(request.resource.data) && request.resource.data.revision == resource.data.revision + 1;
         allow delete: if false;
       }
-      match /gameShares/{gameId} {
-        allow get: if signedIn() && profileExists(profileId);
-        allow list: if false;
-        allow create, update: if signedIn() && profileExists(profileId)
-          && validActiveShare(request.resource.data,profileId,gameId);
-        allow delete: if signedIn() && profileExists(profileId);
-      }
-    }
-    match /shareLinks/{hash} {
-      allow get: if signedIn() && (resource == null || resource.data.expiresAt > request.time);
-      allow list: if false;
-      allow create: if signedIn() && validShare(request.resource.data,hash);
-      allow update: if false;
-      allow delete: if signedIn();
     }
     match /{document=**} { allow read, write: if false; }
   }
