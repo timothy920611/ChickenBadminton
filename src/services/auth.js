@@ -1,7 +1,7 @@
 import { signInAnonymously } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
-import { auth, db, functions, configurationError } from './firebase.js';
+import { runOperation } from './client-store.js';
+import { auth, db, configurationError } from './firebase.js';
 
 const PROFILE_KEY = 'chicken:selectedProfile';
 let connectionPromise;
@@ -26,8 +26,7 @@ export async function listProfiles() {
 }
 export async function createProfile(name) {
   await getConnectionUser();
-  const { data } = await httpsCallable(functions, 'createProfile')({ name });
-  return profileView(data);
+  return profileView(await runOperation('createProfile', { name }));
 }
 export function selectProfile(profile) {
   localStorage.setItem(PROFILE_KEY, profile.id || profile.uid);

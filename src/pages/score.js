@@ -1,5 +1,5 @@
 import { scoreboardResultKey } from '../services/cache.js';
-import { exposeActions } from '../services/ui.js';
+import { exposeActions, enableStartupControls } from '../services/ui.js';
 
 // 狀態設定
     let scoreA = 0;
@@ -538,3 +538,5 @@ import { exposeActions } from '../services/ui.js';
     loadSavedState();
     setupPanelGestures();
     updateDisplay();
+
+enableStartupControls();

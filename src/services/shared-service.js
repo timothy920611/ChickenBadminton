@@ -1,12 +1,12 @@
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import {
   DomainError, validateState, validatePlayers, text, identifier, assertRevision,
   assertShareActive, applyMatchScore, toPublic, sharedGame
-} from './domain.js';
+} from '../domain/validation.js';
 
 const SHARE_LIFETIME_MS = 24 * 60 * 60 * 1000;
 const fail = (code, message) => { throw new DomainError(code, message); };
-const tokenHash = token => createHash('sha256').update(token).digest('hex');
+const tokenHash = async token => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token)))].map(byte => byte.toString(16).padStart(2, '0')).join('');
+const randomToken = () => btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
 const pathId = (value, label) => {
   identifier(value, label);
   // Path segments must not allow dot segments, even though legacy player IDs can contain dots.
@@ -32,22 +32,22 @@ const requireProfile = snapshot => {
 };
 
 /**
- * Callable implementation factory, also usable with a transactional test store.
+ * Shared application operations, backed by Firestore client transactions on Spark.
  * Profiles intentionally are shared workspaces: every authenticated visitor may manage all profiles.
  * Firebase anonymous Auth establishes a session, not ownership of a selected profile.
  */
-export function createService(db, { now = () => new Date(), newId = randomUUID, newToken = () => randomBytes(32).toString('base64url') } = {}) {
+export function createService(db, { now = () => new Date(), newId = () => crypto.randomUUID(), newToken = randomToken } = {}) {
   const profileRef = profileId => db.doc(`profiles/${pathId(profileId, '使用者 ID')}`);
   const gameRef = (profileId, gameId) => db.doc(`profiles/${pathId(profileId, '使用者 ID')}/games/${pathId(gameId, '比賽 ID')}`);
   const rosterRef = profileId => db.doc(`profiles/${pathId(profileId, '使用者 ID')}/settings/frequentPlayers`);
   const activeShareRef = (profileId, gameId) => db.doc(`profiles/${pathId(profileId, '使用者 ID')}/gameShares/${pathId(gameId, '比賽 ID')}`);
-  function shareRef(token) {
+  async function shareRef(token) {
     if (typeof token !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(token)) fail('permission-denied', '分享連結格式不正確。');
-    return db.doc(`shareLinks/${tokenHash(token)}`);
+    return db.doc(`shareLinks/${await tokenHash(token)}`);
   }
   async function readProfile(transaction, profileId) { return requireProfile(await transaction.get(profileRef(profileId))); }
   async function readShared(transaction, token) {
-    const snapshot = await transaction.get(shareRef(token));
+    const snapshot = await transaction.get(await shareRef(token));
     const link = snapshot.exists ? snapshot.data() : null;
     assertShareActive(link, now().getTime());
     await readProfile(transaction, link.profileId);
@@ -128,7 +128,7 @@ export function createService(db, { now = () => new Date(), newId = randomUUID, 
       const ref = gameRef(data.profileId, data.gameId);
       const activeRef = activeShareRef(data.profileId, data.gameId);
       const token = newToken();
-      const hash = tokenHash(token);
+      const hash = await tokenHash(token);
       const expiry = new Date(now().getTime() + SHARE_LIFETIME_MS);
       return db.runTransaction(async transaction => {
         await readProfile(transaction, data.profileId);

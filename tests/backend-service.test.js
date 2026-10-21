@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createService } from '../functions/service.js';
-import { STATE_KEYS } from '../functions/domain.js';
+import { createService } from '../src/services/shared-service.js';
+import { STATE_KEYS } from '../src/domain/validation.js';
 
 /** A serializable test store: atomic commits, snapshots, and Firestore's reads-before-writes rule. */
 function memoryFirestore() {
@@ -79,7 +79,7 @@ async function fixture() {
 
 const matchUpdate = (matchId, score1 = 21, score2 = 15) => ({ scheduleId: 1, matchId, score1, score2, isFinished: true });
 
-test('every callable rejects requests without a Firebase authentication session', async () => {
+test('every operation rejects requests without a Firebase authentication session', async () => {
   const { service } = await fixture();
   for (const [name, operation] of Object.entries(service)) {
     await assert.rejects(operation({ data: {} }), (error) => error.code === 'unauthenticated', name);

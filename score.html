@@ -33,7 +33,7 @@
         <!-- 點擊隊名可直接原地修改 -->
         <input type="text" id="name-a" value="主隊" 
                class="team-name-input bg-transparent text-center font-black text-4xl md:text-6xl focus:outline-none focus:border-b-2 border-white/80 cursor-text tracking-wide"
-               onclick="event.stopPropagation();" onchange="saveSettings()">
+               onclick="event.stopPropagation();" onchange="saveSettings()" disabled data-startup-disabled>
         <span id="crown-a" class="team-crown text-yellow-300 drop-shadow-lg transition-all duration-300 opacity-0 transform scale-50">
           <i data-lucide="crown" class="w-8 h-8 fill-current"></i>
         </span>
@@ -56,7 +56,7 @@
       <div class="team-name-row">
         <input type="text" id="name-b" value="客隊" 
                class="team-name-input bg-transparent text-center font-black text-4xl md:text-6xl focus:outline-none focus:border-b-2 border-white/80 cursor-text tracking-wide"
-               onclick="event.stopPropagation();" onchange="saveSettings()">
+               onclick="event.stopPropagation();" onchange="saveSettings()" disabled data-startup-disabled>
         <span id="crown-b" class="team-crown text-yellow-300 drop-shadow-lg transition-all duration-300 opacity-0 transform scale-50">
           <i data-lucide="crown" class="w-8 h-8 fill-current"></i>
         </span>
@@ -75,17 +75,17 @@
   <!-- 懸浮控制板 (位於畫面中央) — 精簡為 3 個按鈕 -->
   <div class="floating-controls absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 flex items-center text-gray-800 rounded-full px-5 py-2.5 border border-white/60 gap-5">
     <!-- 全螢幕按鈕 -->
-    <button onclick="toggleFullscreen()" id="fullscreen-btn" class="hover:text-[#3b82f6] transition-colors active:scale-90" title="全螢幕">
+    <button onclick="toggleFullscreen()" id="fullscreen-btn" class="hover:text-[#3b82f6] transition-colors active:scale-90" title="全螢幕" disabled data-startup-disabled>
       <i data-lucide="maximize" class="w-6 h-6 md:w-7 md:h-7"></i>
     </button>
     
     <!-- 設定按鈕 (含歸零) -->
-    <button onclick="toggleSettingsModal(true)" class="hover:text-[#3b82f6] transition-colors active:scale-90" title="設定">
+    <button onclick="toggleSettingsModal(true)" class="hover:text-[#3b82f6] transition-colors active:scale-90" title="設定" disabled data-startup-disabled>
       <i data-lucide="settings" class="w-6 h-6 md:w-7 md:h-7"></i>
     </button>
     
     <!-- 交換按鈕 -->
-    <button onclick="swapTeams()" class="hover:text-[#3b82f6] transition-colors active:scale-90" title="交換場地">
+    <button onclick="swapTeams()" class="hover:text-[#3b82f6] transition-colors active:scale-90" title="交換場地" disabled data-startup-disabled>
       <i data-lucide="arrow-left-right" class="w-6 h-6 md:w-7 md:h-7"></i>
     </button>
   </div>
@@ -94,7 +94,7 @@
   <div class="finish-controls absolute left-1/2 transform -translate-x-1/2 z-30">
     <button onclick="finishAndReturn()" 
             class="finish-button flex items-center gap-1.5 hover:bg-black/50 text-white/90 hover:text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-all active:scale-95 border border-white/25"
-            title="完成並帶回比分">
+            title="完成並帶回比分" disabled data-startup-disabled>
       <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
       完賽
     </button>
@@ -113,18 +113,18 @@
         <div>
           <label class="block text-sm font-bold text-gray-600 mb-1">勝利分數限制 (0 代表不設限)</label>
           <div class="flex gap-2">
-            <button onclick="setTargetScorePreset(11)" class="flex-1 py-1.5 px-3 bg-gray-100 rounded-lg font-bold text-sm hover:bg-blue-500 hover:text-white transition">11分</button>
-            <button onclick="setTargetScorePreset(21)" class="flex-1 py-1.5 px-3 bg-gray-100 rounded-lg font-bold text-sm hover:bg-blue-500 hover:text-white transition">21分</button>
-            <button onclick="setTargetScorePreset(25)" class="flex-1 py-1.5 px-3 bg-gray-100 rounded-lg font-bold text-sm hover:bg-blue-500 hover:text-white transition">25分</button>
+            <button onclick="setTargetScorePreset(11)" class="flex-1 py-1.5 px-3 bg-gray-100 rounded-lg font-bold text-sm hover:bg-blue-500 hover:text-white transition" disabled data-startup-disabled>11分</button>
+            <button onclick="setTargetScorePreset(21)" class="flex-1 py-1.5 px-3 bg-gray-100 rounded-lg font-bold text-sm hover:bg-blue-500 hover:text-white transition" disabled data-startup-disabled>21分</button>
+            <button onclick="setTargetScorePreset(25)" class="flex-1 py-1.5 px-3 bg-gray-100 rounded-lg font-bold text-sm hover:bg-blue-500 hover:text-white transition" disabled data-startup-disabled>25分</button>
           </div>
-          <input type="number" id="target-score" class="mt-2 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" min="0" value="11">
+          <input type="number" id="target-score" class="mt-2 w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" min="0" value="11" disabled data-startup-disabled>
         </div>
 
         <!-- 聲音與震動 -->
         <div class="flex items-center justify-between border-t pt-4">
           <span class="text-sm font-bold text-gray-600">操作音效與提示</span>
           <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="sound-toggle" class="sr-only peer" checked onchange="saveSettings()">
+            <input type="checkbox" id="sound-toggle" class="sr-only peer" checked onchange="saveSettings()" disabled data-startup-disabled>
             <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
           </label>
         </div>
@@ -132,7 +132,7 @@
         <div class="flex items-center justify-between border-t pt-4">
           <span class="text-sm font-bold text-gray-600">觸覺震動回饋 (限手機)</span>
           <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="vibrate-toggle" class="sr-only peer" checked onchange="saveSettings()">
+            <input type="checkbox" id="vibrate-toggle" class="sr-only peer" checked onchange="saveSettings()" disabled data-startup-disabled>
             <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
           </label>
         </div>
@@ -144,7 +144,7 @@
         <!-- 歸零區塊 -->
         <div class="border-t pt-4">
           <button onclick="toggleSettingsModal(false); confirmReset();" 
-                  class="w-full py-2.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-xl transition flex items-center justify-center gap-2 border border-red-200">
+                  class="w-full py-2.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-xl transition flex items-center justify-center gap-2 border border-red-200" disabled data-startup-disabled>
             <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
             分數歸零
           </button>
@@ -153,7 +153,7 @@
 
       <!-- 底部按鈕 -->
       <div class="mt-6 flex gap-3">
-        <button onclick="toggleSettingsModal(false)" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition shadow-md">
+        <button onclick="toggleSettingsModal(false)" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition shadow-md" disabled data-startup-disabled>
           確定並套用
         </button>
       </div>
@@ -169,10 +169,10 @@
       <h3 class="text-lg font-bold text-gray-900 mb-2">確定要把分數歸零嗎？</h3>
       <p class="text-sm text-gray-500 mb-6">目前的比分與勝負狀態將會被清除重置。</p>
       <div class="flex gap-3">
-        <button onclick="toggleResetModal(false)" class="flex-1 py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-xl transition">
+        <button onclick="toggleResetModal(false)" class="flex-1 py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-xl transition" disabled data-startup-disabled>
           取消
         </button>
-        <button onclick="resetScores()" class="flex-1 py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition shadow-md">
+        <button onclick="resetScores()" class="flex-1 py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition shadow-md" disabled data-startup-disabled>
           確定歸零
         </button>
       </div>

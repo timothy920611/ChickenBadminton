@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { createService } from '../../functions/service.js';
-import { toPublic } from '../../functions/domain.js';
+import { createService } from '../../src/services/shared-service.js';
+import { toPublic } from '../../src/domain/validation.js';
 
-// Optional browser fixture: real page and callable implementations with a
+// Optional browser fixture: real page and shared domain operations with a
 // serializable in-memory store. Firebase transport/rules require emulator mode.
 const authModule = `
 const key = 'chicken:selectedProfile';

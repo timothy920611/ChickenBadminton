@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-21",
+  "timezone": "Asia/Taipei",
+  "projectId": "chickenbadminton",
+  "mapping": {
+    "Timothy": "85df8e0a-d113-4b9e-b1b9-a01a7dfbf0df",
+    "guest": "19ddfa51-8034-43a1-b380-57b90b4b37c0"
+  },
+  "createdDocuments": 13,
+  "skippedDocuments": 0,
+  "verifiedDocuments": 13,
+  "profiles": [
+    {
+      "name": "Timothy",
+      "games": 8,
+      "frequentPlayers": 17
+    },
+    {
+      "name": "guest",
+      "games": 4,
+      "frequentPlayers": 0
+    }
+  ],
+  "legacySourceFiles": 31,
+  "legacySourceUnchanged": true,
+  "gameChronologyPreserved": true
+}

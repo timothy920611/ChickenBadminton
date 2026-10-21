@@ -1,0 +1,24 @@
+{
+  "score": 3,
+  "summary": "Spark shared prototype. Shared management is deliberate authorization, not an ownership bypass. Rules validate document envelopes and concurrency; client business validation is not a trusted server boundary.",
+  "findings": [
+    {
+      "check": "Nested data validation",
+      "severity": "moderate",
+      "issue": "Rules bound the state arrays but do not validate every nested player, team and match. A visitor who bypasses the website can corrupt shared nested state. Client validation cannot prevent this.",
+      "recommendation": "For hostile public use, normalize nested entities into individually validated documents, or adopt a trusted backend after explicitly revisiting the free-only requirement."
+    }
+  ],
+  "verifiedControls": [
+    "Anonymous authentication required for all data access",
+    "All authenticated visitors intentionally share management access",
+    "Strict top-level fields, required fields, types and array sizes on create and update",
+    "Server timestamps and immutable game metadata",
+    "Revision increments on whole-game, roster and score changes",
+    "Transaction conflict retries preserve scores on different matches",
+    "No physical profile or game deletes; archive is irreversible in client rules",
+    "No orphan subcollection access or arbitrary settings paths",
+    "Share creation is atomic with its active hash; expiry is at most 24 hours",
+    "Share tokens are never stored; hashes cannot be listed; expired and revoked links fail"
+  ]
+}

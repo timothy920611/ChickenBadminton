@@ -13,13 +13,13 @@
 
 <div class="toolbar-container">
     <div class="toolbar">
-        <button class="gamestart-layout-1 tool-btn" onclick="window.location.href='dashboard.html'">◀ 回賽程管理</button>
+        <button class="gamestart-layout-1 tool-btn" onclick="window.location.href='dashboard.html'" disabled data-startup-disabled>◀ 回賽程管理</button>
         <span id="gameTitle" class="gamestart-layout-2"></span>
         <div class="gamestart-layout-3">
             <span id="syncStatus" class="gamestart-layout-4"></span>
-            <button class="gamestart-layout-5 tool-btn" onclick="openShareModal()">🔗 邀請協助計分</button>
-            <button class="tool-btn" onclick="reloadGame()">🔄 重新載入</button>
-            <button class="tool-btn" id="btnSync" onclick="syncToCloud()">☁️ 儲存至雲端</button>
+            <button class="gamestart-layout-5 tool-btn" onclick="openShareModal()" disabled data-startup-disabled>🔗 邀請協助計分</button>
+            <button class="tool-btn" onclick="reloadGame()" disabled data-startup-disabled>🔄 重新載入</button>
+            <button class="tool-btn" id="btnSync" onclick="syncToCloud()" disabled data-startup-disabled>☁️ 儲存至雲端</button>
         </div>
     </div>
 </div>
@@ -29,15 +29,15 @@
     <div class="gamestart-layout-7">
         <div class="gamestart-layout-8">
             <h3 class="gamestart-layout-9">🔗 邀請朋友協助計分</h3>
-            <button onclick="closeShareModal()" class="gamestart-layout-10">&times;</button>
+            <button onclick="closeShareModal()" class="gamestart-layout-10" disabled data-startup-disabled>&times;</button>
         </div>
         <p class="gamestart-layout-11">傳送連結或 QR Code 給朋友，對方開啟連結即可協助輸入這場比賽的比分。</p>
         <div class="gamestart-layout-12">
-            <input id="shareUrl" type="text" readonly class="gamestart-layout-13">
-            <button onclick="copyShareUrl()" id="btnCopy" class="gamestart-layout-14">複製</button>
+            <input id="shareUrl" type="text" readonly class="gamestart-layout-13" disabled data-startup-disabled>
+            <button onclick="copyShareUrl()" id="btnCopy" class="gamestart-layout-14" disabled data-startup-disabled>複製</button>
         </div>
         <p id="shareExpiry" class="share-expiry" role="status"></p>
-        <button class="revoke-share" onclick="revokeShareLink()">撤銷分享連結</button>
+        <button class="revoke-share" onclick="revokeShareLink()" disabled data-startup-disabled>撤銷分享連結</button>
         <div id="qrcode" class="gamestart-layout-15"></div>
         <p class="gamestart-layout-16">⚠️ 持有此連結的人可以修改這場比賽的分數，請謹慎分享。</p>
     </div>
@@ -49,13 +49,13 @@
     <!-- 產生下一輪 -->
     <div id="rematchContainer" class="gamestart-layout-17">
         <div class="gamestart-layout-18">
-            <button class="btn-rematch" onclick="generateRematch()">
+            <button class="btn-rematch" onclick="generateRematch()" disabled data-startup-disabled>
                 🔄 沿用目前分組再打一輪 (新增賽程 <span id="nextScheduleNum"></span>)
             </button>
-            <button class="gamestart-layout-19 btn-rematch" onclick="openRegroupModal()">
+            <button class="gamestart-layout-19 btn-rematch" onclick="openRegroupModal()" disabled data-startup-disabled>
                 🎲 重新分組同樣的人 → 產生新賽程
             </button>
-            <button class="gamestart-layout-20 btn-rematch" onclick="generateRankedSingleElimination()">
+            <button class="gamestart-layout-20 btn-rematch" onclick="generateRankedSingleElimination()" disabled data-startup-disabled>
                 🪜 依目前排名產生單敗淘汰賽
             </button>
             <div class="gamestart-layout-21">
@@ -70,12 +70,12 @@
         <div class="gamestart-layout-24">
             <div class="gamestart-layout-25">
                 <h3 class="gamestart-layout-26">🎲 重新分組同樣的人</h3>
-                <button onclick="closeRegroupModal()" class="gamestart-layout-27">&times;</button>
+                <button onclick="closeRegroupModal()" class="gamestart-layout-27" disabled data-startup-disabled>&times;</button>
             </div>
             <div class="gamestart-layout-28">
-                <button onclick="autoRegroup()" class="gamestart-layout-29">🎲 自動重新分組</button>
-                <button onclick="confirmRegroupAndStart('single')" class="gamestart-layout-30">✅ 確認 → 單輪賽</button>
-                <button onclick="confirmRegroupAndStart('round-robin')" class="gamestart-layout-31">🏆 確認 → 循環賽</button>
+                <button onclick="autoRegroup()" class="gamestart-layout-29" disabled data-startup-disabled>🎲 自動重新分組</button>
+                <button onclick="confirmRegroupAndStart('single')" class="gamestart-layout-30" disabled data-startup-disabled>✅ 確認 → 單輪賽</button>
+                <button onclick="confirmRegroupAndStart('round-robin')" class="gamestart-layout-31" disabled data-startup-disabled>🏆 確認 → 循環賽</button>
             </div>
             <div class="gamestart-layout-32">
                 💡 點「自動重新分組」可依實力重新均衡配對；也可直接點擊兩張球員卡片來互換位置。

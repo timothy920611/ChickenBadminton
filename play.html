@@ -11,11 +11,11 @@
 </head>
 <body>
 
-<input type="file" id="csvInput" accept=".csv" onchange="handleCSVImport(event)" class="play-csv-input-style">
+<input type="file" id="csvInput" accept=".csv" onchange="handleCSVImport(event)" class="play-csv-input-style" disabled data-startup-disabled>
 
 <div class="toolbar-container">
     <div class="toolbar">
-        <button class="tool-btn play-tool-btn-style" onclick="window.location.href='dashboard.html'">◀ 回賽程管理</button>
+        <button class="tool-btn play-tool-btn-style" onclick="window.location.href='dashboard.html'" disabled data-startup-disabled>◀ 回賽程管理</button>
         <span id="gameTitle" class="play-game-title-style"></span>
         <div class="play-content-style"></div>
     </div>
@@ -26,17 +26,17 @@
         1. 球員名單
         <span class="play-content-style-2">
             <span>已加入：<span id="playerCount">0</span> / 20</span>
-            <button class="dev-btn play-dev-btn-style" onclick="generateMockPlayers()">快速加入測試假資料</button>
-            <button class="dev-btn play-dev-btn-style-2" onclick="triggerCSVImport('current')">📁 匯入 CSV</button>
-            <button class="dev-btn play-dev-btn-style-3" onclick="openFrequentPlayersModal()">👥 常用選手</button>
+            <button class="dev-btn play-dev-btn-style" onclick="generateMockPlayers()" disabled data-startup-disabled>快速加入測試假資料</button>
+            <button class="dev-btn play-dev-btn-style-2" onclick="triggerCSVImport('current')" disabled data-startup-disabled>📁 匯入 CSV</button>
+            <button class="dev-btn play-dev-btn-style-3" onclick="openFrequentPlayersModal()" disabled data-startup-disabled>👥 常用選手</button>
         </span>
     </h2>
     <div class="progress-container"><div class="progress-bar play-progress-bar-style" id="progressBar"></div></div>
-    <div class="sync-banner" id="playerSyncStatus" role="status" aria-live="polite">☁️ 正在載入雲端資料</div><button class="dev-btn" onclick="reloadGame()">🔄 重新載入雲端</button><br>
+    <div class="sync-banner" id="playerSyncStatus" role="status" aria-live="polite">☁️ 正在載入雲端資料</div><button class="dev-btn" onclick="reloadGame()" disabled data-startup-disabled>🔄 重新載入雲端</button><br>
     <div class="form-group">
-        <input type="text" id="playerName" maxlength="80" placeholder="球員姓名" class="play-player-name-style">
-        <select id="playerGender"><option value="男">男</option><option value="女">女</option></select>
-        <select id="playerLevel">
+        <input type="text" id="playerName" maxlength="80" placeholder="球員姓名" class="play-player-name-style" disabled data-startup-disabled>
+        <select id="playerGender" disabled data-startup-disabled><option value="男">男</option><option value="女">女</option></select>
+        <select id="playerLevel" disabled data-startup-disabled>
             <option value="" disabled selected>實力級數</option>
             <option value="1">1 (新手)</option><option value="2">2</option><option value="3">3</option>
             <option value="4">4 (初階)</option><option value="5">5</option><option value="6">6 (初中)</option>
@@ -45,8 +45,8 @@
             <option value="13">13 (高階)</option><option value="14">14</option><option value="15">15</option>
             <option value="16">16 (職業)</option><option value="17">17</option><option value="18">18</option>
         </select>
-        <button type="button" onclick="openLevelModal()" class="play-content-style-3">ℹ️ 分級</button>
-        <button id="btnAddPlayer" type="button" onclick="addPlayer()">加入</button>
+        <button type="button" onclick="openLevelModal()" class="play-content-style-3" disabled data-startup-disabled>ℹ️ 分級</button>
+        <button id="btnAddPlayer" type="button" onclick="addPlayer()" disabled data-startup-disabled>加入</button>
     </div>
     <div class="player-grid" id="playerList"></div>
 </div>
@@ -54,14 +54,14 @@
 <div class="card">
     <h2>2. 分組安排</h2>
     <div class="draft-toolbar">
-        <button class="tool-btn play-btn-load-draft-style" onclick="loadSavedTeamDraft()" id="btnLoadDraft" hidden>📂 載入已儲存分組</button>
+        <button class="tool-btn play-btn-load-draft-style" onclick="loadSavedTeamDraft()" id="btnLoadDraft" hidden disabled data-startup-disabled>📂 載入已儲存分組</button>
         <span class="draft-status" id="draftStatus">尚未儲存分組草稿</span>
     </div>
     <div class="mode-buttons">
-        <button class="btn-mode-1" onclick="generateSchedule('single')">
+        <button class="btn-mode-1" onclick="generateSchedule('single')" disabled data-startup-disabled>
             🎲 自動分組 → 單輪賽事<br><span class="play-content-style-4">(依實力均衡配對，可手動調整)</span>
         </button>
-        <button class="btn-mode-2" onclick="generateSchedule('round-robin')">
+        <button class="btn-mode-2" onclick="generateSchedule('round-robin')" disabled data-startup-disabled>
             🏆 自動分組 → 循環賽<br><span class="play-content-style-4">(依實力均衡配對，可手動調整)</span>
         </button>
     </div>
@@ -74,10 +74,10 @@
         </div>
         <div class="teams-drag-grid" id="teamsDragGrid"></div>
         <div class="team-editor-actions">
-            <button class="btn-confirm-teams" onclick="confirmTeamsAndStart('single')">✅ 確認 → 開始單輪賽事</button>
-            <button class="btn-confirm-rr" onclick="confirmTeamsAndStart('round-robin')">🏆 確認 → 開始循環賽</button>
-            <button class="btn-cancel-edit play-btn-cancel-edit-style" onclick="saveTeamDraft()">💾 儲存分組草稿</button>
-            <button class="btn-cancel-edit" onclick="cancelTeamEdit()">✕ 取消</button>
+            <button class="btn-confirm-teams" onclick="confirmTeamsAndStart('single')" disabled data-startup-disabled>✅ 確認 → 開始單輪賽事</button>
+            <button class="btn-confirm-rr" onclick="confirmTeamsAndStart('round-robin')" disabled data-startup-disabled>🏆 確認 → 開始循環賽</button>
+            <button class="btn-cancel-edit play-btn-cancel-edit-style" onclick="saveTeamDraft()" disabled data-startup-disabled>💾 儲存分組草稿</button>
+            <button class="btn-cancel-edit" onclick="cancelTeamEdit()" disabled data-startup-disabled>✕ 取消</button>
         </div>
     </div>
 </div>
@@ -87,13 +87,13 @@
     <div class="modal-content play-modal-content-style">
         <div class="modal-header">
             <div class="modal-title">👥 選擇常用選手</div>
-            <button class="close-btn" onclick="closeFrequentPlayersModal()">&times;</button>
+            <button class="close-btn" onclick="closeFrequentPlayersModal()" disabled data-startup-disabled>&times;</button>
         </div>
         <div class="play-content-style-7">
             <span id="fpSyncStatus" class="play-fp-sync-status-style"></span>
             <div>
-                <button class="dev-btn play-dev-btn-style-4" onclick="triggerCSVImport('frequent')">📁 批次匯入</button>
-                <button class="dev-btn play-dev-btn-style-5" onclick="fetchFrequentPlayers(true)">🔄 重新載入</button>
+                <button class="dev-btn play-dev-btn-style-4" onclick="triggerCSVImport('frequent')" disabled data-startup-disabled>📁 批次匯入</button>
+                <button class="dev-btn play-dev-btn-style-5" onclick="fetchFrequentPlayers(true)" disabled data-startup-disabled>🔄 重新載入</button>
             </div>
         </div>
         <div id="frequentPlayersList" class="play-frequent-players-list-style">
@@ -102,9 +102,9 @@
         <div class="play-content-style-9">
             <h3 class="play-content-style-10">➕ 新增常用選手</h3>
             <div class="form-group play-form-group-style">
-                <input type="text" id="fpName" maxlength="80" placeholder="姓名" class="play-fp-name-style">
-                <select id="fpGender"><option value="男">男</option><option value="女">女</option></select>
-                <select id="fpLevel" class="play-fp-level-style">
+                <input type="text" id="fpName" maxlength="80" placeholder="姓名" class="play-fp-name-style" disabled data-startup-disabled>
+                <select id="fpGender" disabled data-startup-disabled><option value="男">男</option><option value="女">女</option></select>
+                <select id="fpLevel" class="play-fp-level-style" disabled data-startup-disabled>
                     <option value="" disabled selected>級數</option>
                     <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
                     <option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option>
@@ -112,11 +112,11 @@
                     <option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option>
                     <option value="17">17</option><option value="18">18</option>
                 </select>
-                <button onclick="addFrequentPlayer()" id="btnAddFp" class="play-content-style-3">儲存</button>
+                <button onclick="addFrequentPlayer()" id="btnAddFp" class="play-content-style-3" disabled data-startup-disabled>儲存</button>
             </div>
         </div>
         <div class="play-content-style-11">
-            <button onclick="addSelectedFrequentPlayers()" class="play-content-style-12">✅ 加入本次賽程</button>
+            <button onclick="addSelectedFrequentPlayers()" class="play-content-style-12" disabled data-startup-disabled>✅ 加入本次賽程</button>
         </div>
     </div>
 </div>
@@ -126,7 +126,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <div class="modal-title">🏸 羽球程度分級制度</div>
-            <button class="close-btn" onclick="closeLevelModal()">&times;</button>
+            <button class="close-btn" onclick="closeLevelModal()" disabled data-startup-disabled>&times;</button>
         </div>
         <table class="level-table">
             <thead><tr><th width="60">級數</th><th width="160">比賽階級</th><th>程度說明</th></tr></thead>

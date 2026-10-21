@@ -3,6 +3,7 @@ dist/
 .env*
 !.env.example
 !.env.emulator
+!.env.production
 .firebase/
 *-debug.log*
 playwright-report/

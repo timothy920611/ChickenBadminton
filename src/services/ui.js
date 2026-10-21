@@ -16,3 +16,10 @@ export function showPageError(error) {
   }
   panel.textContent = error?.message || String(error);
 }
+
+export function enableStartupControls() {
+  document.querySelectorAll('[data-startup-disabled]').forEach(control => {
+    control.disabled = false;
+    control.removeAttribute('data-startup-disabled');
+  });
+}

@@ -11,7 +11,6 @@ export default defineConfig({
         manualChunks: {
           'firebase-auth': ['firebase/auth'],
           'firebase-firestore': ['firebase/firestore'],
-          'firebase-functions': ['firebase/functions'],
         },
       },
     },

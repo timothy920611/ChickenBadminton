@@ -20,15 +20,13 @@ jobs:
           cache: npm
           cache-dependency-path: |
             package-lock.json
-            functions/package-lock.json
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
       - run: npm ci
-      - run: npm --prefix functions ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run build
+      - run: npm run build:production
       - run: npm run test:emulators
       - uses: actions/upload-artifact@v4
         if: failure()

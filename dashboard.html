@@ -15,7 +15,7 @@
         <h1>🏸 賽程管理</h1>
         <div class="user-info">
             <span>👤 <span id="displayUser">載入中...</span></span>
-            <button class="btn-logout" onclick="logout()">切換使用者</button>
+            <button class="btn-logout" onclick="logout()" disabled data-startup-disabled>切換使用者</button>
         </div>
     </div>
 
@@ -24,8 +24,8 @@
         <h2>✨ 建立新比賽</h2>
         <p class="dashboard-style-1">建立一個新的賽程群組，獨立管理當天的參賽人員與比分。</p>
         <div class="input-group">
-            <input type="text" id="newGameName" maxlength="120" placeholder="例如：3/23 週末羽球團" autocomplete="off">
-            <button class="btn-primary" id="createGameBtn" onclick="createGame()">➕ 新增並進入計分板</button>
+            <input type="text" id="newGameName" maxlength="120" placeholder="例如：3/23 週末羽球團" autocomplete="off" disabled data-startup-disabled>
+            <button class="btn-primary" id="createGameBtn" onclick="createGame()" disabled data-startup-disabled>➕ 新增並進入計分板</button>
         </div>
     </div>
 
@@ -38,15 +38,15 @@
     </div>
 
     <!-- 常用選手管理 -->
-    <input type="file" id="fpCsvInput" accept=".csv" onchange="handleFpCsvImport(event)" class="dashboard-style-3">
+    <input type="file" id="fpCsvInput" accept=".csv" onchange="handleFpCsvImport(event)" class="dashboard-style-3" disabled data-startup-disabled>
     <div class="card">
         <h2>👥 常用選手名冊</h2>
 
         <!-- 新增表單 -->
         <div class="fp-add-form">
-            <input type="text" id="fpName" maxlength="80" placeholder="球員姓名" class="dashboard-style-4">
-            <select id="fpGender"><option value="男">男</option><option value="女">女</option></select>
-            <select id="fpLevel" class="dashboard-style-5">
+            <input type="text" id="fpName" maxlength="80" placeholder="球員姓名" class="dashboard-style-4" disabled data-startup-disabled>
+            <select id="fpGender" disabled data-startup-disabled><option value="男">男</option><option value="女">女</option></select>
+            <select id="fpLevel" class="dashboard-style-5" disabled data-startup-disabled>
                 <option value="" disabled selected>實力級數</option>
                 <option value="1">1 (新手)</option><option value="2">2</option><option value="3">3</option>
                 <option value="4">4 (初階)</option><option value="5">5</option><option value="6">6 (初中)</option>
@@ -55,15 +55,15 @@
                 <option value="13">13 (高階)</option><option value="14">14</option><option value="15">15</option>
                 <option value="16">16 (職業)</option><option value="17">17</option><option value="18">18</option>
             </select>
-            <button class="btn-primary btn-sm" id="btnAddFp" onclick="addFrequentPlayer()">➕ 新增</button>
+            <button class="btn-primary btn-sm" id="btnAddFp" onclick="addFrequentPlayer()" disabled data-startup-disabled>➕ 新增</button>
         </div>
 
         <!-- 工具列 -->
         <div class="fp-toolbar">
             <span class="fp-sync-status" id="fpSyncStatus" role="status" aria-live="polite"></span>
             <div class="dashboard-style-6">
-                <button class="btn-primary btn-sm dashboard-style-7" onclick="document.getElementById('fpCsvInput').click()">📁 CSV 匯入</button>
-                <button class="btn-primary btn-sm dashboard-style-8" id="reloadFpButton" onclick="loadFrequentPlayers()">🔄 從雲端重新載入</button>
+                <button class="btn-primary btn-sm dashboard-style-7" onclick="document.getElementById('fpCsvInput').click()" disabled data-startup-disabled>📁 CSV 匯入</button>
+                <button class="btn-primary btn-sm dashboard-style-8" id="reloadFpButton" onclick="loadFrequentPlayers()" disabled data-startup-disabled>🔄 從雲端重新載入</button>
             </div>
         </div>
 

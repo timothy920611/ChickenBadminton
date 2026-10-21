@@ -18,7 +18,7 @@ npm run migrate -- --source ./json --map ./mapping.local.json
 4. 在有目標專案管理員權限的環境，透過 Application Default Credentials 執行：
 
 ```bash
-npm run migrate -- --source ./json --map ./mapping.local.json --project YOUR_PROJECT_ID --write
+npm run migrate -- --source ./json --map ./mapping.local.json --project chickenbadminton --write
 ```
 
 工具只處理 mapping 指定來源，並只匯入 `games_index.json` 列出的賽事及 `frequent_players.json`。現代 `game_ID.json` 優先，沒有時讀取舊格式 `games/ID.json`；尚無賽程檔的索引會建立空賽事。`trash/`、未被索引列出的孤立檔案及 `users/` 密碼資料均不匯入。無法通過新版欄位驗證的資料會停止處理，不會靜默捨棄欄位。
@@ -28,3 +28,9 @@ npm run migrate -- --source ./json --map ./mapping.local.json --project YOUR_PRO
 使用者是免密碼、跨裝置共用的資料分類，任何開啟網站的人都可管理；mapping 不是帳號權限或身分驗證。
 
 舊版的 GitHub PAT 曾放在前端，請到 GitHub Settings → Developer settings → Personal access tokens 撤銷該 PAT。移除程式碼及舊密碼檔不會消除 Git 歷史中的曝光。
+
+## 已完成的正式匯入（2026-10-21）
+
+Timothy 的 8 場賽事及 17 位常用選手、guest 的 4 場賽事已完成匯入，新增 13 份文件、略過 0 份。逐欄讀回比對通過，全部 31 份來源 JSON 的 SHA-256 不變。遊戲原有 Date.now() ID 保留為 createdAt，避免匯入時間改變舊賽事排序。
+
+目的 profile 已存在；後續請使用 [正式匯入紀錄](migration-record.json) 的 mapping，避免建立同名重複使用者。該紀錄只有共用 profile ID 與數量，沒有 Firebase Auth 憑證或管理員金鑰。

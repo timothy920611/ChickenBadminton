@@ -1,6 +1,6 @@
 import { collection, doc, getDoc, getDocs, onSnapshot } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
-import { db, functions } from './firebase.js';
+import { runOperation } from './client-store.js';
+import { db } from './firebase.js';
 import { readyUser, getConnectionUser } from './auth.js';
 
 const stateKeys = ['players', 'currentTeams', 'schedules', 'matchMode', 'pendingRestMsg',
@@ -26,9 +26,9 @@ function plain(value) {
 async function call(name, payload = {}, withProfile = true) {
   await getConnectionUser();
   if (withProfile) payload = { ...payload, profileId: await currentProfile() };
-  try { return (await httpsCallable(functions, name)(payload)).data; }
+  try { return await runOperation(name, payload); }
   catch (error) {
-    if (error.code === 'functions/aborted' || error.code === 'functions/failed-precondition') {
+    if (['aborted', 'failed-precondition'].includes(error.code)) {
       error.message = '資料已由其他裝置更新，請重新載入後再編輯。本機草稿尚未上傳。';
     }
     throw error;

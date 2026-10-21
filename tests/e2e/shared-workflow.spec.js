@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { createMockBackend } from './mock-backend.js';
 
-// Run with the Auth, Firestore and Functions emulators. No production data is used.
+// Run with the Auth and Firestore emulators. No production data is used.
 test('shared users work across browsers and helper links update only scores', async ({ page, browser, baseURL }) => {
   const attachBackend = createMockBackend();
   await attachBackend(page.context());
-  const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  const suffix = process.env.E2E_RUN_ID || `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
   const profileName = `共享測試 ${suffix}`;
   const gameName = `週末球局 ${suffix}`;
   const pageErrors = [];
@@ -120,4 +120,18 @@ test('shared users work across browsers and helper links update only scores', as
     await secondContext.close();
     await helperContext.close();
   }
+});
+
+test('controls remain disabled while the entry module is still loading', async ({page}) => {
+  const attachBackend=createMockBackend();await attachBackend(page.context());
+  let release;
+  const gate=new Promise(resolve=>{release=resolve;});
+  await page.route(/\/(?:src\/pages\/index\.js|assets\/index-[^/]+\.js)(?:\?|$)/,async route=>{await gate;await route.continue();});
+  try {
+    await page.goto('/index.html',{waitUntil:'commit'});
+    await expect(page.locator('#profileName')).toBeDisabled();
+    await expect(page.getByRole('button',{name:'建立並進入',exact:true})).toBeDisabled();
+    release();
+    await expect(page.getByRole('button',{name:'建立並進入',exact:true})).toBeEnabled();
+  } finally {release();}
 });

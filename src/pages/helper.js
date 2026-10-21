@@ -1,7 +1,7 @@
 import { readyUser } from '../services/auth.js';
 import { configurationError } from '../services/firebase.js';
 import { getSharedGame, saveMatchScore } from '../services/repository.js';
-import { exposeActions, showPageError } from '../services/ui.js';
+import { exposeActions, showPageError, enableStartupControls } from '../services/ui.js';
 import { renderMatchSchedules, readScores } from '../ui/matches.js';
 
 // Tokens stay in the URL fragment, which is not sent to Hosting or in referrers.
@@ -58,7 +58,7 @@ async function submitScore(scheduleId, matchId, score1, score2, isFinished) {
     setBusy(true);
     status('☁️ 儲存比分中...');
     try {
-        // The server changes only this match; concurrent scores remain intact.
+        // The transaction changes only this match; concurrent scores remain intact.
         game = await saveMatchScore({ token, scheduleId, matchId, score1, score2, isFinished });
         render();
         status('✅ 比分已儲存');
@@ -80,6 +80,7 @@ async function initialize() {
         await readyUser({ allowGuest: true });
         await reloadGame();
     } catch (error) { status(`❌ ${error.message}`); showPageError(error); }
+    finally { enableStartupControls(); }
 }
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) stopPolling();

@@ -7,7 +7,7 @@ import {
   recomputeBracket,
   validatePlayers,
   validateState,
-} from '../functions/domain.js';
+} from '../src/domain/validation.js';
 
 const team = (id) => ({ id, name1: `${id}-1`, name2: `${id}-2`, totalLevel: 8 });
 const match = (id, round, team1, team2, overrides = {}) => ({

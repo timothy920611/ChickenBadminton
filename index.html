@@ -46,13 +46,13 @@
             <p class="warning-text shared-notice">這是共用賽程空間。任何開啟網站的人都能選取使用者，查看與管理其賽事；不需要帳號或密碼。</p>
             <h2 class="profile-heading">選擇使用者</h2>
             <div id="profileList" class="profile-list" aria-label="使用者清單"></div>
-            <button class="btn-secondary" type="button" onclick="loadProfiles()">重新整理使用者清單</button>
+            <button class="btn-secondary" type="button" onclick="loadProfiles()" disabled data-startup-disabled>重新整理使用者清單</button>
             <h2 class="profile-heading">建立使用者</h2>
             <div class="input-group">
                 <label for="profileName">使用者名稱</label>
-                <input type="text" id="profileName" placeholder="例如：小雞羽球團" autocomplete="off" maxlength="80" required>
+                <input type="text" id="profileName" placeholder="例如：小雞羽球團" autocomplete="off" maxlength="80" required disabled data-startup-disabled>
             </div>
-            <button class="btn-primary" type="button" onclick="handleCreateProfile()">建立並進入</button>
+            <button class="btn-primary" type="button" onclick="handleCreateProfile()" disabled data-startup-disabled>建立並進入</button>
             <div id="statusMsg" role="status" aria-live="polite"></div>
         </div>
 

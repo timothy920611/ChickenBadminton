@@ -2,7 +2,7 @@ import { readyUser } from '../services/auth.js';
 import { configurationError } from '../services/firebase.js';
 import { getGame, watchGame, saveGame, saveMatchScore, createShare, revokeShare } from '../services/repository.js';
 import { writeGameCache, scoreboardResultKey } from '../services/cache.js';
-import { escapeHtml, exposeActions, showPageError } from '../services/ui.js';
+import { escapeHtml, exposeActions, showPageError, enableStartupControls } from '../services/ui.js';
 import { buildStandingsTableRows, buildSingleEliminationSchedule } from '../domain/tournament.js';
 import { renderMatchSchedules, readScores } from '../ui/matches.js';
 
@@ -96,6 +96,8 @@ async function initialize() {
             window.location.replace(`play.html?gameId=${encodeURIComponent(GAME_ID)}`);
             return;
         }
+        enableStartupControls();
+        setBusy(isSyncing);
         startWatching();
         if (!isSyncing) status('✅ 已連線');
     } catch (error) {

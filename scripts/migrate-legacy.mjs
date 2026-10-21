@@ -1,7 +1,7 @@
 import { readFile, realpath } from 'node:fs/promises';
 import { resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { STATE_KEYS, validateState, validatePlayers } from '../functions/domain.js';
+import { STATE_KEYS, validateState, validatePlayers } from '../src/domain/validation.js';
 
 // Password records in users/ are deliberately never opened by this tool.
 export function normalizeLegacyGame(raw) {
@@ -62,7 +62,10 @@ export async function writeMigration(entries, database, now = () => new Date()) 
       const date = now();
       const data = { ...entry.data, updatedAt: date };
       if (entry.path.includes('/games/')) {
-        data.createdAt = date;
+        // Legacy IDs were generated with Date.now(); retain their chronology
+        // instead of sorting all imported games by this migration's write time.
+        data.createdAt = /^\d{13}$/.test(String(entry.data.id))
+          ? new Date(Number(entry.data.id)) : date;
         data.lastUpdated = date.toISOString();
       }
       transaction.create(reference, data);
